@@ -732,7 +732,7 @@ Example:
 ```text
 Phase 0 — Project Discovery       [x] Completed
 Step 0 — Scaffolding              [x] Completed
-Step 1 — Domain                   [ ] Pending
+Step 1 — Domain                   [x] Completed
 Step 2 — Infrastructure           [ ] Pending
 Step 3 — Application              [ ] Pending
 Step 4 — API                      [ ] Pending
@@ -787,6 +787,21 @@ Step 0 additions (scaffold):
 - docker-compose defaults carry safe placeholder credentials so the stack runs without a .env file;
   a real .env must never be committed
 - PostgreSQL 16 Alpine in Docker with persistent named volume (pgdata) and pg_isready healthcheck
+
+Step 1 additions (domain foundation):
+
+```text
+- PublicId value object: 12-char base62, cryptographically generated (RandomNumberGenerator);
+  global uniqueness enforced by DB unique constraint in a later step
+- Slug value object: canonical pattern ^[a-z0-9]+(-[a-z0-9]+)*$, max 60 chars;
+  normalization from platform name with deterministic fallback "platform" when no URL-safe
+  characters are present (e.g. Arabic-only names); slugs are NOT globally unique
+- Email value object with lightweight format validation
+- PlatformStatus states: PendingActivation -> Active -> Deactivated;
+  Activate only from PendingActivation, Deactivate only from Active
+- Platform ownership represented through TeacherPlatformMembership (Owner role + IsOwner flag)
+- Domain layer has zero external dependencies (no ASP.NET Core/EF/HTTP packages)
+  and is independent of ASP.NET Core, EF Core, PostgreSQL, and JWT
 ```
 
 Do not change these decisions silently.
