@@ -1,0 +1,35 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+[Dd]ebug/
+[Rr]elease/
+x64/
+[Bb]in/
+[Oo]bj/
+.vs/
+*.vscode/*
+!.vscode/extensions.json
+
+# Coverage
+coverage/
+*.coverage
+*.coveragexml
+TestResults/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+
+# User-specific / IDE
+.vs/
+.idea/
+
+# Node / misc
+node_modules/
+*.log
