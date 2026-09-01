@@ -733,7 +733,7 @@ Example:
 Phase 0 — Project Discovery       [x] Completed
 Step 0 — Scaffolding              [x] Completed
 Step 1 — Domain                   [x] Completed
-Step 2 — Infrastructure           [ ] Pending
+Step 2 — Infrastructure           [x] Completed
 Step 3 — Application              [ ] Pending
 Step 4 — API                      [ ] Pending
 Step 5 — Docker                   [ ] Pending
@@ -802,6 +802,27 @@ Step 1 additions (domain foundation):
 - Platform ownership represented through TeacherPlatformMembership (Owner role + IsOwner flag)
 - Domain layer has zero external dependencies (no ASP.NET Core/EF/HTTP packages)
   and is independent of ASP.NET Core, EF Core, PostgreSQL, and JWT
+```
+
+Step 2 additions (infrastructure):
+
+```text
+- EF Core version unified to 10.0.11 across the graph: Microsoft.EntityFrameworkCore and
+  Microsoft.EntityFrameworkCore.Relational are explicit public references in Infrastructure so Api and
+  IntegrationTests bind to the same runtime used by Microsoft.EntityFrameworkCore.Design 10.0.11
+  (prevents MSB3277 assembly conflicts when consumers combine Npgsql's 10.0.4 transitive EF with 10.0.11)
+- Scoped TenantContext holds at most one tenant per DI scope and rejects mid-scope tenant switches;
+  ApplicationDbContext exposes TenantId through the ITenantContext port
+- EF Core global query filters applied ONLY to tenant-scoped entities (Role, RolePermission,
+  TeacherPlatformMembership); global entities (Teacher, TeacherPlatform, Permission) are NOT filtered
+- Password hashing infrastructure via PasswordHasher<Teacher> behind an IPasswordHasher port;
+  no authentication/login/JWT implemented in Step 2
+- Value converters for Email/PublicId/Slug expose static fields named EmailConverter/PublicIdConverter/
+  SlugConverter because bare names shadowed the type aliases during compilation
+- Design-time factory (IDesignTimeDbContextFactory) reads ConnectionStrings__DefaultConnection and
+  otherwise builds a connection string from POSTGRES_* env vars with docker-compose placeholder defaults
+- InitialCreate migration generated (dotnet ef tools 10.0.7) and applied to the Docker PostgreSQL dev
+  database; constraints verified live (duplicate slug allowed, duplicate PublicId/Email rejected)
 ```
 
 Do not change these decisions silently.
