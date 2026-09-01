@@ -734,7 +734,7 @@ Phase 0 — Project Discovery       [x] Completed
 Step 0 — Scaffolding              [x] Completed
 Step 1 — Domain                   [x] Completed
 Step 2 — Infrastructure           [x] Completed
-Step 3 — Application              [ ] Pending
+Step 3 — Application              [x] Completed
 Step 4 — API                      [ ] Pending
 Step 5 — Docker                   [ ] Pending
 Step 6 — Tests                    [ ] Pending
@@ -823,6 +823,39 @@ Step 2 additions (infrastructure):
   otherwise builds a connection string from POSTGRES_* env vars with docker-compose placeholder defaults
 - InitialCreate migration generated (dotnet ef tools 10.0.7) and applied to the Docker PostgreSQL dev
   database; constraints verified live (duplicate slug allowed, duplicate PublicId/Email rejected)
+```
+
+Step 3 additions (application layer):
+
+```text
+- One service per approved use case: RegisterTeacherService, CreateTeacherPlatformService,
+  ActivateTeacherPlatformService, AuthenticateTeacherService, TenantRouteResolver
+- Purpose-specific persistence ports only: ITeacherRepository, IPlatformRepository (by PublicId),
+  IRoleRepository, IPermissionRepository (by code) + IUnitOfWork (single SaveChangesAsync commit)
+- Atomicity: each use case stages its full graph through repositories and commits with one
+  SaveChangesAsync (EF wraps a single save in a transaction); no Unit of Work abstraction beyond
+  the minimal commit port (avoids a generic UoW)
+- Duplicate email is enforced by the DB unique constraint only and translated by the persistence
+  layer into DuplicateEmailException (no application-side existence pre-check, so no race window)
+- CreateTeacherPlatform builds the full tenant graph atomically: platform (PendingActivation,
+  cryptographic PublicId, deterministic slug from name), Owner role, owner permissions from the
+  global catalog, and the owning teacher's membership (IsOwner); duplicate and non-unique slugs
+  allowed with no uniqueness check
+- Owner role creation depends on the global permission catalog being present; a missing permission
+  aborts creation before anything is saved (data seeding deferred to the composition/infrastructure
+  step without running a new migration here)
+- Central use cases (Register/Create/Activate/Authenticate) refuse to run under an active tenant
+  scope (TenantMismatchException); Create sets its own new-tenant scope for the tenant-scoped writes
+  and clears it afterwards
+- Authentication returns a generic failure for both unknown email and wrong password so stored
+  hashes and email existence are never revealed; JWT stays out of the Application layer
+- ResolveTenantRoute is keyed only by PublicId; invalid/unknown PublicId -> NotFound, wrong slug ->
+  Redirect carrying the canonical PublicId+slug; slug is never queried alone
+- Concurrency: domain state guard (PendingActivation/testable state transitions) + single atomic
+  SaveChanges + DB unique constraints; a dedicated optimistic concurrency token is intentionally
+  deferred (documented risk) to keep this step free of model/migration changes
+- Application project has zero package references (no EF/Npgsql/ASP.NET/JWT); dependency direction
+  is strictly Application -> Domain
 ```
 
 Do not change these decisions silently.
