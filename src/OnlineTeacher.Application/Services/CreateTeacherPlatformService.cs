@@ -71,6 +71,7 @@ public sealed class CreateTeacherPlatformService
         {
             _platforms.Add(platform);
             _roles.Add(role);
+            _teachers.AddMembership(membership);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
         finally

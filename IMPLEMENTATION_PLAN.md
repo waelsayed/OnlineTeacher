@@ -735,7 +735,7 @@ Step 0 — Scaffolding              [x] Completed
 Step 1 — Domain                   [x] Completed
 Step 2 — Infrastructure           [x] Completed
 Step 3 — Application              [x] Completed
-Step 4 — API                      [ ] Pending
+Step 4 — API                      [x] Completed
 Step 5 — Docker                   [ ] Pending
 Step 6 — Tests                    [ ] Pending
 Step 7 — Verification             [ ] Pending
@@ -856,6 +856,50 @@ Step 3 additions (application layer):
   deferred (documented risk) to keep this step free of model/migration changes
 - Application project has zero package references (no EF/Npgsql/ASP.NET/JWT); dependency direction
   is strictly Application -> Domain
+```
+
+Step 4 additions (API & composition layer):
+
+```text
+- Composition root (Program.cs): reads ConnectionStrings:DefaultConnection and falls back to
+  ConnectionFactory.Build(); registers DbContext, TenantContext, repositories, IUnitOfWork, all
+  Application use cases, JwtTokenFactory, permission policy provider/handler, and the tenant-route
+  middleware; startup runs MigrateAsync + PermissionSeeder (scoped) deterministically
+- JwtOptions bound via the Options pipeline; JWT issuer/audience/signing key come from configuration/
+  environment only (no hard-coded secrets), with dev-only placeholder key in appsettings.Development.json
+- JWT claims: sub = TeacherId, tenant = Teacher Platform PublicId, roles (ClaimTypes.Role),
+  permission codes (Permission:) and isOwner; never passwords/hashes/sensitive data
+- IdentityModel 8+/JWT bearer requires a matching "kid" header for signature validation, so the
+  symmetric signing key gets a stable configured KeyId (JwtOptions.KeyId, default "OnlineTeacher.SigningKey")
+  used by both issuance and validation
+- JWT validation configuration is resolved from the SAME JwtOptions (via IOptions) that issues tokens,
+  so a host (e.g. WebApplicationFactory) overriding Jwt config is honored consistently; avoids
+  divergence between a separate Get<JwtOptions>() snapshot and the IOptions instance
+- AddJwtBearer validation via JwtBearerOptions PostConfigure; TokenValidationParameters validate
+  issuer, audience, signing key (with KeyId) and lifetime (30s clock skew)
+- Login (POST /api/auth/login) requires a publicId: the JWT is platform-scoped, so the caller selects
+  the tenant; GetTeacherPlatformAccessService resolves that platform and builds the access profile.
+  (Owner decision: require publicId rather than auto-resolve a teacher's single platform)
+- RequirePermission("...") derives from AuthorizeAttribute and maps to a dynamically resolved policy
+  (PermissionPolicyProvider prefix "Permission:"); PermissionHandler only trusts server-issued
+  permission claims; authentication and authorization remain separate concerns
+- TenantRouteMiddleware processes routes carrying {publicId} + {slug}: NotFound -> 404, wrong slug ->
+  301 to the canonical URL, matching slug -> establish tenant context. The 301 Location preserves the
+  path that follows the slug segment (e.g. /api/platform/me) so following the redirect reaches the same
+  endpoint instead of a non-existent route
+- ExceptionHandlingMiddleware maps application exceptions to consistent RFC 7807 ProblemDetails
+  (Validation 400, NotFound 404, DuplicateEmail 409, BusinessRule 422, TenantMismatch 403,
+  Concurrency 409, Authentication 401, generic 500 with dev-only detail)
+- Platform creation threads the membership explicitly (ITeacherRepository.AddMembership -> Memberships.Add)
+  in addition to adding to the teacher aggregate, because the membership has TWO relationships to
+  TeacherPlatform (TeacherPlatformId AND TenantId) and EF relationship fixup mis-classified the new
+  membership as Modified (UPDATE missing row -> DbUpdateConcurrencyException); explicit add makes the
+  insert deterministic
+- .env.example documents ConnectionStrings__DefaultConnection and Jwt__* overrides; a real .env is
+  never committed
+- Integration tests use Testcontainers PostgreSQL 16 + WebApplicationFactory<Program> (Microsoft.AspNetCore
+  .Mvc.Testing 10.0.11), shared collection fixture, per-test unique emails, and a client with
+  AllowAutoRedirect=false so redirect/301 behavior is asserted directly
 ```
 
 Do not change these decisions silently.

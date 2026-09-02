@@ -6,8 +6,11 @@ namespace OnlineTeacher.UnitTests.Application.TestDoubles;
 internal sealed class FakeTeacherRepository : ITeacherRepository
 {
     private readonly List<Teacher> _teachers = [];
+    private readonly List<TeacherPlatformMembership> _memberships = [];
 
     public IReadOnlyList<Teacher> Teachers => _teachers;
+
+    public IReadOnlyList<TeacherPlatformMembership> Memberships => _memberships;
 
     public void Seed(Teacher teacher)
     {
@@ -23,5 +26,10 @@ internal sealed class FakeTeacherRepository : ITeacherRepository
     public void Add(Teacher teacher)
     {
         _teachers.Add(teacher);
+    }
+
+    public void AddMembership(TeacherPlatformMembership membership)
+    {
+        _memberships.Add(membership);
     }
 }

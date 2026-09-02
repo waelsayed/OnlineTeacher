@@ -13,4 +13,6 @@ public interface ITeacherRepository
     Task<Teacher?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default);
 
     void Add(Teacher teacher);
+
+    void AddMembership(TeacherPlatformMembership membership);
 }
