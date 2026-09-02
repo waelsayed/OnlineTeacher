@@ -55,6 +55,7 @@ builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 builder.Services.AddScoped<ITeacherPlatformAccessRepository, TeacherPlatformAccessRepository>();
+builder.Services.AddScoped<IPlatformMembershipRepository, PlatformMembershipRepository>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
 // Application use cases
@@ -64,6 +65,12 @@ builder.Services.AddScoped<ActivateTeacherPlatformService>();
 builder.Services.AddScoped<AuthenticateTeacherService>();
 builder.Services.AddScoped<TenantRouteResolver>();
 builder.Services.AddScoped<GetTeacherPlatformAccessService>();
+builder.Services.AddScoped<GetPlatformProfileService>();
+builder.Services.AddScoped<UpdatePlatformProfileService>();
+builder.Services.AddScoped<ListPlatformMembersService>();
+builder.Services.AddScoped<AddPlatformMemberService>();
+builder.Services.AddScoped<ChangePlatformMemberRoleService>();
+builder.Services.AddScoped<RemovePlatformMemberService>();
 
 // API-framework services
 builder.Services.AddScoped<JwtTokenFactory>();
