@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using OnlineTeacher.Application.Persistence;
 using OnlineTeacher.Domain.Entities;
 
@@ -14,6 +15,9 @@ public sealed class RoleRepository : IRoleRepository
     {
         _db = db;
     }
+
+    public Task<Role?> GetByNameAsync(Guid tenantId, string name, CancellationToken cancellationToken = default) =>
+        _db.Roles.FirstOrDefaultAsync(r => r.TenantId == tenantId && r.Name == name, cancellationToken);
 
     public void Add(Role role)
     {

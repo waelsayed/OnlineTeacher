@@ -7,5 +7,8 @@ namespace OnlineTeacher.Application.Persistence;
 /// </summary>
 public interface IRoleRepository
 {
+    /// <summary>Returns a role by name within the given tenant, or null when absent.</summary>
+    Task<Role?> GetByNameAsync(Guid tenantId, string name, CancellationToken cancellationToken = default);
+
     void Add(Role role);
 }
