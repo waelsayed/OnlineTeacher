@@ -1,5 +1,7 @@
 using System.Security.Authentication;
+using OnlineTeacher.Api.Authentication;
 using OnlineTeacher.Application.Dtos;
+using OnlineTeacher.Application.Exceptions;
 using OnlineTeacher.Application.Services;
 using OnlineTeacher.Application.Tenancy;
 
@@ -70,6 +72,8 @@ public sealed class TenantRouteMiddleware : IMiddleware
                 return;
 
             case TenantRouteStatus.Matched:
+                EnforceTenantBinding(context, publicId);
+
                 if (!_tenantContext.TrySetTenant(resolution.PlatformId!.Value))
                 {
                     throw new AuthenticationException("The request could not be associated with a single tenant scope.");
@@ -80,6 +84,34 @@ public sealed class TenantRouteMiddleware : IMiddleware
 
             default:
                 throw new AuthenticationException("Tenant resolution returned an unexpected result.");
+        }
+    }
+
+    /// <summary>
+    /// Centralized tenant-isolation enforcement at the security boundary. For any
+    /// authenticated request to a resolved tenant route, the JWT <c>tenant</c> claim MUST
+    /// equal the route <c>publicId</c>. Tenant isolation must not depend on each service or
+    /// controller remembering to perform this check. Anonymous requests are intentionally
+    /// allowed to reach the resolved route so downstream authorization returns 401 and the
+    /// tenant context is still established for tenant-aware data access.
+    /// </summary>
+    private static void EnforceTenantBinding(HttpContext context, string publicId)
+    {
+        var principal = context.User;
+        if (principal.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        var tokenTenant = principal.FindFirst(JwtClaims.Tenant)?.Value;
+        if (tokenTenant is null)
+        {
+            throw new TenantMismatchException("The token is not scoped to a teacher platform.");
+        }
+
+        if (!string.Equals(tokenTenant, publicId, StringComparison.Ordinal))
+        {
+            throw new TenantMismatchException("The token is not authorized for this teacher platform.");
         }
     }
 

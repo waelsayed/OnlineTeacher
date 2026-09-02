@@ -1,8 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.IdentityModel.Tokens;
 using OnlineTeacher.Api.Contracts;
 using Xunit;
 
@@ -199,6 +203,18 @@ public sealed class ApiScenarioTests
     }
 
     [Fact]
+    public async Task TenantIsolation_TokenMissingTenantClaim_Returns403()
+    {
+        using var client = NewClient();
+        var found = await RegisterTeacherAsync(client, UniqueEmail(), "No Tenant Claim");
+        var tokenWithoutTenant = CreateTokenWithoutTenantClaim(found.TeacherId);
+
+        var response = await GetAsync(client, $"/{found.Platform.PublicId}/{found.Platform.Slug}/api/platform/me", tokenWithoutTenant);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task SlugAlone_NeverResolvesPlatform()
     {
         using var client = NewClient();
@@ -261,5 +277,35 @@ public sealed class ApiScenarioTests
         var message = new HttpRequestMessage(HttpMethod.Post, url);
         message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         return await client.SendAsync(message);
+    }
+
+    /// <summary>
+    /// Crafts a structurally valid JWT (correct issuer/audience/signing key/lifetime) that is
+    /// authenticated by the bearer middleware but carries NO <c>tenant</c> claim, to prove the
+    /// middleware rejects an authenticated token that cannot be bound to the tenant route.
+    /// </summary>
+    private static string CreateTokenWithoutTenantClaim(Guid teacherId)
+    {
+        const string signingKey = "integration-tests-only-signing-key-0123456789abcdef-0123456789abcdef";
+
+        var credentials = new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey))
+            {
+                KeyId = "OnlineTeacher.SigningKey"
+            },
+            SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: "OnlineTeacher.IntegrationTests",
+            audience: "OnlineTeacher.IntegrationTests",
+            claims: new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, teacherId.ToString())
+            },
+            notBefore: DateTime.UtcNow,
+            expires: DateTime.UtcNow.AddMinutes(120),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
