@@ -736,7 +736,7 @@ Step 1 — Domain                   [x] Completed
 Step 2 — Infrastructure           [x] Completed
 Step 3 — Application              [x] Completed
 Step 4 — API                      [x] Completed
-Step 5 — Docker                   [ ] Pending
+Step 5 — Docker                   [x] Completed
 Step 6 — Tests                    [ ] Pending
 Step 7 — Verification             [ ] Pending
 Step 8 — Git                      [ ] Pending
@@ -909,8 +909,32 @@ Step 4 additions (API & composition layer):
   endpoints enforce tenant access through the existing authorization and application security (permission
   policies + membership checks in application services), keeping defense-in-depth. NotFound (404),
   canonical-redirect (301) and central (non-tenant) endpoints behavior is unchanged. Unit tests
-  (TenantRouteMiddlewareTests) prove the middleware neither rejects an authenticated cross-tenant request
-  nor an anonymous request.
+(TenantRouteMiddlewareTests) prove the middleware neither rejects an authenticated cross-tenant request
+   nor an anonymous request.
+```
+
+Step 5 additions (Dockerization & deployment hardening):
+
+```text
+- Multi-stage Dockerfile (mcr.microsoft.com/dotnet/sdk:10.0 build -> aspnet:10.0 final) restoring and
+  publishing only the API project graph (not the whole solution, which also references the test projects);
+  framework-dependent publish (UseAppHost=false), EXPOSE 8080, ENTRYPOINT dotnet OnlineTeacher.Api.dll
+- docker-compose now runs both services: postgres (unchanged, service_healthy) and api (built from the
+  Dockerfile, depends_on postgres condition: service_healthy so it starts only after PostgreSQL is healthy)
+- API runtime configuration is environment-driven: ASPNETCORE_ENVIRONMENT=Production, ASPNETCORE_URLS=http://+:8080,
+  POSTGRES_HOST/PORT/DB/USER/PASSWORD (consumed by ConnectionFactory), and Jwt__Issuer/Audience/SigningKey/
+  TokenLifetimeMinutes from compose placeholders; no secrets committed and a real .env is never committed
+- Added a lightweight liveness /health endpoint (Microsoft.Extensions.Diagnostics.HealthChecks,
+  app.MapHealthChecks("/health")) for container orchestration; it is unauthenticated and sits outside the
+  tenant route
+- EF Core migrations + permission seeding run at container startup via the existing Program.cs startup
+  path; verified idempotent against an already-migrated database ("No migrations were applied. The database
+  is already up to date.")
+- Structured JSON console logging retained (built-in AddJsonConsole), suitable for Docker log collection
+- .env.example updated with POSTGRES_HOST and API_PORT/Jwt placeholders; docker-compose.yml documents the
+  stack inline
+- Verified end-to-end from a clean-build container: register -> create platform -> login -> activate ->
+  /api/platform/me; wrong-tenant 403; wrong-slug 301 preserves the endpoint suffix; invalid PublicId 404
 ```
 
 Do not change these decisions silently.

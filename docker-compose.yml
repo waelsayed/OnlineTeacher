@@ -18,5 +18,30 @@ services:
       retries: 5
       start_period: 10s
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: onlineteacher-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      # The API builds its PostgreSQL connection from POSTGRES_* vars (see ConnectionFactory).
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB:-onlineteacher}
+      POSTGRES_USER: ${POSTGRES_USER:-onlineteacher}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-onlineteacher_dev}
+      Jwt__Issuer: ${JWT_ISSUER:-OnlineTeacher.Central}
+      Jwt__Audience: ${JWT_AUDIENCE:-OnlineTeacher.Teachers}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:-change-me-to-a-long-random-secret}
+      Jwt__TokenLifetimeMinutes: ${JWT_TOKEN_LIFETIME_MINUTES:-120}
+    ports:
+      - "${API_PORT:-8080}:8080"
+
 volumes:
   pgdata:

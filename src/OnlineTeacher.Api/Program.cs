@@ -112,6 +112,7 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 
 builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -121,6 +122,9 @@ app.UseMiddleware<TenantRouteMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Lightweight liveness probe for container orchestration (e.g. Docker Compose dependency).
+app.MapHealthChecks("/health");
 
 // Apply migrations and seed the permission catalog deterministically at startup.
 using (var scope = app.Services.CreateScope())

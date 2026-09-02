@@ -1,0 +1,12 @@
+**/bin
+**/obj
+**/TestResults
+.git
+.gitignore
+.vs
+.idea
+.env
+.env.*
+!.env.example
+*.user
+coverage/
