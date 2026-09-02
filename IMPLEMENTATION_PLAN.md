@@ -741,6 +741,25 @@ Task 1 — Platform Management     [x] Completed
   - Verification                 [x] Completed
 ```
 
+## Task 2 — Central Student Identity & Following
+
+```text
+Task 2 — Student Identity & Following  [x] Completed
+  - Central Student entity              [x] Completed
+  - StudentFollow (central)             [x] Completed
+  - Student registration                [x] Completed
+  - Student login (no Platform PublicId) [x] Completed
+  - Student JWT principal_type          [x] Completed
+  - Student profile (me)                [x] Completed
+  - Follow / Unfollow / List / Is-following [x] Completed
+  - DB unique (StudentId, TeacherId)    [x] Completed
+  - Principal-type authorization        [x] Completed
+  - Unit tests                          [x] Completed
+  - Integration tests                   [x] Completed
+  - Documentation                       [x] Completed
+  - Verification                        [x] Completed
+```
+
 Example:
 
 ```text
@@ -1060,6 +1079,64 @@ Task 1 additions (teacher platform management):
   scenarios: owner get/update profile, empty-body 400, assistant owner-only 403,
   cross-tenant 403, anonymous 401, invalid PublicId 404, wrong-slug 301, add/list members,
   promote-to-owner, remove-last-owner 422, remove assistant 204)
+```
+
+Task 2 additions (central student identity & following):
+
+```text
+- Central Student is a NON-tenant-scoped global entity (students table) with a Guid identity
+  (approved decision: NO Student PublicId); a single central account follows multiple Teachers.
+  Student/StudentFollow are NOT under the tenant query filters; only Role, RolePermission and
+  TeacherPlatformMembership remain filtered (unchanged).
+- Follow target resolution (approved decision): {teacherPublicId} is a Teacher PLATFORM PublicId;
+  FollowTeacherService/UnfollowTeacherService/IsFollowingTeacherService resolve that platform to
+  its OWNER teacher (via IPlatformMembershipRepository.GetOwnerTeacherIdAsync) and create a
+  StudentFollow referencing the central Teacher by internal Id. GetOwnedPlatformsAsync (narrow
+  IgnoreQueryFilters join to TeacherPlatforms) returns the followed teacher's OwnedPlatform
+  (PublicId + Slug) so follow lists expose only public identifiers, never internal Ids.
+- Domain: Student.AddFollow rejects a duplicate teacher and a follow that belongs to another
+  student; Student.RemoveFollow validates ownership; StudentFollow rejects empty student/teacher
+  ids and self-follow (DomainException -> 422).
+- Persistence: StudentConfiguration (ux_students_email unique) and StudentFollowConfiguration
+  (ux_follows_student_teacher unique; ix_follows_teacher; FK student->teacher RESTRICT). A unique
+  (StudentId, TeacherId) DB constraint is the backstop against duplicate follows.
+- Migration 20260902231809_AddStudentFollow adds students and student_follows (central tables with
+  no tenant_id); applied to the dev Docker PostgreSQL and schema-verified.
+- EfUnitOfWork.Translate maps ux_students_email -> Duplicate(409) and
+  ux_follows_student_teacher -> BusinessRuleViolation(422), following the existing "already
+  member" convention (no new status codes introduced).
+- Authentication: Student login does NOT require a Platform PublicId (central). Student JWT =
+  sub(studentId) + principal_type=student and carries NO tenant/permission/role claims, so it can
+  never satisfy Teacher-only management endpoints.
+- Principal type separation: teacher tokens now carry principal_type=teacher (a minimal,
+  approved extension preserving all existing Teacher claims); student tokens carry
+  principal_type=student. PrincipalTypeRequirement + PrincipalTypeHandler + RequirePrincipalType
+  attribute resolve dynamically through the existing PermissionPolicyProvider ("PrincipalType:"
+  prefix); a Student JWT is rejected (403) on Teacher-only endpoints and a Teacher JWT is
+  rejected (403) on Student-only endpoints.
+- Student endpoints: POST /api/student/register (anonymous), POST /api/student/login (anonymous),
+  GET /api/student/me, POST /api/student/follow/{teacherPublicId}, DELETE /api/student/follow/
+  {teacherPublicId}, GET /api/student/following, GET /api/student/following/{teacherPublicId}
+  (all [Authorize] + [RequirePrincipalType("student")]).
+- Business rules: duplicate follow -> BusinessRuleViolation(422) with app-level pre-check AND the
+  DB unique backstop; follow on an unknown platform -> NotFound(404); unfollow when not following
+  is a safe no-op (DELETE -> 204); follows do NOT grant access to private Teacher Platform
+  management endpoints (Student JWT has no permission claims -> 403); cross-tenant public
+  browsing is preserved (TenantRouteMiddleware still only resolves the tenant and never re-binds
+  JWT to tenant). Self-follow is prevented at the domain layer.
+- Unit tests: 221/221 passed (added Student/StudentFollow domain tests, PrincipalTypeTests for
+  teacher/student principal_type claims and principal-type authorization, and 7 service tests for
+  register/authenticate/profile/follow/unfollow/list/is-following). A FakePlatformMembershipRepository
+  was updated so GetOwnedPlatformsAsync returns configured PublicId/Slug (matching production's
+  join) instead of internal Ids.
+- Integration tests: 39/39 passed (13 new StudentTests scenarios via the existing ApiFactory/
+  Testcontainer harness: register, duplicate-email 409, invalid 400, login without PublicId,
+  invalid-login 401, me, unauthenticated 401, teacher-token-on-student 403, follow/list/
+  is-following/unfollow flow, duplicate-follow 422, unfollow-when-not-following safe no-op,
+  student-cannot-manage either platform 403, teacher auth unchanged). Existing 26 integration
+  tests all remain green.
+- Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit tests 221/221 passed;
+  integration tests 39/39 passed against a real PostgreSQL 16 Testcontainer.
 ```
 
 If a decision must change:
