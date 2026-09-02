@@ -19,18 +19,25 @@ public sealed class PermissionPolicyProvider : IAuthorizationPolicyProvider
 
     public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
     {
-        if (!policyName.StartsWith(RequirePermissionAttribute.PolicyPrefix, StringComparison.Ordinal))
+        if (policyName.StartsWith(RequirePermissionAttribute.PolicyPrefix, StringComparison.Ordinal))
         {
-            return _defaultProvider.GetPolicyAsync(policyName);
+            var permission = policyName[RequirePermissionAttribute.PolicyPrefix.Length..];
+            var policy = new AuthorizationPolicyBuilder(Array.Empty<string>())
+                .AddRequirements(new PermissionRequirement(permission))
+                .Build();
+            return Task.FromResult<AuthorizationPolicy?>(policy);
         }
 
-        var permission = policyName[RequirePermissionAttribute.PolicyPrefix.Length..];
-        var requirement = new PermissionRequirement(permission);
-        var policy = new AuthorizationPolicyBuilder(Array.Empty<string>())
-            .AddRequirements(requirement)
-            .Build();
+        if (policyName.StartsWith(RequirePrincipalTypeAttribute.PolicyPrefix, StringComparison.Ordinal))
+        {
+            var principalType = policyName[RequirePrincipalTypeAttribute.PolicyPrefix.Length..];
+            var policy = new AuthorizationPolicyBuilder(Array.Empty<string>())
+                .AddRequirements(new PrincipalTypeRequirement(principalType))
+                .Build();
+            return Task.FromResult<AuthorizationPolicy?>(policy);
+        }
 
-        return Task.FromResult<AuthorizationPolicy?>(policy);
+        return _defaultProvider.GetPolicyAsync(policyName);
     }
 
     public Task<AuthorizationPolicy> GetDefaultPolicyAsync() => _defaultProvider.GetDefaultPolicyAsync();

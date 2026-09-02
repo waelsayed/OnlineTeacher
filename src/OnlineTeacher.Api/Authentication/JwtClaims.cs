@@ -13,6 +13,21 @@ public static class JwtClaims
     public const string Permission = "permission";
     public const string Role = ClaimTypes.Role;
     public const string IsOwner = "isOwner";
+
+    /// <summary>
+    /// Distinguishes the authenticated principal type ("teacher" vs "student") so a Student
+    /// JWT is never treated as a Teacher and vice versa.
+    /// </summary>
+    public const string PrincipalType = "principal_type";
+}
+
+/// <summary>
+/// Canonical principal-type values used to distinguish teacher and student JWTs.
+/// </summary>
+public static class PrincipalTypes
+{
+    public const string Teacher = "teacher";
+    public const string Student = "student";
 }
 
 /// <summary>

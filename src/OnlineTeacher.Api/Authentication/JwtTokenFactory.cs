@@ -35,7 +35,8 @@ public sealed class JwtTokenFactory
         {
             new(JwtRegisteredClaimNames.Sub, access.TeacherId.ToString()),
             new(JwtClaims.Tenant, access.PublicId),
-            new(JwtClaims.IsOwner, access.IsOwner ? "true" : "false")
+            new(JwtClaims.IsOwner, access.IsOwner ? "true" : "false"),
+            new(JwtClaims.PrincipalType, PrincipalTypes.Teacher)
         };
 
         foreach (var role in access.RoleNames)
@@ -47,6 +48,34 @@ public sealed class JwtTokenFactory
         {
             claims.Add(new Claim(PermissionClaims.Type, permission));
         }
+
+        return WriteToken(claims);
+    }
+
+    /// <summary>
+    /// Issues a central, tenant-agnostic student JWT. A student token carries no platform
+    /// tenant claim and no permission/role claims, so it can never satisfy Teacher-only
+    /// platform-management authorization. The principal type distinguishes it from a teacher.
+    /// </summary>
+    public string CreateStudent(Guid studentId)
+    {
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, studentId.ToString()),
+            new(JwtClaims.PrincipalType, PrincipalTypes.Student)
+        };
+
+        return WriteToken(claims);
+    }
+
+    private string WriteToken(IEnumerable<Claim> claims)
+    {
+        var credentials = new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey))
+            {
+                KeyId = _options.KeyId
+            },
+            SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: _options.Issuer,

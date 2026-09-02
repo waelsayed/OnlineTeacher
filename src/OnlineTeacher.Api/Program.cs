@@ -56,6 +56,8 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 builder.Services.AddScoped<ITeacherPlatformAccessRepository, TeacherPlatformAccessRepository>();
 builder.Services.AddScoped<IPlatformMembershipRepository, PlatformMembershipRepository>();
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IStudentFollowRepository, StudentFollowRepository>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
 // Application use cases
@@ -71,11 +73,19 @@ builder.Services.AddScoped<ListPlatformMembersService>();
 builder.Services.AddScoped<AddPlatformMemberService>();
 builder.Services.AddScoped<ChangePlatformMemberRoleService>();
 builder.Services.AddScoped<RemovePlatformMemberService>();
+builder.Services.AddScoped<RegisterStudentService>();
+builder.Services.AddScoped<AuthenticateStudentService>();
+builder.Services.AddScoped<GetStudentProfileService>();
+builder.Services.AddScoped<FollowTeacherService>();
+builder.Services.AddScoped<UnfollowTeacherService>();
+builder.Services.AddScoped<ListFollowedTeachersService>();
+builder.Services.AddScoped<IsFollowingTeacherService>();
 
 // API-framework services
 builder.Services.AddScoped<JwtTokenFactory>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, PrincipalTypeHandler>();
 builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 builder.Services.AddTransient<TenantRouteMiddleware>();
 
