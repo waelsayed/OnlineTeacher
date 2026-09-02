@@ -727,6 +727,20 @@ Each commit should leave the repository in a comprehensible state.
 
 The Agent must maintain this section as implementation progresses.
 
+## Task 1 — Teacher Platform Management
+
+```text
+Task 1 — Platform Management     [x] Completed
+  - Profile (get/update)         [x] Completed
+  - Membership list              [x] Completed
+  - Add member                   [x] Completed
+  - Change member role           [x] Completed
+  - Remove member                [x] Completed
+  - Unit tests                   [x] Completed
+  - Integration tests            [x] Completed
+  - Verification                 [x] Completed
+```
+
 Example:
 
 ```text
@@ -1003,6 +1017,49 @@ Step 8 additions (Git strategy / final repository cleanup & history review):
   this step; a final dotnet build --warnaserror (0 warnings/0 errors) and full dotnet test (135 unit +
   14 integration) confirmed the unchanged repository still verifies
 - History preserved entirely (no commit hashes changed); nothing was pushed to origin
+```
+
+Task 1 additions (teacher platform management):
+
+```text
+- Endpoint area: authenticated management context under {publicId}/{slug}/api/platform:
+  GET/PUT `/profile` and GET `members` are gated by `Platform.Manage`; POST `members`
+  and PUT/PATCH/DELETE `members/{teacherId}` are gated by the new `Platform.Membership`
+  permission (only the Owner has it by default)
+- New permission `Platform.Membership` appended to the `PlatformPermissions` catalog
+  (Platform.Access, Platform.Manage, Platform.Membership); the catalog drives PermissionSeeder
+  auto-seeding and the Owner role auto-grant, so no new migration or manual seeding is needed
+- New role `Assistant` added to `PlatformRoles` with NO permissions by default; the
+  AddMember service creates a per-tenant Assistant role (granting only `Platform.Access`)
+  on first use so members gain the ability to authenticate and browse the public platform
+- Membership mutations are Owner-only (additional RequireOwnerAsync on top of the
+  permission policy) for defense-in-depth; membership/profile reads require
+  RequireMemberAsync; both backstops throw TenantMismatchException (403) to stop
+  cross-tenant management
+- ChangeRole maps a role name to the ownership flag: role=="Owner" -> IsOwner=true,
+  any other role -> IsOwner=false; the Owner role also carries `Platform.Membership`,
+  so promoting to a non-Owner role strips those manager permissions
+- Business rules: the last remaining Owner cannot be demoted or removed
+  (BusinessRuleViolationException -> 422); platform name slug is not changed by profile
+  update when omitted; the platform's PublicId and internal Id are immutable
+- Profile update semantics: name=null means skip, non-null whitespace -> 400 "Platform name
+  is required."; both name and slug null/blank -> 400 "Provide a platform name and/or slug
+  to update."; a supplied slug must pass Slug validation (400 on invalid)
+- Repository: new IPlatformMembershipRepository (GetMembersAsync joining teacher/role names
+  into PlatformMember[] with Owner listed first, GetForTeacherAsync(tenantId, teacherId),
+  Remove); IRoleRepository gained GetByNameAsync(tenantId, name)
+- Integration-test infrastructure fix: Testcontainers on this Docker Desktop host returned
+  the container's INTERNAL port (5432) from BOTH GetConnectionString() and
+  GetMappedPublicPort(5432), so WebApplicationFactory reached an unbound port. Fixed by
+  pinning an explicit host port binding (WithPortBinding(5433, 5432)) and driving the
+  connection string through builder.UseSetting("ConnectionStrings:DefaultConnection", ...)
+  (plus ConfigureAppConfiguration's in-memory collection) so GetConnectionString resolves
+  the fixed host port 5433 instead of the internal 5432
+- Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit tests 174/174
+  passed; integration tests 26/26 passed (14 pre-existing + 12 new platform-management
+  scenarios: owner get/update profile, empty-body 400, assistant owner-only 403,
+  cross-tenant 403, anonymous 401, invalid PublicId 404, wrong-slug 301, add/list members,
+  promote-to-owner, remove-last-owner 422, remove assistant 204)
 ```
 
 If a decision must change:
