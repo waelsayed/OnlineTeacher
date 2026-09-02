@@ -24,4 +24,17 @@ public interface IPlatformMembershipRepository
     /// Stages a membership for removal. Actual deletion is committed by the unit of work.
     /// </summary>
     void Remove(TeacherPlatformMembership membership);
+
+    /// <summary>
+    /// Returns the tenant's owner teacher Id, or null when the tenant has no owner.
+    /// Request must run with the tenant established.
+    /// </summary>
+    Task<Guid?> GetOwnerTeacherIdAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns the platforms (public identity + slug) for which the given teacher is the owner.
+    /// This is a central/explicit read used to present a student's followed teachers as
+    /// browseable public platforms; it is deliberately scoped to one teacher.
+    /// </summary>
+    Task<IReadOnlyList<OwnedPlatform>> GetOwnedPlatformsAsync(Guid teacherId, CancellationToken cancellationToken = default);
 }
