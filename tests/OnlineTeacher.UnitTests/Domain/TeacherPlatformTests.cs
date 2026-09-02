@@ -108,4 +108,29 @@ public class TeacherPlatformTests
 
         platform.Slug.Value.Should().Be("brand-new-canonical-slug");
     }
+
+    [Fact]
+    public void Rename_UpdatesNameAndPreservesIdentity()
+    {
+        var platform = NewPlatform();
+        var id = platform.Id;
+        var publicId = platform.PublicId;
+
+        platform.Rename("Updated Name");
+
+        platform.Name.Should().Be("Updated Name");
+        platform.Id.Should().Be(id);
+        platform.PublicId.Should().Be(publicId);
+        platform.UpdatedAtUtc.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Rename_WhenBlank_Throws()
+    {
+        var platform = NewPlatform();
+
+        var act = () => platform.Rename("   ");
+
+        act.Should().Throw<DomainException>();
+    }
 }

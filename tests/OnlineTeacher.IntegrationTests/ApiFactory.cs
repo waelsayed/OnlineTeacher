@@ -13,25 +13,32 @@ namespace OnlineTeacher.IntegrationTests;
 /// </summary>
 public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private const int HostPostgresPort = 5433;
+
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16-alpine")
         .WithDatabase("onlineteacher_test")
         .WithUsername("onlineteacher")
         .WithPassword("onlineteacher_test_pwd")
+        .WithPortBinding(HostPostgresPort, 5432)
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        var connectionString =
+            $"Host={_container.Hostname};Port={HostPostgresPort};" +
+            $"Database=onlineteacher_test;Username=onlineteacher;Password=onlineteacher_test_pwd;";
+
         builder.UseEnvironment("Development");
         builder.ConfigureAppConfiguration((_, configuration) =>
-        {
             configuration.AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:DefaultConnection"] = _container.GetConnectionString(),
+                ["ConnectionStrings:DefaultConnection"] = connectionString,
                 ["Jwt:Issuer"] = "OnlineTeacher.IntegrationTests",
                 ["Jwt:Audience"] = "OnlineTeacher.IntegrationTests",
                 ["Jwt:SigningKey"] = "integration-tests-only-signing-key-0123456789abcdef-0123456789abcdef"
-            });
-        });
+            }));
+
+        builder.UseSetting("ConnectionStrings:DefaultConnection", connectionString);
     }
 
     public async Task InitializeAsync()
