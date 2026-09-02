@@ -900,14 +900,17 @@ Step 4 additions (API & composition layer):
 - Integration tests use Testcontainers PostgreSQL 16 + WebApplicationFactory<Program> (Microsoft.AspNetCore
   .Mvc.Testing 10.0.11), shared collection fixture, per-test unique emails, and a client with
   AllowAutoRedirect=false so redirect/301 behavior is asserted directly
-- Security invariant (SECURITYFIX): TenantRouteMiddleware centrally binds the authenticated JWT "tenant"
-  claim to the resolved route publicId at the middleware/security boundary, so tenant isolation does NOT
-  depend on every future service/controller remembering the check. For any authenticated request to a
-  matched tenant route: missing "tenant" claim -> 403; "tenant" claim != route publicId -> 403. Anonymous
-  requests are allowed through so downstream authorization returns 401 and the tenant context is still
-  established for tenant-aware access. NotFound (404), canonical-redirect (301) and central (non-tenant)
-  endpoints behavior is unchanged. Orchestrated with the same TenantMismatchException -> 403 mapping already
-  used by the exception handler.
+- Security behavior (SECURITYFIX then FINALSTEP4 refinement): an initial middleware-level JWT-tenant
+  binding was added (SECURITYFIX) that rejected any authenticated request whose "tenant" claim differed
+  from the route publicId, but this was reversed/refined (FINALSTEP4) because the product MUST allow an
+  authenticated user to browse another tenant's PUBLIC content. TenantRouteMiddleware now RESOLVES the
+  tenant from {publicId}/{slug} and establishes the TenantContext but does NOT reject an authenticated
+  request solely because its JWT "tenant" claim differs from the route tenant. Protected tenant-management
+  endpoints enforce tenant access through the existing authorization and application security (permission
+  policies + membership checks in application services), keeping defense-in-depth. NotFound (404),
+  canonical-redirect (301) and central (non-tenant) endpoints behavior is unchanged. Unit tests
+  (TenantRouteMiddlewareTests) prove the middleware neither rejects an authenticated cross-tenant request
+  nor an anonymous request.
 ```
 
 Do not change these decisions silently.

@@ -203,13 +203,13 @@ public sealed class ApiScenarioTests
     }
 
     [Fact]
-    public async Task TenantIsolation_TokenMissingTenantClaim_Returns403()
+    public async Task Protected_AuthenticatedTokenMissingPermission_Returns403()
     {
         using var client = NewClient();
-        var found = await RegisterTeacherAsync(client, UniqueEmail(), "No Tenant Claim");
-        var tokenWithoutTenant = CreateTokenWithoutTenantClaim(found.TeacherId);
+        var found = await RegisterTeacherAsync(client, UniqueEmail(), "No Permission Claim");
+        var tokenWithoutPermission = CreateTokenWithoutPermissionClaims(found.TeacherId);
 
-        var response = await GetAsync(client, $"/{found.Platform.PublicId}/{found.Platform.Slug}/api/platform/me", tokenWithoutTenant);
+        var response = await GetAsync(client, $"/{found.Platform.PublicId}/{found.Platform.Slug}/api/platform/me", tokenWithoutPermission);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -281,10 +281,12 @@ public sealed class ApiScenarioTests
 
     /// <summary>
     /// Crafts a structurally valid JWT (correct issuer/audience/signing key/lifetime) that is
-    /// authenticated by the bearer middleware but carries NO <c>tenant</c> claim, to prove the
-    /// middleware rejects an authenticated token that cannot be bound to the tenant route.
+    /// authenticated by the bearer middleware but carries only a <c>sub</c> claim — no permission
+    /// claims. Used to prove a protected endpoint denies an authenticated token that lacks the
+    /// required permission (the protected-endpoint enforcement after the middleware no longer
+    /// performs cross-tenant binding).
     /// </summary>
-    private static string CreateTokenWithoutTenantClaim(Guid teacherId)
+    private static string CreateTokenWithoutPermissionClaims(Guid teacherId)
     {
         const string signingKey = "integration-tests-only-signing-key-0123456789abcdef-0123456789abcdef";
 

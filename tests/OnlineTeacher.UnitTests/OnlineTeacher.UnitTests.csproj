@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\OnlineTeacher.Domain\OnlineTeacher.Domain.csproj" />
     <ProjectReference Include="..\..\src\OnlineTeacher.Application\OnlineTeacher.Application.csproj" />
+    <ProjectReference Include="..\..\src\OnlineTeacher.Api\OnlineTeacher.Api.csproj" />
   </ItemGroup>
 
 </Project>
