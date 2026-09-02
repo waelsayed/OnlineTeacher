@@ -739,7 +739,7 @@ Step 4 — API                      [x] Completed
 Step 5 — Docker                   [x] Completed
 Step 6 — Tests                    [x] Completed
 Step 7 — Verification             [x] Completed
-Step 8 — Git                      [ ] Pending
+Step 8 — Git                      [x] Completed
 ```
 
 Use:
@@ -979,6 +979,30 @@ Step 7 additions (full containerized verification):
   libgssapi_krb5.so.2 load, HTTP_PORTS override) that do not affect functionality
 - Environment torn down after the test (docker compose down), leaving the pgdata named volume for dev reuse;
   repository left clean except the intended IMPLEMENTATION_PLAN.md status/log changes
+```
+
+Step 8 additions (Git strategy / final repository cleanup & history review):
+
+```text
+- Reviewed the full implementation history (Step 0..7 mapping cleanly to commits e8bcb55, 6c7533b
+  scaffold, 41f46dd domain, 2b63650 infrastructure, 963c541 application, 99ab681 api, 8b0f9ab +
+  34781f9 security refinements, f57b2fa docker, b4079f1 checkpoint, d338e6a tests, ce17356 verification);
+  no accidental, temporary, duplicate, or debugging commits exist, so the history is preserved as-is
+  (no rewrite for cosmetic reasons)
+- Repository state verified clean: only untracked file after the final commit is none; the only ignored
+  paths are project bin/ and obj/ build artifacts, all correctly covered by .gitignore
+- .gitignore is comprehensive (bin/obj, Debug/Release, .vs/.idea, *.user/*.suo, .env* but !.env.example,
+  *.pfx/*.p12, TestResults/coverage, *.log) and needed no corrections
+- No secrets verified committed: appsettings SigningKey is empty/placeholder, appsettings.Development
+  uses an explicitly dev-only placeholder key, docker-compose POSTGRES_PASSWORD/Jwt__SigningKey use env
+  var with placeholder defaults, .env.example holds placeholders only, and a broad secret scan across
+  tracked text files found no credentials, keys, or real .env; no private keys or production config present
+- No generated artifacts tracked: git ls-files contains no bin/ or obj/ paths; Testcontainers test
+  credentials in ApiFactory are ephemeral test-only values
+- No application code, tests, architecture, JWT, tenant-isolation, or database design was modified in
+  this step; a final dotnet build --warnaserror (0 warnings/0 errors) and full dotnet test (135 unit +
+  14 integration) confirmed the unchanged repository still verifies
+- History preserved entirely (no commit hashes changed); nothing was pushed to origin
 ```
 
 If a decision must change:
