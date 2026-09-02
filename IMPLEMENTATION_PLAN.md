@@ -738,7 +738,7 @@ Step 3 — Application              [x] Completed
 Step 4 — API                      [x] Completed
 Step 5 — Docker                   [x] Completed
 Step 6 — Tests                    [x] Completed
-Step 7 — Verification             [ ] Pending
+Step 7 — Verification             [x] Completed
 Step 8 — Git                      [ ] Pending
 ```
 
@@ -956,6 +956,29 @@ Step 6 additions (testing):
   cryptographically unique per platform
 - Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit tests 135/135 passed;
   integration tests 14/14 passed against a real PostgreSQL 16 Testcontainer via WebApplicationFactory
+```
+
+Step 7 additions (full containerized verification):
+
+```text
+- Ran a clean Docker Compose end-to-end smoke test (docker compose down, then up -d --build) against
+  postgres:16-alpine (healthy) + the onlineteacher-api image; /health returned 200 "Healthy"
+- Verified the API was served by the container (no native OnlineTeacher.Api process; port 8080 owned by
+  Docker networking), with Startup running migrations idempotently ("database is already up to date") and
+  seeding the Platform.Access/Platform.Manage permissions
+- Happy path from the containerized API: Register -> Create Platform -> Login -> Activate ->
+  /api/platform/me all succeeded (JWT issued; /me returned status=Active, isOwner=true, roles=Owner,
+  permissions=Platform.Access, Platform.Manage)
+- Authorization/routing verified: cross-tenant A->B /me => 403; correct PublicId + wrong slug => 301 with
+  Location preserving the /api/platform/me suffix; invalid PublicId => 404; anonymous protected => 401;
+  canonical slug => 200; /health stays healthy
+- EF Core tenant query filters confirmed live in logs (tenant_id filter on memberships/roles/role_permissions),
+  so cross-tenant access is blocked at the data layer as well as at authorization
+- Container logs showed no Error/Critical/Exception and no 5xx responses during the smoke test; only benign
+  startup warnings (ASP.NET Data Protection key persistence in ephemeral container, Npgsql GSSAPI
+  libgssapi_krb5.so.2 load, HTTP_PORTS override) that do not affect functionality
+- Environment torn down after the test (docker compose down), leaving the pgdata named volume for dev reuse;
+  repository left clean except the intended IMPLEMENTATION_PLAN.md status/log changes
 ```
 
 If a decision must change:
