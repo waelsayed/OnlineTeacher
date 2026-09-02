@@ -9,6 +9,7 @@ internal sealed class FakePlatformMembershipRepository : IPlatformMembershipRepo
     private readonly List<TeacherPlatformMembership> _memberships = [];
     private readonly Dictionary<Guid, string> _teacherNames = new();
     private readonly Dictionary<Guid, string> _roleNames = new();
+    private readonly Dictionary<Guid, OwnedPlatform> _ownedPlatforms = new();
 
     public IReadOnlyList<TeacherPlatformMembership> Memberships => _memberships;
 
@@ -24,6 +25,11 @@ internal sealed class FakePlatformMembershipRepository : IPlatformMembershipRepo
         {
             _roleNames[membership.RoleId] = roleName;
         }
+    }
+
+    public void SeedOwnedPlatform(Guid platformId, OwnedPlatform platform)
+    {
+        _ownedPlatforms[platformId] = platform;
     }
 
     public Task<IReadOnlyList<PlatformMember>> GetMembersAsync(Guid tenantId, CancellationToken cancellationToken = default)
@@ -45,6 +51,22 @@ internal sealed class FakePlatformMembershipRepository : IPlatformMembershipRepo
     public Task<TeacherPlatformMembership?> GetForTeacherAsync(Guid tenantId, Guid teacherId, CancellationToken cancellationToken = default) =>
         Task.FromResult(_memberships.FirstOrDefault(
             m => m.TeacherPlatformId == tenantId && m.TeacherId == teacherId));
+
+    public Task<Guid?> GetOwnerTeacherIdAsync(Guid tenantId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(_memberships.FirstOrDefault(
+            m => m.TeacherPlatformId == tenantId && m.IsOwner)?.TeacherId);
+
+    public Task<IReadOnlyList<OwnedPlatform>> GetOwnedPlatformsAsync(Guid teacherId, CancellationToken cancellationToken = default)
+    {
+        var owned = _memberships
+            .Where(m => m.TeacherId == teacherId && m.IsOwner)
+            .Select(m => _ownedPlatforms.GetValueOrDefault(
+                m.TeacherPlatformId,
+                new OwnedPlatform(m.TeacherPlatformId.ToString(), m.TeacherPlatformId.ToString())))
+            .ToList();
+
+        return Task.FromResult<IReadOnlyList<OwnedPlatform>>(owned);
+    }
 
     public void Remove(TeacherPlatformMembership membership)
     {
