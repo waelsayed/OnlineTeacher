@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineTeacher.Application.Dtos;
 using OnlineTeacher.Application.Persistence;
+using OnlineTeacher.Domain.ValueObjects;
 using OnlineTeacher.Domain.Entities;
 using OnlineTeacher.Domain.Permissions;
 
@@ -57,6 +58,27 @@ public sealed class PlatformMembershipRepository : IPlatformMembershipRepository
         _db.Memberships.FirstOrDefaultAsync(
             m => m.TeacherPlatformId == tenantId && m.TeacherId == teacherId,
             cancellationToken);
+
+    public Task<Guid?> GetOwnerTeacherIdAsync(Guid tenantId, CancellationToken cancellationToken = default) =>
+        _db.Memberships
+            .Where(m => m.TeacherPlatformId == tenantId && m.IsOwner)
+            .Select(m => (Guid?)m.TeacherId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<OwnedPlatform>> GetOwnedPlatformsAsync(Guid teacherId, CancellationToken cancellationToken = default)
+    {
+        var owned = await _db.Memberships
+            .IgnoreQueryFilters()
+            .Where(m => m.TeacherId == teacherId && m.IsOwner)
+            .Join(
+                _db.TeacherPlatforms,
+                m => m.TeacherPlatformId,
+                p => p.Id,
+                (m, p) => new OwnedPlatform(p.PublicId.Value, p.Slug.Value))
+            .ToListAsync(cancellationToken);
+
+        return owned;
+    }
 
     public void Remove(TeacherPlatformMembership membership)
     {

@@ -33,6 +33,10 @@ public sealed class ApplicationDbContext : DbContext
 
     public DbSet<TeacherPlatformMembership> Memberships => Set<TeacherPlatformMembership>();
 
+    public DbSet<Student> Students => Set<Student>();
+
+    public DbSet<StudentFollow> StudentFollows => Set<StudentFollow>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

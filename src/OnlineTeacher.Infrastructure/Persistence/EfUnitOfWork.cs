@@ -51,6 +51,8 @@ public sealed class EfUnitOfWork : IUnitOfWork
         constraintName switch
         {
             "ux_teachers_email" => new DuplicateEmailException(exception),
+            "ux_students_email" => new DuplicateEmailException(exception),
+            "ux_follows_student_teacher" => new BusinessRuleViolationException("The student already follows this teacher.", exception),
             _ => new ConcurrencyException("A concurrent change prevented this operation from completing.", exception)
         };
 }
