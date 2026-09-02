@@ -84,6 +84,21 @@ public sealed class TeacherPlatform : IAuditable
     }
 
     /// <summary>
+    /// Renames the platform. The internal Id and the stable PublicId are never changed;
+    /// only the editable display name is updated.
+    /// </summary>
+    public void Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new DomainException("Platform name is required.");
+        }
+
+        Name = name.Trim();
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
+
+    /// <summary>
     /// Changes the canonical slug. Routing later resolves the current canonical slug for redirect purposes.
     /// </summary>
     public void ChangeSlug(Slug newSlug)

@@ -7,4 +7,10 @@ namespace OnlineTeacher.Domain.Permissions;
 public static class PlatformRoles
 {
     public const string Owner = "Owner";
+
+    /// <summary>
+    /// Non-owner member role used when the owner adds additional members to a platform.
+    /// Granted only a minimal permission set; never carries ownership.
+    /// </summary>
+    public const string Assistant = "Assistant";
 }

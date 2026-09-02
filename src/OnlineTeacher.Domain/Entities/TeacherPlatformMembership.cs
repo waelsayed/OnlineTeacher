@@ -59,4 +59,23 @@ public sealed class TeacherPlatformMembership : IAuditable, ITenantScoped
         IsOwner = isOwner;
         CreatedAtUtc = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Changes the member's role and/or owner flag.
+    ///
+    /// Preventing orphaning the platform (removing its last owner) is an aggregate-wide
+    /// invariant that depends on the set of memberships, so it is enforced by the
+    /// application layer, not here.
+    /// </summary>
+    public void ChangeRole(Guid newRoleId, bool isOwner)
+    {
+        if (newRoleId == Guid.Empty)
+        {
+            throw new DomainException("Membership requires a role.");
+        }
+
+        RoleId = newRoleId;
+        IsOwner = isOwner;
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
 }
