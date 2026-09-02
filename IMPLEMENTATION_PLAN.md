@@ -737,7 +737,7 @@ Step 2 — Infrastructure           [x] Completed
 Step 3 — Application              [x] Completed
 Step 4 — API                      [x] Completed
 Step 5 — Docker                   [x] Completed
-Step 6 — Tests                    [ ] Pending
+Step 6 — Tests                    [x] Completed
 Step 7 — Verification             [ ] Pending
 Step 8 — Git                      [ ] Pending
 ```
@@ -937,7 +937,26 @@ Step 5 additions (Dockerization & deployment hardening):
   /api/platform/me; wrong-tenant 403; wrong-slug 301 preserves the endpoint suffix; invalid PublicId 404
 ```
 
-Do not change these decisions silently.
+Step 6 additions (testing):
+
+```text
+- Filled the section 19 gap on "Permission/claim construction" and authorization unit tests that were
+  previously only exercised end-to-end: added JwtTokenFactoryTests (sub, tenant, isOwner, all role claims,
+  all permission claims, issuer/audience, configured lifetime, kid header, and never emits password/hash
+  material) and PermissionAuthorizationTests (PermissionHandler grants only on the exact server-issued
+  permission claim and denies when absent/different; PermissionPolicyProvider maps "Permission:<code>" to a
+  PermissionRequirement and forwards unknown policies to the default provider; RequirePermissionAttribute
+  builds the dynamic "Permission:<code>" policy name). All live under tests/OnlineTeacher.UnitTests/Api,
+  consistent with the existing TenantRouteMiddlewareTests
+- Added a missing section 19 integration scenario: activating an already-active platform returns 422
+  (BusinessRuleViolation), proving invalid state transitions are rejected at the API boundary
+- Remaining section 19 integration scenarios (slice, tenant isolation, invalid PublicId 404, wrong slug 301,
+  canonical slug, 401, 403, duplicate email 409, duplicate slug allowed) were already covered by the existing
+  ApiScenarioTests; duplicate platform `publicId` collision is not integration-testable because publicIds are
+  cryptographically unique per platform
+- Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit tests 135/135 passed;
+  integration tests 14/14 passed against a real PostgreSQL 16 Testcontainer via WebApplicationFactory
+```
 
 If a decision must change:
 

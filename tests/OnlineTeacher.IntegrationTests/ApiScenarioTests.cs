@@ -152,6 +152,21 @@ public sealed class ApiScenarioTests
     }
 
     [Fact]
+    public async Task Route_InvalidStateTransition_ActivateAlreadyActive_Returns422()
+    {
+        using var client = NewClient();
+        var teacher = await RegisterTeacherAsync(client, UniqueEmail(), "State Platform");
+        var token = await LoginAsync(client, teacher.Email, Password, teacher.Platform.PublicId);
+
+        var activate = await PostAsync(client, $"/api/central/platforms/{teacher.Platform.PublicId}/activate", token);
+        activate.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var secondActivate = await PostAsync(client, $"/api/central/platforms/{teacher.Platform.PublicId}/activate", token);
+
+        secondActivate.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
     public async Task Route_ValidPublicId_WrongSlug_Returns301CanonicalRedirect()
     {
         using var client = NewClient();
