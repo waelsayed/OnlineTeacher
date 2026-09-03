@@ -97,9 +97,9 @@ public sealed class PurchaseCourseService
                 throw new BusinessRuleViolationException("Insufficient wallet balance.");
             }
 
-            var existing = await _enrollments.GetAsync(studentId, courseId, cancellationToken);
+            var existing = await _enrollments.GetActiveAsync(studentId, courseId, cancellationToken);
 
-            if (existing is not null && existing.Status == EnrollmentStatus.Active)
+            if (existing is not null)
             {
                 throw new BusinessRuleViolationException("The student already holds an active enrollment in this course.");
             }

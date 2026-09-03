@@ -4,11 +4,15 @@ namespace OnlineTeacher.Application.Persistence;
 
 /// <summary>
 /// Data access for the tenant-scoped Student Enrollment relationship.
-/// Duplicate (Student, Course) pairs are prevented by a database unique constraint.
+/// A student may hold only one Active enrollment per course, but historical terminal
+/// (cancelled) enrollments may coexist so a student can re-enroll after cancellation.
 /// </summary>
 public interface IEnrollmentRepository
 {
     Task<Enrollment?> GetAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default);
+
+    /// <summary>Returns the student's Active enrollment in a course, if one exists.</summary>
+    Task<Enrollment?> GetActiveAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<EnrollmentListItem>> ListByStudentForPlatformAsync(Guid studentId, Guid tenantId, CancellationToken cancellationToken = default);
 

@@ -11,8 +11,9 @@ namespace OnlineTeacher.Application.Services;
 /// Enrolls a central Student into a tenant-scoped Course. The student JWT is central (no tenant
 /// claims); the target platform is addressed by publicId and the tenant context is scoped for the
 /// tenant-scoped Course read, then restored. Only Published courses in an Active platform are
-/// eligible. Duplicate (Student, Course) enrollments are rejected and the database unique
-/// constraint guarantees the pair cannot repeat.
+/// eligible. A student may not hold more than one Active enrollment in a course; a new enrollment
+/// is permitted after a previous enrollment reached its terminal (cancelled) state, preserving the
+/// prior history. The database partial unique constraint guarantees only one Active pair.
 /// </summary>
 public sealed class EnrollStudentService
 {
@@ -74,7 +75,7 @@ public sealed class EnrollStudentService
                 throw new BusinessRuleViolationException("Only published courses can be enrolled in.");
             }
 
-            if (await _enrollments.GetAsync(studentId, courseId, cancellationToken) is not null)
+            if (await _enrollments.GetActiveAsync(studentId, courseId, cancellationToken) is not null)
             {
                 throw new BusinessRuleViolationException("The student is already enrolled in this course.");
             }
