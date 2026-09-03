@@ -58,6 +58,7 @@ builder.Services.AddScoped<ITeacherPlatformAccessRepository, TeacherPlatformAcce
 builder.Services.AddScoped<IPlatformMembershipRepository, PlatformMembershipRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentFollowRepository, StudentFollowRepository>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
 // Application use cases
@@ -80,6 +81,17 @@ builder.Services.AddScoped<FollowTeacherService>();
 builder.Services.AddScoped<UnfollowTeacherService>();
 builder.Services.AddScoped<ListFollowedTeachersService>();
 builder.Services.AddScoped<IsFollowingTeacherService>();
+builder.Services.AddScoped<CreateCourseService>();
+builder.Services.AddScoped<UpdateCourseService>();
+builder.Services.AddScoped<GetCourseService>();
+builder.Services.AddScoped<ListCoursesService>();
+builder.Services.AddScoped<DeleteCourseService>();
+builder.Services.AddScoped<AddUnitService>();
+builder.Services.AddScoped<UpdateUnitService>();
+builder.Services.AddScoped<RemoveUnitService>();
+builder.Services.AddScoped<AddLessonService>();
+builder.Services.AddScoped<UpdateLessonService>();
+builder.Services.AddScoped<RemoveLessonService>();
 
 // API-framework services
 builder.Services.AddScoped<JwtTokenFactory>();
