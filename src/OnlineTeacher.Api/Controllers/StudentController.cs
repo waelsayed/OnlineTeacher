@@ -5,6 +5,7 @@ using OnlineTeacher.Api.Authentication;
 using OnlineTeacher.Api.Authorization;
 using OnlineTeacher.Api.Contracts;
 using OnlineTeacher.Application.Services;
+using OnlineTeacher.Domain.Enums;
 
 namespace OnlineTeacher.Api.Controllers;
 
@@ -28,6 +29,9 @@ public sealed class StudentController : ControllerBase
     private readonly EnrollStudentService _enroll;
     private readonly ListStudentEnrollmentsService _listEnrollments;
     private readonly CancelEnrollmentService _cancelEnrollment;
+    private readonly SubmitTransferRequestService _submitTransfer;
+    private readonly ListStudentWalletService _listWallet;
+    private readonly PurchaseCourseService _purchase;
     private readonly JwtTokenFactory _jwt;
 
     public StudentController(
@@ -41,6 +45,9 @@ public sealed class StudentController : ControllerBase
         EnrollStudentService enroll,
         ListStudentEnrollmentsService listEnrollments,
         CancelEnrollmentService cancelEnrollment,
+        SubmitTransferRequestService submitTransfer,
+        ListStudentWalletService listWallet,
+        PurchaseCourseService purchase,
         JwtTokenFactory jwt)
     {
         _register = register;
@@ -53,6 +60,9 @@ public sealed class StudentController : ControllerBase
         _enroll = enroll;
         _listEnrollments = listEnrollments;
         _cancelEnrollment = cancelEnrollment;
+        _submitTransfer = submitTransfer;
+        _listWallet = listWallet;
+        _purchase = purchase;
         _jwt = jwt;
     }
 
@@ -172,6 +182,60 @@ public sealed class StudentController : ControllerBase
         var studentId = GetStudentIdClaim();
         await _cancelEnrollment.CancelAsync(studentId, teacherPublicId, courseId, cancellationToken);
         return NoContent();
+    }
+
+    [HttpGet("wallet/{teacherPublicId}")]
+    [Authorize]
+    [RequirePrincipalType(PrincipalTypes.Student)]
+    public async Task<IActionResult> Wallet(string teacherPublicId, CancellationToken cancellationToken)
+    {
+        var studentId = GetStudentIdClaim();
+        var wallet = await _listWallet.GetAsync(studentId, teacherPublicId, cancellationToken);
+        return wallet is null ? Ok((WalletDetailResponse?)null) : Ok(WalletDetailResponse.From(wallet));
+    }
+
+    [HttpPost("wallet/{teacherPublicId}/transfer")]
+    [Authorize]
+    [RequirePrincipalType(PrincipalTypes.Student)]
+    public async Task<IActionResult> SubmitTransfer(
+        string teacherPublicId,
+        [FromBody] SubmitTransferRequest request,
+        CancellationToken cancellationToken)
+    {
+        var studentId = GetStudentIdClaim();
+
+        if (!Enum.TryParse<PaymentMethod>(request.PaymentMethod, ignoreCase: true, out var paymentMethod))
+        {
+            return BadRequest(new
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Title = "Bad Request",
+                Detail = "The payment method is not supported."
+            });
+        }
+
+        var transferId = await _submitTransfer.SubmitAsync(
+            studentId,
+            teacherPublicId,
+            request.Amount,
+            paymentMethod,
+            request.TransferReference,
+            cancellationToken);
+
+        return Created(string.Empty, new { transferId });
+    }
+
+    [HttpPost("purchase/{teacherPublicId}/{courseId:guid}")]
+    [Authorize]
+    [RequirePrincipalType(PrincipalTypes.Student)]
+    public async Task<IActionResult> Purchase(
+        string teacherPublicId,
+        Guid courseId,
+        CancellationToken cancellationToken)
+    {
+        var studentId = GetStudentIdClaim();
+        var enrollmentId = await _purchase.PurchaseAsync(studentId, teacherPublicId, courseId, cancellationToken);
+        return Created(string.Empty, new { enrollmentId });
     }
 
     private Guid GetStudentIdClaim()
