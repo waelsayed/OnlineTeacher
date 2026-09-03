@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineTeacher.Application.Tenancy;
 using OnlineTeacher.Domain.Entities;
+using OnlineTeacher.Domain.Enums;
 
 namespace OnlineTeacher.Infrastructure.Persistence;
 
@@ -51,6 +52,8 @@ public sealed class ApplicationDbContext : DbContext
 
     public DbSet<TransferRequest> TransferRequests => Set<TransferRequest>();
 
+    public DbSet<StudentCoupon> StudentCoupons => Set<StudentCoupon>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -65,5 +68,6 @@ public sealed class ApplicationDbContext : DbContext
         modelBuilder.Entity<StudentWallet>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<FinancialTransaction>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<TransferRequest>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<StudentCoupon>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 }

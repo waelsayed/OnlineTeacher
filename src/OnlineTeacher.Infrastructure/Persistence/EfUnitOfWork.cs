@@ -55,6 +55,7 @@ public sealed class EfUnitOfWork : IUnitOfWork
             "ux_follows_student_teacher" => new BusinessRuleViolationException("The student already follows this teacher.", exception),
             "ux_enrollments_student_course" => new BusinessRuleViolationException("The student is already enrolled in this course.", exception),
             "ux_student_wallets_student_tenant" => new BusinessRuleViolationException("A wallet already exists for this student in this platform.", exception),
+            "ux_student_coupons_tenant_code" => new BusinessRuleViolationException("A coupon with this code already exists for this platform.", exception),
             _ => new ConcurrencyException("A concurrent change prevented this operation from completing.", exception)
         };
 }
