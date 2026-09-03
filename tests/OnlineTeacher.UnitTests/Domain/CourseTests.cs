@@ -207,4 +207,62 @@ public class CourseTests
 
         act.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void Create_DefaultsToFreePricing_WithNoPrice()
+    {
+        var course = NewCourse();
+
+        course.PricingType.Should().Be(CoursePricingType.Free);
+        course.Price.Should().BeNull();
+        course.IsPaid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Create_PaidCourse_WithPositivePrice_SetsPricing()
+    {
+        var course = new Course(Guid.NewGuid(), "Haskell", null, CoursePricingType.Paid, 350m);
+
+        course.PricingType.Should().Be(CoursePricingType.Paid);
+        course.Price.Should().Be(350m);
+        course.IsPaid.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Create_PaidCourse_WithoutPrice_Throws()
+    {
+        var act = () => new Course(Guid.NewGuid(), "Haskell", null, CoursePricingType.Paid, null);
+
+        act.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Create_PaidCourse_WithNonPositivePrice_Throws()
+    {
+        var act = () => new Course(Guid.NewGuid(), "Haskell", null, CoursePricingType.Paid, 0m);
+
+        act.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void SetPricing_ToFree_ClearsPrice()
+    {
+        var course = new Course(Guid.NewGuid(), "Haskell", null, CoursePricingType.Paid, 350m);
+
+        course.SetPricing(CoursePricingType.Free);
+
+        course.PricingType.Should().Be(CoursePricingType.Free);
+        course.Price.Should().BeNull();
+        course.IsPaid.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SetPricing_ToPaid_RequiresPositivePrice()
+    {
+        var course = NewCourse();
+
+        var act = () => course.SetPricing(CoursePricingType.Paid, 0m);
+
+        act.Should().Throw<DomainException>();
+    }
 }

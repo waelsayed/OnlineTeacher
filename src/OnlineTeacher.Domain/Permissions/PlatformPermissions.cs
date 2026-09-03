@@ -24,6 +24,13 @@ public static class PlatformPermissions
     /// <summary>Grants read access to enrollment information for a platform's courses.</summary>
     public const string EnrollmentView = "Enrollment.View";
 
+    /// <summary>
+    /// Grants management of a platform's wallet operations: reviewing (approving/rejecting) student
+    /// transfer requests and viewing the platform wallet ledger. Granted to the Owner role and to
+    /// assistants who are authorized to handle wallet credits.
+    /// </summary>
+    public const string WalletManage = "Wallet.Manage";
+
     public static readonly IReadOnlyCollection<string> All =
-        new[] { Access, Manage, Membership, CourseView, CourseManage, EnrollmentView };
+        new[] { Access, Manage, Membership, CourseView, CourseManage, EnrollmentView, WalletManage };
 }

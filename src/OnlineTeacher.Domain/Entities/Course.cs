@@ -24,6 +24,12 @@ public sealed class Course : IAuditable, ITenantScoped
 
     public CourseStatus Status { get; private set; }
 
+    /// <summary>Explicit commercial state: Free (no purchase) or Paid (requires a wallet purchase).</summary>
+    public CoursePricingType PricingType { get; private set; }
+
+    /// <summary>Price in EGP for Paid courses; null for Free courses.</summary>
+    public decimal? Price { get; private set; }
+
     public IReadOnlyList<Unit> Units => _units;
 
     public DateTime CreatedAtUtc { get; private set; }
@@ -38,7 +44,7 @@ public sealed class Course : IAuditable, ITenantScoped
     {
     }
 
-    public Course(Guid tenantId, string title, string? summary = null)
+    public Course(Guid tenantId, string title, string? summary = null, CoursePricingType pricingType = CoursePricingType.Free, decimal? price = null)
     {
         if (tenantId == Guid.Empty)
         {
@@ -55,7 +61,35 @@ public sealed class Course : IAuditable, ITenantScoped
         Title = title.Trim();
         Summary = string.IsNullOrWhiteSpace(summary) ? null : summary.Trim();
         Status = CourseStatus.Draft;
+        PricingType = pricingType;
+        Price = price;
+        ValidatePricing();
         CreatedAtUtc = DateTime.UtcNow;
+    }
+
+    /// <summary>Sets the course commercial state and price, validating that a Paid course has a positive price.</summary>
+    public void SetPricing(CoursePricingType pricingType, decimal? price = null)
+    {
+        PricingType = pricingType;
+        Price = price;
+        ValidatePricing();
+        UpdatedAtUtc = DateTime.UtcNow;
+    }
+
+    /// <summary>True when the course is Paid (requires a wallet purchase).</summary>
+    public bool IsPaid => PricingType == CoursePricingType.Paid;
+
+    private void ValidatePricing()
+    {
+        if (PricingType == CoursePricingType.Paid && (Price is null || Price.Value <= 0m))
+        {
+            throw new DomainException("A paid course requires a positive price.");
+        }
+
+        if (PricingType == CoursePricingType.Free)
+        {
+            Price = null;
+        }
     }
 
     /// <summary>Renames the course and updates the summary. Passing null keeps the existing value.</summary>
