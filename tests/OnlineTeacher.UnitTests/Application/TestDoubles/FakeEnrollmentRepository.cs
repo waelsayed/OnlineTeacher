@@ -18,6 +18,10 @@ internal sealed class FakeEnrollmentRepository : IEnrollmentRepository
     public Task<Enrollment?> GetAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default) =>
         Task.FromResult(_enrollments.FirstOrDefault(e => e.StudentId == studentId && e.CourseId == courseId));
 
+    public Task<Enrollment?> GetActiveAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(_enrollments.FirstOrDefault(
+            e => e.StudentId == studentId && e.CourseId == courseId && e.Status == EnrollmentStatus.Active));
+
     public Task<IReadOnlyList<EnrollmentListItem>> ListByStudentForPlatformAsync(
         Guid studentId,
         Guid tenantId,

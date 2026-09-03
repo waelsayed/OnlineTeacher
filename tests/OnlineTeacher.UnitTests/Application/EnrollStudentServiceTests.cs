@@ -137,6 +137,22 @@ public class EnrollStudentServiceTests
     }
 
     [Fact]
+    public async Task Enroll_AfterCancelledEnrollment_AllowsNewEnrollment()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPublishedCourse(platform);
+        var previous = new Enrollment(student.Id, course.Id, platform.Id);
+        previous.Cancel();
+        _enrollments.Seed(previous);
+
+        var id = await CreateService().EnrollAsync(student.Id, platform.PublicId.Value, course.Id);
+
+        _enrollments.Enrollments.Should().HaveCount(2);
+        _enrollments.Enrollments.Should().Contain(e => e.Id == previous.Id && e.Status == EnrollmentStatus.Cancelled);
+        _enrollments.Enrollments.Should().Contain(e => e.Id == id && e.Status == EnrollmentStatus.Active);
+    }
+
+    [Fact]
     public async Task Enroll_UnderTenantContext_ThrowsTenantMismatch()
     {
         var (student, platform) = SeedEligibleTarget();
