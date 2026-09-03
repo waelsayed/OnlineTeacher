@@ -45,6 +45,12 @@ public sealed class ApplicationDbContext : DbContext
 
     public DbSet<Enrollment> Enrollments => Set<Enrollment>();
 
+    public DbSet<StudentWallet> StudentWallets => Set<StudentWallet>();
+
+    public DbSet<FinancialTransaction> FinancialTransactions => Set<FinancialTransaction>();
+
+    public DbSet<TransferRequest> TransferRequests => Set<TransferRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -56,5 +62,8 @@ public sealed class ApplicationDbContext : DbContext
         modelBuilder.Entity<Unit>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Lesson>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Enrollment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<StudentWallet>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<FinancialTransaction>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<TransferRequest>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 }

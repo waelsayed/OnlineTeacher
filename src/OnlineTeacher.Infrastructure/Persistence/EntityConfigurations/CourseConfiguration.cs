@@ -15,6 +15,8 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.Property(c => c.Title).HasColumnName("title").HasMaxLength(200).IsRequired();
         builder.Property(c => c.Summary).HasColumnName("summary").HasMaxLength(2000);
         builder.Property(c => c.Status).HasColumnName("status").IsRequired();
+        builder.Property(c => c.PricingType).HasColumnName("pricing_type").IsRequired();
+        builder.Property(c => c.Price).HasColumnName("price").HasPrecision(18, 2);
 
         builder.HasIndex(c => new { c.TenantId, c.Id }).HasDatabaseName("ix_courses_tenant");
 
