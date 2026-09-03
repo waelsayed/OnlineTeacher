@@ -53,6 +53,7 @@ public sealed class EfUnitOfWork : IUnitOfWork
             "ux_teachers_email" => new DuplicateEmailException(exception),
             "ux_students_email" => new DuplicateEmailException(exception),
             "ux_follows_student_teacher" => new BusinessRuleViolationException("The student already follows this teacher.", exception),
+            "ux_enrollments_student_course" => new BusinessRuleViolationException("The student is already enrolled in this course.", exception),
             _ => new ConcurrencyException("A concurrent change prevented this operation from completing.", exception)
         };
 }

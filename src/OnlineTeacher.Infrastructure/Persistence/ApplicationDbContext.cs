@@ -43,6 +43,8 @@ public sealed class ApplicationDbContext : DbContext
 
     public DbSet<Lesson> Lessons => Set<Lesson>();
 
+    public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -53,5 +55,6 @@ public sealed class ApplicationDbContext : DbContext
         modelBuilder.Entity<Course>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Unit>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Lesson>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Enrollment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 }
