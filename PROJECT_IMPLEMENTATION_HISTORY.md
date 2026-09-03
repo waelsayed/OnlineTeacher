@@ -1,7 +1,8 @@
 # Online Teacher — Project Implementation History
 
 > This document reconstructs the Online Teacher project's implementation history from its
-> beginning up to the current checkpoint (after approved Task 3, before Task 4 implementation).
+> beginning up to the current checkpoint (after completed Task 5 — Student Wallet & Course
+> Purchase).
 >
 > It is **evidence-based**: every important rationale is classified as one of:
 >
@@ -194,7 +195,7 @@ The following principles were established throughout the project.
 # 3. Implementation Timeline
 
 The project progressed through a scaffolding phase (Steps 0–8) followed by product feature tasks
-(Tasks 1–3), and now pauses before Task 4.
+(Tasks 1–5), and now pauses after Task 5.
 
 Chronological order:
 
@@ -212,7 +213,8 @@ Step 8  — Git strategy / final repository cleanup
 Task 1  — Teacher Platform Management
 Task 2  — Central Student Identity & Following
 Task 3  — Teacher Platform Course Content
-Task 4  — Student Enrollment in Teacher Courses (PLANNED only — NOT implemented)
+Task 4  — Student Enrollment in Teacher Courses
+Task 5  — Student Wallet & Course Purchase
 ```
 
 ---
@@ -440,6 +442,49 @@ Task 4  — Student Enrollment in Teacher Courses (PLANNED only — NOT implemen
   Platform Courses, with read-only teacher visibility and no payment/wallet/coupon/completion nonsense
   (those remain out of scope).
 
+## Task 5 — Student Wallet & Course Purchase
+
+* **Problem:** Paid course content could not be monetized: there was no Course pricing, no student wallet,
+  and no way for a student to pay for and be enrolled in a Paid course with atomic, auditable financial
+  records.
+* **Goal:** Introduce explicit Free/Paid course pricing, a tenant-scoped student wallet, a wallet-credit
+  flow (transfer submit/approve/reject), and an atomic course-purchase flow, while preserving the existing
+  Free-course direct-enrollment path and all tenant-isolation guarantees.
+* **Design:** `Course.SetPricing` (explicit `CoursePricingType` Free/Paid + EGP `Price`); tenant-scoped
+  `StudentWallet` (lazy-created, balance derived from `FinancialTransaction` history — the balance is never
+  a standalone mutable source of truth); `TransferRequest` (submit → approve/reject) for wallet credit;
+  `PurchaseCourseService` performing the whole paid flow atomically (validate paid+published+balance,
+  re-check duplicate active enrollment, debit wallet, create Enrollment, record FinancialTransaction) in one
+  `IUnitOfWork` transaction. Wallet operations require the new `Wallet.Manage` permission on the teacher
+  side; student operations are `[RequirePrincipalType("student")]`.
+* **Why this design:** Financial operations must be transactional and auditable per `AGENTS.md` §15–§16
+  (prevent negative balances, double spending, duplicate enrollment, double coupon/transfer consumption).
+  The wallet belongs to the Teacher Platform (tenant-scoped), not the Central Platform. Free vs Paid is an
+  explicit state, never inferred from `Price == null/0`. Multiple active-purchase/idempotency protection
+  uses DB constraints plus application checks.
+* **Problems discovered:**
+  * `[Required]` attributes on the `SubmitTransferRequest` contract surfaced as model-state 400/500 errors
+    in the API layer (the controller validation ran before the application service) — removed so validation
+    is owned by the application service (which already validates the same rules).
+  * A cross-tenant transfer review returned a `TenantMismatchException` that mapped 403 despite the transfer
+    being resolved as NotFound in another tenant — resolved so a cross-tenant review returns **404**
+    (NotFound), matching the "unknown resource in this tenant" semantics.
+  * An empty student wallet queried by a different student returned **204 No Content** (via `Ok(null)`)
+    rather than 200 with an empty body — the integration test was updated to assert the 204.
+  * **Re-enrollment after cancellation** was impossible because the Task 4 `ux_enrollments_student_course`
+    index was a FULL unique index on `(student_id, course_id)`, so a cancelled enrollment permanently
+    blocked re-enrollment. Per the approved decision (AGENTS.md §30 surfaced to the user), the index was
+    converted to a **partial unique index** (`WHERE status = Active`) so only one Active enrollment can
+    exist at a time while terminal (cancelled) history may coexist.
+* **Decision (re-enrollment after terminal cancellation):** The previously-approved Task 4 full unique
+  constraint was replaced by a partial unique index allowing one Active enrollment per (student, course).
+  This is an explicit, user-approved change surfaced through the AGENTS.md §30 process.
+* **Decision (wallet ownership/derivation):** Student wallets are owned by the Teacher Platform (tenant) and
+  their balance is derived from an immutable `FinancialTransaction` record set; `Refund` and `CouponCredit`
+  transaction types are reserved for future Tasks (not implemented here).
+* **Verification:** Unit 387/387; integration 77/77; build `--warnaserror` 0 warnings / 0 errors; the
+  re-enrollment migration was applied to the dev Docker PostgreSQL.
+
 ---
 
 # 5. Domain Evolution
@@ -516,9 +561,33 @@ Student (central)
 * **Enrollment ≠ Following:** a student may be enrolled in a Course without following its Teacher, and
   vice-versa. The two central `StudentFollow` and tenant `Enrollment` relationships are independent.
 
+## Added in Task 5
+
+```
+Teacher Platform
+    ↓
+StudentWallet (tenant-scoped; lazy-created; balance derived from FinancialTransactions)
+    ↓
+FinancialTransaction (tenant-scoped; immutable audit record: type/direction/status/amount)
+    ↓
+TransferRequest (tenant-scoped; wallet-credit flow: Pending → Approved/Rejected)
+Course (gains CoursePricingType Free/Paid + Price in EGP via SetPricing)
+```
+
+* `StudentWallet`, `FinancialTransaction`, and `TransferRequest` are **tenant-scoped** (`ITenantScoped`)
+  and under the tenant query filter.
+* The wallet **balance is derived** from the transaction history — it is not a standalone mutable source of
+  truth, satisfying the "financial records must never depend only on a mutable balance field" rule.
+* `Refund` and `CouponCredit` `TransactionType` values are reserved only (future Tasks); no refund/coupon
+  flow is implemented in Task 5.
+* The `Enrollment` unique index became **partial** (`WHERE status = Active`), enabling re-enrollment after a
+  terminal cancellation while preserving history.
+
 **Relationship summary for a reader:** A Teacher owns a Platform (a tenant). The Platform owns Courses.
 Courses contain ordered Units. Units contain ordered Lessons. A Student (central identity) may follow
-Teachers (central `StudentFollow`) and may be enrolled in a tenant's Courses (tenant `Enrollment`).
+Teachers (central `StudentFollow`) and may be enrolled in a tenant's Courses (tenant `Enrollment`). A
+tenant-scoped `StudentWallet` (with its `FinancialTransaction` history and `TransferRequest` credit flows)
+serves the payments/purchase path for Paid Courses.
 
 ---
 
@@ -578,7 +647,8 @@ Teachers (central `StudentFollow`) and may be enrolled in a tenant's Courses (te
 ## EF query filters
 
 * Global query filters are applied **only** to `ITenantScoped` entities:
-  `Role`, `RolePermission`, `TeacherPlatformMembership`, `Course`, `Unit`, `Lesson`, `Enrollment`.
+  `Role`, `RolePermission`, `TeacherPlatformMembership`, `Course`, `Unit`, `Lesson`, `Enrollment`,
+  `StudentWallet`, `FinancialTransaction`, `TransferRequest`.
 * **Central** entities — `Teacher`, `TeacherPlatform`, `Permission`, `Student`, `StudentFollow` — are
   **not** filtered.
 
@@ -592,12 +662,17 @@ Teachers (central `StudentFollow`) and may be enrolled in a tenant's Courses (te
 
 * Central: Student, StudentFollow, Teacher, TeacherPlatform, Permission.
 * Tenant-scoped (filtered): Role, RolePermission, TeacherPlatformMembership, Course, Unit, Lesson,
-  Enrollment.
+  Enrollment, StudentWallet, FinancialTransaction, TransferRequest.
+* Central: Student, StudentFollow, Teacher, TeacherPlatform, Permission.
 * **Why Student/StudentFollow are central:** a student has one identity across platforms and follows
   teachers cross-tenant; they are not owned by any single tenant.
 * **Why Course/Unit/Lesson/Enrollment are tenant-scoped:** they are content/academic records owned by a
   specific Teacher Platform. The Student stays central; the Enrollment (the academic relationship) belongs
   to the tenant whose Course it references.
+* **Why StudentWallet/FinancialTransaction/TransferRequest are tenant-scoped:** the wallet and its financial
+  records belong to the Teacher Platform that operates them (`AGENTS.md` §12 — the Central Platform does not
+  own student wallets). This keeps Student A's wallet, transactions, and transfer requests fully isolated
+  from Student B and from other tenants.
 
 ## How cross-tenant attacks/access are prevented — concrete example
 
@@ -681,6 +756,26 @@ All course endpoints additionally require tenant membership via `PlatformAccessG
 |------|-------|---------|
 | Course enrollments | `GET /{publicId}/{slug}/api/platform/courses/{courseId}/enrollments` | List a course's enrollments (read-only) |
 
+## Task 5 (student wallet & course purchase)
+
+**Student-perspective endpoints** (principal `student`, `[RequirePrincipalType("student")]`):
+
+| Area | Route | Purpose |
+|------|-------|---------|
+| Submit transfer | `POST /api/student/wallet/{publicId}/transfer` | Request a wallet-credit Transfer Request |
+| My wallet | `GET /api/student/wallet/{publicId}` | Read the student's wallet balance + transaction history (empty wallet → 204) |
+| Purchase course | `POST /api/student/purchase/{publicId}/{courseId}` | Atomically purchase a Paid course (debit + enrollment + transaction) |
+
+**Teacher-perspective endpoints** (principal `teacher`, `Wallet.Manage` + membership):
+
+| Area | Route | Purpose |
+|------|-------|---------|
+| List transfer requests | `GET /{publicId}/{slug}/api/platform/wallet/transfers` | List pending/all transfer requests for the platform |
+| Approve transfer | `POST .../wallet/transfers/{requestId}/approve` | Approve and credit the student wallet (idempotent, double-approve → 422) |
+| Reject transfer | `POST .../wallet/transfers/{requestId}/reject` | Reject without crediting |
+
+A cross-tenant transfer review returns **404** (the transfer is not resolvable in the acting tenant).
+
 ---
 
 # 9. Database Evolution
@@ -719,6 +814,17 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * `Enrollment → Course` FK uses **Restrict** (no cascade delete).
 * `EnrollmentStatus` persisted via a value converter.
 
+## Task 5 (wallet & financial migrations)
+
+* `20260903184016_AddWalletAndFinancialTransactions`:
+  * `student_wallets` (tenant-scoped, unique `(StudentId, TenantId)` — one wallet per student per tenant).
+  * `financial_transactions` (tenant-scoped, immutable audit records with type/direction/status/amount).
+  * `transfer_requests` (tenant-scoped, wallet-credit flow states).
+* `20260903192311_ReworkEnrollmentUniqueConstraintForReEnrollment`:
+  * Drops the full unique `ux_enrollments_student_course` index and recreates it as a **partial unique
+    index** (`WHERE status = Active`) so a student may hold only one **Active** enrollment per course while
+    terminal (cancelled) history may coexist — enabling re-enrollment after cancellation.
+
 ## Important database design decisions
 
 * **PublicId globally unique; Slug non-unique** (approved rule — slug is a URL component, not identity).
@@ -730,8 +836,12 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
   must survive course deletion; Unit/Lesson cascade behavior is unaffected.
 * **Position uniqueness deferred to the domain aggregate** (approved deviation) rather than DB unique
   constraint (see Section 10).
-* **Financial/audit records** (wallets, purchases, refunds in the roadmap) are to be treated as
-  historical — relevant to future Tasks.
+* **Financial/audit records** (wallets, purchases, transfer requests implemented in Task 5; refunds**
+  **and coupons reserved) are treated as historical and are not casually deleted.
+* **Wallet uniqueness** — `(StudentId, TenantId)` is unique per tenant (one wallet per student per
+  Teacher Platform), reinforcing the tenant-scoped wallet model.
+* **Enrollment uniqueness (partial)** — only one **Active** enrollment per `(student, course)` is allowed;
+  cancelled history may coexist (re-enrollment after terminal cancellation).
 
 ---
 
@@ -819,6 +929,46 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * **Fix:** Two-step materialization — order the rows in SQL, then project `Status.ToString()` in memory.
 * **Architecture change:** No.
 
+## Contract `[Required]` causing API 4xx/5xx (Task 5)
+
+* **Symptom:** `POST .../wallet/{publicId}/transfer` returned model-state errors (400/500) instead of the
+  application response.
+* **Root cause:** `[Required]` attributes on the `SubmitTransferRequest` DTO let MVC validation reject the
+  request before the application service (which already validates the same rules) ran.
+* **Fix:** Removed the redundant `[Required]` attributes; validation is owned entirely by the application
+  service.
+* **Architecture change:** No — contract simplification.
+
+## Cross-tenant transfer review status (Task 5)
+
+* **Symptom:** `Owner_CannotReviewAnotherTenantsTransfer` expected 403 but the API returned 404.
+* **Root cause:** For the acting tenant, another tenant's `TransferRequest` id is not resolvable, so the
+  handler resolves it as NotFound.
+* **Fix (decision):** A cross-tenant transfer review returns **404 (NotFound)** — consistent with an
+  un-resolvable resource in the acting tenant. The integration test was updated to assert 404.
+* **Architecture change:** No — status-code semantics.
+
+## Empty student wallet response (Task 5)
+
+* **Symptom:** `Student_CannotAccessAnotherStudentsWallet` expected 200 with an empty body but got 204.
+* **Root cause:** A not-yet-created (empty, lazy) wallet caused `Ok(null)`, which MVC serializes as
+  **204 No Content** with no body.
+* **Fix:** The integration test now asserts 204 No Content for a student whose wallet has no history.
+* **Architecture change:** No — response semantics.
+
+## Re-enrollment blocked by full unique index (Task 5)
+
+* **Symptom:** `Student_RepurchasesAfterTerminalCancellation_Permitted` failed because a cancelled
+  enrollment still owned the `(student, course)` unique pair, so re-purchase returned 422 "already
+  enrolled".
+* **Root cause:** The Task 4 `ux_enrollments_student_course` index was a **full** unique index on
+  `(student_id, course_id)`.
+* **Fix (approved decision):** Converted it to a **partial unique index** (`WHERE status = Active`),
+  `GetActiveAsync` in the enrollment repository, and duplicate checks in Enroll/Purchase switched to
+  rejecting only a duplicate **Active** enrollment. Re-enrollment after a terminal cancellation is now
+  permitted while prior history is preserved.
+* **Architecture change:** Yes, but a small, approved data-constraint change surfaced via AGENTS.md §30.
+
 ---
 
 # 11. Important Decisions / ADR-style Summary
@@ -841,6 +991,13 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 | Enrollment.View permission | Read-only course-enrollment access as a dynamic permission | Follows Course.View precedent; permissions, not roles | Per-feature role | Approved |
 | Enrollment ≠ Following | Separate; enrolling does not auto-follow, following does not enroll | Follow is a central interest signal; Enrollment is the academic relationship | Merge the two | Approved |
 | Duplicate-enrollment & delete semantics | `ux_enrollments_student_course` unique index + `Enrollment→Course` Restrict FK | DB-level single-enrollment guarantee and preserved academic history | App-level check + cascade | Approved |
+| Course pricing | Explicit `CoursePricingType` (Free/Paid) + EGP `Price` via `SetPricing` | Free vs Paid is an explicit state, never inferred from `Price` | Infer from `Price == null/0` (rejected) | Approved |
+| Student wallet ownership | Tenant-scoped `StudentWallet`, balance derived from `FinancialTransaction` history | Wallet belongs to the Teacher Platform; financial records not dependent on a mutable balance | Central-owned wallet (rejected) | Approved |
+| Wallet credit flow | `TransferRequest` submit → approve/reject; approve idempotent (double-approve 422) | Auditable, controlled wallet funding | Direct balance mutation | Approved |
+| Atomic course purchase | `PurchaseCourseService` validates+debts+enrolls+records transaction in one UoW | Prevent partial/negative/double-spend; duplicate active purchase 422 | Non-atomic multi-step | Approved |
+| Re-enrollment after cancellation | Partial unique `(student, course)` index (`WHERE status = Active`); duplicate-check on Active only | Preserve history yet permit re-enrollment after terminal cancellation | Full unique index (rejected — blocked re-enrollment) | Approved |
+| Wallet financial types | `Refund` + `CouponCredit` `TransactionType` reserved only (not implemented) | Forward-compatible, no invented flows | Implement refunds/coupons now (rejected) | Approved |
+| Free course enrollment | Free course → direct-enroll (no wallet/purchase); purchase endpoint rejects Free | Keep Free/Paid flows distinct; do not break Free enrollment | Route all enrollments through purchase (rejected) | Approved |
 
 ---
 
@@ -869,6 +1026,7 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 | Task 2 | 221 | 39 |
 | Task 3 | 281 | 51 |
 | Task 4 | 315 | 64 |
+| Task 5 | 387 | 77 |
 
 ## Notable integration coverage
 
@@ -879,6 +1037,11 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * Full slice: register → create → activate → login → access.
 * Task 4: 28 application-service tests (enroll/list/cancel/course-list) + 13 integration scenarios across
   `EnrollmentTests.cs` (enroll, list, cancel, duplicate-enrollment 422, teacher read, tenant isolation).
+* Task 5: 7 new application-service suites (purchase, submit/review/list transfer, list wallet) + 13
+  integration scenarios in `WalletAndPurchaseTests.cs` (submit/approve flow, double-approve 422, reject,
+  fund+purchase+enrollment+debit, insufficient balance 422, draft-course purchase 422, free-through-purchase
+  422 + free direct-enroll, duplicate active purchase 422, repurchase-after-cancellation permitted,
+  cross-tenant review 404, anonymous 401, assistant-without-`Wallet.Manage` 403, cross-student wallet 204).
 
 ---
 
@@ -902,16 +1065,21 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * **Task 3** — `c79cbc9` domain, `9f59091` infra, `8bdd2fe` application, `796ce20` api, `a5e39cc` test, `9d876e8` docs.
 * **Task 4** — `71d215b` domain, `bc6b389` infra, `f5f2940` application, `b747e7b` api, `d42ef46` test, and
   the docs commit for this update (`docs: ...`).
+* **Task 5** — `da6b603` domain (wallet/transaction/transfer/pricing), `410c8ce` infra (persistence +
+  `AddWalletAndFinancialTransactions`), `ddf27d4` application (repos + DTOs), `eba4d42` application
+  (use cases), `33c8bef` api (endpoints), `b0dd333` application (active-enrollment lookup for
+  re-enrollment), `85c95e1` infra (partial unique index migration), `37d15af` api (pricing + contract
+  cleanup), `658d66d` test (unit + integration coverage).
 
 ## Current repository state
 
-* Branch: `main`, ahead of `origin/main` by 33 commits.
-* Working tree: clean except the in-progress Task 4 documentation update on
+* Branch: `main`, ahead of `origin/main` by 42 commits.
+* Working tree: clean except the in-progress Task 5 documentation update on
   `IMPLEMENTATION_PLAN.md` / `PROJECT_IMPLEMENTATION_HISTORY.md` and the untracked baseline planning files
   (`PROJECT_DOCUMENTATION/`, `SETUPDOCUMENT.md`, `Tasks/3-9-1.md`, `Tasks/3-9.md`, `Tasks/Approved2.md`,
-  `Tasks/TASK4.md`, `Tasks/FINAL2-9.md`).
+  `Tasks/TASK5.md`, `Tasks/TASK5_PLAN.md`, `Tasks/TASKREVIEW.md`).
 * **Nothing has been pushed to `origin`** (documented throughout).
-* Current checkpoint: after completed Task 4 (Student Enrollment).
+* Current checkpoint: after completed Task 5 (Student Wallet & Course Purchase).
 
 ---
 
@@ -927,6 +1095,7 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 
 * Tenant-scoped profile and membership management (owner-only mutations; last-owner protection).
 * Tenant-scoped course content: Course → Unit → Lesson with explicit ordering.
+* Tenant-scoped Student Wallets, Financial Transactions, and Transfer Requests (wallet credit + audit).
 * Membership-based tenant access via `PlatformAccessGuard`.
 
 ## Student
@@ -934,6 +1103,7 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * Central identity (registration, login without PublicId, profile).
 * Follow/unfollow/list/is-following teachers (central, DB-unique).
 * Enroll in / list / cancel Course Enrollments (tenant-scoped academic relationship, central identity).
+* Wallet: submit transfer requests, read wallet + transaction history, and atomically purchase Paid Courses.
 * Following does not grant platform-management access; Enrollment ≠ Following.
 
 ## Authentication
@@ -943,17 +1113,18 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 
 ## Courses
 
-* Tenant-scoped `Course` (Draft/Published) → `Unit` (Position) → `Lesson` (Position).
+* Tenant-scoped `Course` (Draft/Published, explicit Free/Paid pricing) → `Unit` (Position) → `Lesson` (Position).
 * No public course URLs; internal Guid identity; duplicate titles allowed; hard delete/cascade.
 * Tenant-scoped `Enrollment` (Active/Cancelled) links a central Student to a Course
-  (`ux_enrollments_student_course` unique; `Enrollment → Course` Restrict FK).
+  (partial unique `ux_enrollments_student_course` allowing one Active enrollment; `Enrollment → Course` Restrict FK).
 
 ## Database
 
 * Major entities: `teachers`, `teacher_platforms`, `permissions`, `roles`, `role_permissions`,
   `teacher_platform_memberships`, `students`, `student_follows`, `courses`, `units`, `lessons`,
-  `enrollments`.
-* Tenant-scoped (filtered): roles, role_permissions, memberships, courses, units, lessons, enrollments.
+  `enrollments`, `student_wallets`, `financial_transactions`, `transfer_requests`.
+* Tenant-scoped (filtered): roles, role_permissions, memberships, courses, units, lessons, enrollments,
+  student_wallets, financial_transactions, transfer_requests.
 * Central (not filtered): teachers, platforms, permissions, students, student_follows.
 
 ## API
@@ -963,18 +1134,21 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * Teacher Platform management: `/{publicId}/{slug}/api/platform/{profile,members,...}`.
 * Teacher Platform course content: `/{publicId}/{slug}/api/platform/courses...`.
 * Teacher Platform enrollments: `/{publicId}/{slug}/api/platform/courses/{courseId}/enrollments` (`Enrollment.View`).
-* Student: `/api/student/{register,login,me,follow...,following...}` + `/api/student/enroll...` (enroll/list/cancel).
+* Teacher Platform wallet: `/{publicId}/{slug}/api/platform/wallet/transfers...` (list/approve/reject, `Wallet.Manage`).
+* Student: `/api/student/{register,login,me,follow...,following...}` + `/api/student/enroll...` (enroll/list/cancel)
+  + `/api/student/wallet/{publicId}` (transfer + wallet) + `/api/student/purchase/{publicId}/{courseId}`.
 * Health: `/health`.
 
 ## Security
 
 * TenantRouteMiddleware resolves the tenant (404/301/continue) without global JWT-tenant rejection.
 * Permission policies + application membership guards enforce tenant access (defense in depth).
-* EF tenant query filters guard tenant-scoped data at the data layer.
+* EF tenant query filters guard tenant-scoped data at the data layer (including wallets/finance).
+* Financial operations (purchase, wallet credit) are transactional and idempotency-protected.
 
 ## Tests
 
-* Unit 315/315; integration 64/64; build 0 warnings / 0 errors (Task 4 baseline).
+* Unit 387/387; integration 77/77; build 0 warnings / 0 errors (Task 5 baseline).
 
 ---
 
@@ -987,12 +1161,14 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * Task 2 — Central Student Identity & Following.
 * Task 3 — Teacher Platform Course Content.
 * Task 4 — Student Enrollment in Teacher Courses.
+* Task 5 — Student Wallet & Course Purchase.
 
 ## Future / planned (not yet implemented)
 
-* Task 5 and beyond — see `IMPLEMENTATION_PLAN.md` and approved `Tasks/` documents. Candidate roadmap
-  items (carried in the roadmap/plan) include completion/progress tracking, payments & the Student Wallet,
-  coupons, refunds, and potential future Enrollment lifecycle states beyond Active/Cancelled.
+* Task 6 and beyond — see `IMPLEMENTATION_PLAN.md` and approved `Tasks/` documents. Candidate roadmap
+  items (carried in the roadmap/plan) include completion/progress tracking, coupons, refunds (types
+  reserved in Task 5 but not implemented), and potential future Enrollment lifecycle states beyond
+  Active/Cancelled.
 
 ---
 
@@ -1003,8 +1179,8 @@ A future implementation session should:
 1. Read `AGENTS.md`.
 2. Read `IMPLEMENTATION_PLAN.md`.
 3. Read `PROJECT_IMPLEMENTATION_HISTORY.md`.
-4. Read the relevant Task document (e.g. `Tasks/TASK5.md` once it is drafted and approved).
-5. Confirm the current checkpoint (currently: after completed Task 4 — Student Enrollment).
+4. Read the relevant Task document (e.g. `Tasks/TASK6.md`/the next approved Task document).
+5. Confirm the current checkpoint (currently: after completed Task 5 — Student Wallet & Course Purchase).
 6. Review any pending roadmap decisions for the next task.
 7. Obtain explicit human approval before implementing.
 8. Implement only the approved task.

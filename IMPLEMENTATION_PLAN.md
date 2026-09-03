@@ -808,6 +808,37 @@ Task 4 — Student Enrollment in Teacher Courses    [x] Completed
 > completion, exams, grades, notifications, public browsing, auto-follow,
 > re-enrollment) were intentionally left out.
 
+## Task 5 — Student Wallet & Course Purchase
+
+```text
+Task 5 — Student Wallet & Course Purchase            [x] Completed
+  - Course pricing (Free/Paid explicit states)       [x] Completed
+  - StudentWallet (tenant-scoped, lazy-created)      [x] Completed
+  - FinancialTransaction (auditable, balance-derived) [x] Completed
+  - TransferRequest (submit/approve/reject)          [x] Completed
+  - Wallet.Manage permission                         [x] Completed
+  - PurchaseCourseService (atomic debit + enrollment) [x] Completed
+  - Paid/Free enrollment flows preserved             [x] Completed
+  - Re-enrollment after terminal cancellation        [x] Completed
+  - Transactional + idempotency protection           [x] Completed
+  - Domain tests                                     [x] Completed
+  - Application tests                                [x] Completed
+  - Integration tests (authorization + isolation)    [x] Completed
+  - Documentation                                    [x] Completed
+  - Verification                                     [x] Completed
+```
+
+> Task 5 (Student Wallet & Course Purchase) is complete and verified.
+> Courses now carry an explicit Free/Paid pricing state; a student holds a tenant-scoped
+> `StudentWallet` (lazy-created) and can credit it via a submitted/approved `TransferRequest`.
+> A Paid course is enrolled only through a single atomic `Purchase` that validates balance,
+> debits the wallet, creates the `Enrollment`, and records an auditable `FinancialTransaction`.
+> Free courses still enroll via the direct-enroll flow (no wallet/purchase). Wallet operations
+> are strictly tenant-scoped, transactional, and guarded against duplicate active purchase,
+> double debit, and double coupon/transfer consumption. Re-enrollment after a terminal
+> cancellation is permitted (history preserved) via a partial unique index allowing one Active
+> enrollment per (student, course). Refund and CouponCredit transaction types are reserved only.
+
 Example:
 
 ```text
@@ -1274,6 +1305,67 @@ Task 4 additions (student enrollment in teacher courses):
 - Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit tests 315/315;
   integration tests 64/64 against a real PostgreSQL 16 Testcontainer; no Task 1-3
   regressions.
+```
+
+Task 5 additions (student wallet & course purchase):
+
+```text
+- Domain: Course gains an explicit pricing state via CoursePricingType (Free=0, Paid=1),
+  a Price (EGP, decimal) and SetPricing(); a Paid course requires a positive price and a
+  Free course carries no price. Default is Free. PricingType is never inferred from a
+  null/zero Price.
+- Domain: StudentWallet (tenant-scoped, Balance decimal, lazy-created per student+tenant),
+  FinancialTransaction (immutable audit record: tenant, student, wallet, TransactionType,
+  Direction/Credit-Debit, FinancialTransactionStatus, amount, optional purchase/transfer
+  reference, timestamps; financial records are derived from transactions, never a mutable
+  balance alone), TransferRequest (tenant-scoped, Pending/Approved/Rejected status,
+  requested amount, payment method, optional transfer reference).
+- Enums: TransactionType (WalletCredit, Purchase, Refund, CouponCredit),
+  FinancialTransactionStatus (Completed, Pending, Failed), TransferRequestStatus
+  (Pending, Approved, Rejected), PaymentMethod (VodafoneCash, InstaPay),
+  CoursePricingType (Free, Paid).
+- Permissions: PlatformPermissions gained Wallet.Manage (appended to All so the
+  PermissionSeeder auto-seeds and the Owner role auto-grants it; no new migration).
+- Persistence: migrations 20260903184016_AddWalletAndFinancialTransactions (student_wallets,
+  financial_transactions, transfer_requests with tenant FKs and unique wallet (student, tenant))
+  and 20260903192311_ReworkEnrollmentUniqueConstraintForReEnrollment (partial unique index
+  allowing only one Active enrollment per (student, course)). EfUnitOfWork.Translate maps
+  duplicate transfer/purchase/enrollment violations to BusinessRuleViolation (422).
+- Application services: SubmitTransferRequestService, ReviewTransferRequestService
+  (approve/reject, idempotent against double-approve 422), ListTransferRequestsService,
+  ListStudentWalletService (wallet REPLACED by transaction history; empty wallet -> no content),
+  PurchaseCourseService (atomic: validate paid + published + balance, re-check duplicate active
+  enrollment, debit wallet, create enrollment, record FinancialTransaction in one
+  IUnitOfWork/SaveChangesAsync transaction).
+- Enrollment / re-enrollment: IEnrollmentRepository gained GetActiveAsync; EnrollStudentService
+  and PurchaseCourseService now reject only a DUPLICATE ACTIVE enrollment, so a student may
+  re-purchase/re-enroll after a terminal (cancelled) enrollment, preserving prior history. The
+  DB constraint changed from a FULL unique (student, course) index to a PARTIAL unique index
+  (WHERE status = Active) named ux_enrollments_student_course (approved change).
+  CancelEnrollmentService is unchanged (a terminal enrollment rejects cancellation anyway).
+- API (student, central JWT): POST /api/student/wallet/{publicId}/transfer (submit), GET
+  /api/student/wallet/{publicId} (wallet + history), POST /api/student/purchase/{publicId}/
+  {courseId} (atomic purchase -> 201). All [Authorize] + [RequirePrincipalType("student")].
+- API (teacher, platform-scoped, Wallet.Manage + membership): GET .../api/platform/wallet/
+  transfers (list), POST .../transfers/{requestId}/approve, POST .../transfers/{requestId}/
+  reject. A cross-tenant transfer review returns 404 (NotFound) rather than 403.
+- Contract/validation: SubmitTransferRequest relies on the application service (removed
+  redundant [Required] attributes that caused model-state 400s/500); CreateCourseRequest gains
+  optional PricingType/Price; CourseContentController.ParsePricingType maps the string to the
+  enum (400 on unknown).
+- Idempotency/concurrency: duplicate submit within one request handled; double-approve -> 422
+  and credited once; duplicate active purchase -> 422 and no double debit; insufficient balance
+  -> 422 with no side effects; wallet is strictly tenant-scoped so Student A never sees Student
+  B's wallet; no auto-follow on purchase; Refund and CouponCredit transaction types reserved only.
+- Tests: unit 387/387 (7 new application service suites + domain + re-enrollment test additions);
+  integration 77/77 (13 new WalletAndPurchaseTests: submit/approve flow, double-approve 422,
+  reject, fund+purchase+enrollment+debit, insufficient balance 422, draft-course purchase 422,
+  free-through-purchase 422 + free direct-enroll, duplicate active purchase 422, repurchase
+  after cancellation permitted, cross-tenant review 404, anonymous 401, assistant-without-
+  Wallet.Manage 403, cross-student wallet 204). No Task 1-4 regressions.
+- Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit 387/387;
+  integration 77/77 against a real PostgreSQL 16 Testcontainer; re-enrollment migration applied
+  to the dev Docker PostgreSQL.
 ```
 
 DEVIATION (approved via Tasks/Approved1.md):
