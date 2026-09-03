@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OnlineTeacher.Domain.Entities;
+using OnlineTeacher.Domain.Enums;
 
 namespace OnlineTeacher.Infrastructure.Persistence.EntityConfigurations;
 
@@ -18,8 +19,12 @@ public sealed class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollmen
         builder.Property(e => e.EnrolledAtUtc).HasColumnName("enrolled_at_utc").IsRequired();
         builder.Property(e => e.CancelledAtUtc).HasColumnName("cancelled_at_utc");
 
+        // Partial unique index: a student may hold only ONE Active enrollment per course, but
+        // historical terminal (cancelled) enrollments may coexist so a student can re-enroll after
+        // the previous enrollment reached its terminal state (approved requirement).
         builder.HasIndex(e => new { e.StudentId, e.CourseId })
             .IsUnique()
+            .HasFilter($"status = {(int)EnrollmentStatus.Active}")
             .HasDatabaseName("ux_enrollments_student_course");
         builder.HasIndex(e => new { e.StudentId, e.TenantId })
             .HasDatabaseName("ix_enrollments_student_tenant");

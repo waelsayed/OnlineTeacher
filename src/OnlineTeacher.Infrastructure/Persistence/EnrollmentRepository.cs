@@ -6,8 +6,9 @@ using OnlineTeacher.Domain.Enums;
 namespace OnlineTeacher.Infrastructure.Persistence;
 
 /// <summary>
-/// EF Core data access for the tenant-scoped Student Enrollment relationship.
-/// Duplicate (Student, Course) pairs are rejected by a database unique constraint.
+/// EF Core data access for the tenant-scoped Student Enrollment relationship. A student may
+/// hold only one Active enrollment per course (partial unique index); terminal (cancelled)
+/// enrollments may coexist so a student can re-enroll after cancellation.
 /// </summary>
 public sealed class EnrollmentRepository : IEnrollmentRepository
 {
@@ -21,6 +22,11 @@ public sealed class EnrollmentRepository : IEnrollmentRepository
     public Task<Enrollment?> GetAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default) =>
         _db.Enrollments.FirstOrDefaultAsync(
             e => e.StudentId == studentId && e.CourseId == courseId,
+            cancellationToken);
+
+    public Task<Enrollment?> GetActiveAsync(Guid studentId, Guid courseId, CancellationToken cancellationToken = default) =>
+        _db.Enrollments.FirstOrDefaultAsync(
+            e => e.StudentId == studentId && e.CourseId == courseId && e.Status == EnrollmentStatus.Active,
             cancellationToken);
 
     public async Task<IReadOnlyList<EnrollmentListItem>> ListByStudentForPlatformAsync(
