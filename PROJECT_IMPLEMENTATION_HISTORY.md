@@ -401,14 +401,44 @@ Task 4  — Student Enrollment in Teacher Courses (PLANNED only — NOT implemen
 * **Verification:** Unit 281/281; integration 51/51; build 0/0; migration applied cleanly.
 * **Result:** A tenant-scoped, ordered course content hierarchy.
 
-## Task 4 — Planning / Current Checkpoint
+## Task 4 — Student Enrollment in Teacher Courses (Completed)
 
-* **Problem:** The project needs a defined next capability after course content.
-* **Goal:** Plan Task 4 (Student Enrollment in Teacher Courses) at the planning level only.
-* **Design:** See `Tasks/TASK4.md` (planning reference). Task 4 is **planned but not implemented**.
-* **Why this design:** The project intentionally pauses here; future implementation requires explicit
-  human approval.
-* **Result:** A documented checkpoint; no Task 4 implementation exists.
+* **Problem:** No academic relationship connecting a central Student to a Teacher Platform Course.
+* **Goal:** Implement `Student → Course` Enrollment with a tenant-scoped Enrollment, a status lifecycle,
+  an `Enrollment.View` permission for read-only course-enrollment access, and student-perspective
+  enrollment endpoints while preserving the central Student identity.
+* **Design:**
+  * Domain `Enrollment` entity (tenant-scoped) with `EnrollmentStatus` lifecycle:
+    `Active` (Enrolled) → `Cancelled` (terminal).
+  * Add `Enrollment.View` permission to the dynamic permission catalog.
+  * Persistence via `ApplicationDbContext` DbSet + tenant query filter, an EF `EnrollmentConfiguration`,
+    `EnrollmentRepository`, and the `20260903171426_AddEnrollment` migration.
+  * Four application services: Enroll, ListStudent, Cancel, ListCourse.
+  * API: three student-perspective endpoints (enroll / list / cancel by central student identity) and one
+    teacher-side read endpoint (`GET .../courses/{courseId}/enrollments`) guarded by `Enrollment.View` +
+    membership.
+  * DB unique index `ux_enrollments_student_course` prevents duplicate enrollments; `Enrollment → Course`
+    FK uses **Restrict** so cancel/complete statuses preserve academic records (course content cascade is
+    unchanged because the Restrict FK is not referenced by Unit/Lesson children).
+* **Why this design:** Enrollment is the core academic relationship between Student and Course. Keeping the
+  Student central while scoping the Enrollment to the tenant preserves the documented identity model. The
+  `Enrollment.View` permission follows the Course.View precedent for read access. Enrollment remains
+  **distinct from Following** — following a Teacher does not enroll the student, and enrolling does not
+  auto-follow (documented below).
+* **Problems discovered:**
+  * `EnrollmentRepository` LINQ query (ordering before a `Status.ToString()` projection) did not translate
+    to SQL → fixed via a two-step materialization (order rows in SQL, then project `Status.ToString()` in
+    memory).
+  * An integration test initially passed an invalid-format PublicId for an unknown platform and expected a
+    404 → corrected to a valid 12-char PublicId (`PublicId.Generate().Value`).
+* **Decision (enrollment ≠ following):** Following and Enrollment are intentionally separate. Enrollment in a
+  course creates the Student→Teacher relationship only in the sense of course membership; it does **not**
+  auto-create a Follow, and the student is not required to follow to enroll. This is a deliberate,
+  documented design choice within the approved Task 4 scope.
+* **Verification:** Unit 315/315; integration 64/64; build `--warnaserror` 0 warnings / 0 errors.
+* **Result:** A tenant-scoped, lifecycle-managed academic relationship between central Students and Teacher
+  Platform Courses, with read-only teacher visibility and no payment/wallet/coupon/completion nonsense
+  (those remain out of scope).
 
 ---
 
@@ -466,10 +496,29 @@ Lesson (tenant-scoped; UnitId + Position)
 * Units/Lessons carry an explicit integer `Position` (1-based, contiguous, unique within the parent),
   enforced by the domain aggregate (single writer).
 
+## Added in Task 4
+
+```
+Teacher Platform
+    ↓
+Enrollment (tenant-scoped; StudentId + CourseId + Status)
+    ↓ (academic relationship to)
+Student (central)
+```
+
+* `Enrollment` is **tenant-scoped** (`ITenantScoped`) and under the tenant query filter, linking a central
+  `Student` to a tenant `Course`.
+* `EnrollmentStatus` lifecycle: `Active` (Enrolled) → `Cancelled` (terminal).
+* Duplicate enrollments are prevented at the DB level by `ux_enrollments_student_course`.
+* `Enrollment → Course` FK is **Restrict** (no cascade) so cancelled/completed enrollments preserve their
+  historical academic records.
+* New permission: `Enrollment.View` (read access to a course's enrollments).
+* **Enrollment ≠ Following:** a student may be enrolled in a Course without following its Teacher, and
+  vice-versa. The two central `StudentFollow` and tenant `Enrollment` relationships are independent.
+
 **Relationship summary for a reader:** A Teacher owns a Platform (a tenant). The Platform owns Courses.
-Courses contain ordered Units. Units contain ordered Lessons. Separately, a Student (central identity)
-may follow Teachers. Enrollment (Student → Course) is the planned next relationship and does **not**
-exist yet.
+Courses contain ordered Units. Units contain ordered Lessons. A Student (central identity) may follow
+Teachers (central `StudentFollow`) and may be enrolled in a tenant's Courses (tenant `Enrollment`).
 
 ---
 
@@ -529,7 +578,7 @@ exist yet.
 ## EF query filters
 
 * Global query filters are applied **only** to `ITenantScoped` entities:
-  `Role`, `RolePermission`, `TeacherPlatformMembership`, `Course`, `Unit`, `Lesson`.
+  `Role`, `RolePermission`, `TeacherPlatformMembership`, `Course`, `Unit`, `Lesson`, `Enrollment`.
 * **Central** entities — `Teacher`, `TeacherPlatform`, `Permission`, `Student`, `StudentFollow` — are
   **not** filtered.
 
@@ -542,10 +591,13 @@ exist yet.
 ## Central vs tenant-scoped data
 
 * Central: Student, StudentFollow, Teacher, TeacherPlatform, Permission.
-* Tenant-scoped (filtered): Role, RolePermission, TeacherPlatformMembership, Course, Unit, Lesson.
+* Tenant-scoped (filtered): Role, RolePermission, TeacherPlatformMembership, Course, Unit, Lesson,
+  Enrollment.
 * **Why Student/StudentFollow are central:** a student has one identity across platforms and follows
   teachers cross-tenant; they are not owned by any single tenant.
-* **Why Course/Unit/Lesson are tenant-scoped:** they are content owned by a specific Teacher Platform.
+* **Why Course/Unit/Lesson/Enrollment are tenant-scoped:** they are content/academic records owned by a
+  specific Teacher Platform. The Student stays central; the Enrollment (the academic relationship) belongs
+  to the tenant whose Course it references.
 
 ## How cross-tenant attacks/access are prevented — concrete example
 
@@ -613,6 +665,22 @@ permission claims, so students cannot access teacher-management endpoints.
 
 All course endpoints additionally require tenant membership via `PlatformAccessGuard.RequireMemberAsync`.
 
+## Task 4 (student enrollment)
+
+**Student-perspective endpoints** (principal `student`, `[RequirePrincipalType("student")]`):
+
+| Area | Route | Purpose |
+|------|-------|---------|
+| Enroll | `POST /api/student/enroll/{teacherPublicId}/{courseId}` | Enroll the central student in a tenant Course |
+| My enrollments | `GET /api/student/enrollments/{teacherPublicId}` | List the student's enrollments in a teacher's platform |
+| Cancel | `DELETE /api/student/enrollments/{teacherPublicId}/{courseId}` | Cancel the student's enrollment |
+
+**Teacher-perspective endpoint** (principal `teacher`, `Enrollment.View` + membership):
+
+| Area | Route | Purpose |
+|------|-------|---------|
+| Course enrollments | `GET /{publicId}/{slug}/api/platform/courses/{courseId}/enrollments` | List a course's enrollments (read-only) |
+
 ---
 
 # 9. Database Evolution
@@ -643,11 +711,23 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * `Course.Title` NOT unique (duplicate titles allowed)
 * No Course PublicId / slug / index
 
+## Task 4 (AddEnrollment migration `20260903171426`)
+
+* `enrollments` (tenant-scoped with `TenantId` FK)
+* `ux_enrollments_student_course` unique `(TenantId, StudentId, CourseId)` — prevents duplicate enrollment
+  at the DB level.
+* `Enrollment → Course` FK uses **Restrict** (no cascade delete).
+* `EnrollmentStatus` persisted via a value converter.
+
 ## Important database design decisions
 
 * **PublicId globally unique; Slug non-unique** (approved rule — slug is a URL component, not identity).
 * **Query filters only on tenant-scoped entities** — central identity data is never hidden from central operations.
 * **Duplicate follow prevented at the DB level** (`ux_follows_student_teacher`), not only in application code.
+* **Duplicate enrollment prevented at the DB level** (`ux_enrollments_student_course`), not only in
+  application code.
+* **Enrollment→Course Restrict FK** — cancelled/completed enrollments are historical academic records and
+  must survive course deletion; Unit/Lesson cascade behavior is unaffected.
 * **Position uniqueness deferred to the domain aggregate** (approved deviation) rather than DB unique
   constraint (see Section 10).
 * **Financial/audit records** (wallets, purchases, refunds in the roadmap) are to be treated as
@@ -730,6 +810,15 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * **Fix:** The repository explicitly orders Units by Position (and Lessons by Position) in `GetByIdAsync`.
 * **Architecture change:** No.
 
+## Enrollment LINQ translation (Task 4)
+
+* **Symptom:** `EnrollmentRepository` quyery with ordering applied before a `Status.ToString()`
+  projection threw a LINQ translation error.
+* **Root cause:** Certain projections (enum `ToString`) cannot be translated to SQL alongside ordering in a
+  single query.
+* **Fix:** Two-step materialization — order the rows in SQL, then project `Status.ToString()` in memory.
+* **Architecture change:** No.
+
 ---
 
 # 11. Important Decisions / ADR-style Summary
@@ -748,6 +837,10 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 | Course content hard delete before Enrollment | Hard delete + cascade (no enrollment yet) | No student references yet; revisit later | Soft delete | Approved |
 | Domain-only ordering uniqueness | No DB unique position index; aggregate is single writer | EF topological conflict with atomic reorder | Deferrable constraints (rejected) | Approved (deviation) |
 | Cross-tenant public browsing | TenantRouteMiddleware resolves but does not reject on JWT mismatch | Product requires browsing another tenant's public content | Middleware binding (rejected) | Approved |
+| Enrollment entity + lifecycle | Tenant-scoped `Enrollment` with `Active/Cancelled` status | Core academic relationship, status-managed; only Active can be cancelled, Cancelled is terminal | Freeform no-status record | Approved |
+| Enrollment.View permission | Read-only course-enrollment access as a dynamic permission | Follows Course.View precedent; permissions, not roles | Per-feature role | Approved |
+| Enrollment ≠ Following | Separate; enrolling does not auto-follow, following does not enroll | Follow is a central interest signal; Enrollment is the academic relationship | Merge the two | Approved |
+| Duplicate-enrollment & delete semantics | `ux_enrollments_student_course` unique index + `Enrollment→Course` Restrict FK | DB-level single-enrollment guarantee and preserved academic history | App-level check + cascade | Approved |
 
 ---
 
@@ -775,6 +868,7 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 | Task 1 | 174 | 26 |
 | Task 2 | 221 | 39 |
 | Task 3 | 281 | 51 |
+| Task 4 | 315 | 64 |
 
 ## Notable integration coverage
 
@@ -783,6 +877,8 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * Duplicate email/409; duplicate follow/422; blank-title/400; business-rule/422.
 * Cross-tenant and principal-type separation.
 * Full slice: register → create → activate → login → access.
+* Task 4: 28 application-service tests (enroll/list/cancel/course-list) + 13 integration scenarios across
+  `EnrollmentTests.cs` (enroll, list, cancel, duplicate-enrollment 422, teacher read, tenant isolation).
 
 ---
 
@@ -804,13 +900,18 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * **Task 1** — `891d1e9` domain, `b240283` infra, `de8ec00` application, `da1d74c` api, `ac3e921` test, `c1ff6bf` docs.
 * **Task 2** — `3c36dff` domain, `10c2a81` infra, `8780be2` application, `509962e` api, `9bd8163` test, `fa6d7e7` docs.
 * **Task 3** — `c79cbc9` domain, `9f59091` infra, `8bdd2fe` application, `796ce20` api, `a5e39cc` test, `9d876e8` docs.
+* **Task 4** — `71d215b` domain, `bc6b389` infra, `f5f2940` application, `b747e7b` api, `d42ef46` test, and
+  the docs commit for this update (`docs: ...`).
 
 ## Current repository state
 
-* Branch: `main`, ahead of `origin/main` by 25 commits.
-* Working tree: clean (except untracked planning/documentation files `Tasks/FINAL2-9.md`, `Tasks/TASK4.md`).
+* Branch: `main`, ahead of `origin/main` by 33 commits.
+* Working tree: clean except the in-progress Task 4 documentation update on
+  `IMPLEMENTATION_PLAN.md` / `PROJECT_IMPLEMENTATION_HISTORY.md` and the untracked baseline planning files
+  (`PROJECT_DOCUMENTATION/`, `SETUPDOCUMENT.md`, `Tasks/3-9-1.md`, `Tasks/3-9.md`, `Tasks/Approved2.md`,
+  `Tasks/TASK4.md`, `Tasks/FINAL2-9.md`).
 * **Nothing has been pushed to `origin`** (documented throughout).
-* Current checkpoint: after approved Task 3; Task 4 planned but not implemented.
+* Current checkpoint: after completed Task 4 (Student Enrollment).
 
 ---
 
@@ -832,7 +933,8 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 
 * Central identity (registration, login without PublicId, profile).
 * Follow/unfollow/list/is-following teachers (central, DB-unique).
-* Following does not grant platform-management access.
+* Enroll in / list / cancel Course Enrollments (tenant-scoped academic relationship, central identity).
+* Following does not grant platform-management access; Enrollment ≠ Following.
 
 ## Authentication
 
@@ -843,12 +945,15 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 
 * Tenant-scoped `Course` (Draft/Published) → `Unit` (Position) → `Lesson` (Position).
 * No public course URLs; internal Guid identity; duplicate titles allowed; hard delete/cascade.
+* Tenant-scoped `Enrollment` (Active/Cancelled) links a central Student to a Course
+  (`ux_enrollments_student_course` unique; `Enrollment → Course` Restrict FK).
 
 ## Database
 
 * Major entities: `teachers`, `teacher_platforms`, `permissions`, `roles`, `role_permissions`,
-  `teacher_platform_memberships`, `students`, `student_follows`, `courses`, `units`, `lessons`.
-* Tenant-scoped (filtered): roles, role_permissions, memberships, courses, units, lessons.
+  `teacher_platform_memberships`, `students`, `student_follows`, `courses`, `units`, `lessons`,
+  `enrollments`.
+* Tenant-scoped (filtered): roles, role_permissions, memberships, courses, units, lessons, enrollments.
 * Central (not filtered): teachers, platforms, permissions, students, student_follows.
 
 ## API
@@ -857,7 +962,8 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * Auth: `/api/auth/login`.
 * Teacher Platform management: `/{publicId}/{slug}/api/platform/{profile,members,...}`.
 * Teacher Platform course content: `/{publicId}/{slug}/api/platform/courses...`.
-* Student: `/api/student/{register,login,me,follow...,following...}`.
+* Teacher Platform enrollments: `/{publicId}/{slug}/api/platform/courses/{courseId}/enrollments` (`Enrollment.View`).
+* Student: `/api/student/{register,login,me,follow...,following...}` + `/api/student/enroll...` (enroll/list/cancel).
 * Health: `/health`.
 
 ## Security
@@ -868,7 +974,7 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 
 ## Tests
 
-* Unit 281/281; integration 51/51; build 0 warnings / 0 errors (Task 3 baseline).
+* Unit 315/315; integration 64/64; build 0 warnings / 0 errors (Task 4 baseline).
 
 ---
 
@@ -880,20 +986,13 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 * Task 1 — Teacher Platform Management.
 * Task 2 — Central Student Identity & Following.
 * Task 3 — Teacher Platform Course Content.
+* Task 4 — Student Enrollment in Teacher Courses.
 
-## Planned but not implemented
+## Future / planned (not yet implemented)
 
-* **Task 4 — Student Enrollment in Teacher Courses.**
-  * Planning reference: `Tasks/TASK4.md` (planning-only).
-  * Implementation has **NOT** started — no code, no migration, no tests, no API work exists for Task 4.
-  * The plan scope: the academic relationship `Student → Enrollment → Course`, keeping the
-    Enrolling relationship tenant-respecting while Student identity stays central.
-  * Known planning considerations (carried in `Tasks/TASK4.md`) include the **Course deletion semantics**
-    question now that enrollment would introduce a real student relationship, and the distinction
-    between Following and Enrollment.
-
-> This document intentionally does **not** describe Task 4 implementation details as if they exist.
-> Only the approved/planned scope and unresolved planning decisions are referenced.
+* Task 5 and beyond — see `IMPLEMENTATION_PLAN.md` and approved `Tasks/` documents. Candidate roadmap
+  items (carried in the roadmap/plan) include completion/progress tracking, payments & the Student Wallet,
+  coupons, refunds, and potential future Enrollment lifecycle states beyond Active/Cancelled.
 
 ---
 
@@ -904,9 +1003,9 @@ A future implementation session should:
 1. Read `AGENTS.md`.
 2. Read `IMPLEMENTATION_PLAN.md`.
 3. Read `PROJECT_IMPLEMENTATION_HISTORY.md`.
-4. Read the relevant Task document (e.g. `Tasks/TASK4.md` once approved).
-5. Confirm the current checkpoint (currently: after approved Task 3; Task 4 planned, not implemented).
-6. Review any pending decisions (e.g. Task 4 course-deletion semantics and enrollment eligibility).
+4. Read the relevant Task document (e.g. `Tasks/TASK5.md` once it is drafted and approved).
+5. Confirm the current checkpoint (currently: after completed Task 4 — Student Enrollment).
+6. Review any pending roadmap decisions for the next task.
 7. Obtain explicit human approval before implementing.
 8. Implement only the approved task.
 9. Test and document it.

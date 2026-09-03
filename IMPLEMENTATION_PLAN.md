@@ -778,24 +778,35 @@ Task 3 — Course Content (Courses -> Units -> Lessons) [x] Completed
   - Verification                                     [x] Completed
 ```
 
-## Task 4 — Student Enrollment in Teacher Courses [Checkpoint]
+## Task 4 — Student Enrollment in Teacher Courses
 
 ```text
-Task 4 — Student Enrollment [PLANNED — NOT IMPLEMENTED]
-  - Planned next capability after approved Task 3.
-  - Implementation has NOT started.
-  - A planning/reference document exists (Tasks/TASK4.md) but is planning-only.
-  - Must remain untouched until explicit human approval.
+Task 4 — Student Enrollment in Teacher Courses    [x] Completed
+  - Enrollment domain entity + lifecycle (Active/Cancelled)  [x] Completed
+  - EnrollmentStatus enum                                     [x] Completed
+  - Enrollment.View permission (PlatformPermissions)          [x] Completed
+  - Enrollment EF config + migration + repository             [x] Completed
+  - Application services (enroll/list/cancel/list-course)     [x] Completed
+  - Student enrollment API endpoints                          [x] Completed
+  - Teacher course-enrollment API endpoint                    [x] Completed
+  - Duplicate (Student, Course) DB unique constraint          [x] Completed
+  - Course deletion Restrict behavior (academic records)      [x] Completed
+  - Domain tests                                              [x] Completed
+  - Application tests                                         [x] Completed
+  - Integration tests (authorization + isolation)             [x] Completed
+  - Documentation                                             [x] Completed
+  - Verification                                              [x] Completed
 ```
 
-> **Current checkpoint:** The project is intentionally stopped after approved Task 3.
-> Task 4 (Student Enrollment in Teacher Courses) has been planned and reviewed at the
-> planning stage, but implementation has **not** started.
->
-> - Next planned task: Task 4 — Student Enrollment in Teacher Courses.
-> - Planning reference: `Tasks/TASK4.md` (planning-only; must not be executed yet).
-> - Rule: Task 4 requires explicit human approval before any implementation,
->   migration, or test work begins.
+> Task 4 (Student Enrollment in Teacher Courses) is complete and verified.
+> Enrollment establishes the academic relationship between the central Student and a
+> tenant-scoped Course. Following and Enrollment remain separate concepts; enrollment
+> does not require following. Duplicate enrollments are prevented by the
+> `ux_enrollments_student_course` DB unique constraint, and a Course that has
+> enrollments cannot be deleted (Restrict delete behavior) so academic records are
+> never destroyed. All Task 4 non-goals (payments, wallet, coupons, progress,
+> completion, exams, grades, notifications, public browsing, auto-follow,
+> re-enrollment) were intentionally left out.
 
 Example:
 
@@ -1214,15 +1225,55 @@ Task 3 additions (Teacher Platform course content):
   blank-title 400, anonymous 401, student 403, assistant-without-permission 403, cross-tenant 403).
 ```
 
-Task 4 checkpoint (project intentionally paused):
+Task 4 additions (student enrollment in teacher courses):
 
 ```text
-- The project is intentionally stopped after approved Task 3.
-- Task 4 (Student Enrollment in Teacher Courses) is PLANNED but NOT implemented.
-- Planning reference: Tasks/TASK4.md (planning-only; must not be executed).
-- No Task 4 code, migration, tests, or API work exists.
-- Task 4 requires explicit human approval before implementation begins.
-- A complete implementation history is preserved in PROJECT_IMPLEMENTATION_HISTORY.md.
+- Domain: Enrollment entity (tenant-scoped, Active/Cancelled lifecycle with Cancel();
+  only an Active enrollment may be cancelled; terminal Cancelled state). EnrollmentStatus
+  enum (Active=0, Cancelled=1). Enrollment carries StudentId, CourseId, TenantId,
+  EnrolledAtUtc, CancelledAtUtc, and audit fields. Following and Enrollment remain
+  separate concepts; enrollment does NOT require following.
+- Permissions: PlatformPermissions gained Enrollment.View (appended to All so the
+  PermissionSeeder auto-seeds and the Owner role auto-grants it; no new migration).
+  The teacher course-enrollment read endpoint requires Enrollment.View; application
+  services additionally require tenant membership via PlatformAccessGuard.
+- Persistence: EnrollmentConfiguration maps to the enrollments table with a unique
+  index ux_enrollments_student_course (prevents duplicate (Student, Course) enrollment
+  at the DB level), lookup indexes for student/tenant and course/tenant, and ALL
+  foreign keys (student, course, tenant) use DeleteBehavior.Restrict so a Course with
+  enrollment records cannot be deleted (academic records are preserved). The
+  ApplicationDbContext gained the Enrollments DbSet with a TenantId query filter.
+  EfUnitOfWork.Translate maps ux_enrollments_student_course -> BusinessRuleViolation
+  (422) following the existing "already enrolled" convention.
+- Migration 20260903171426_AddEnrollment adds the enrollments table; applied to the dev
+  Docker PostgreSQL and schema-verified (FKs all RESTRICT, unique index present).
+- Application services (one per use case): EnrollStudentService (validates student,
+  resolves platform by publicId, checks platform Active, checks course Published, checks
+  duplicate enrollment, creates Enrollment, scopes/restores central tenant context),
+  ListStudentEnrollmentsService, CancelEnrollmentService (validates ownership, calls
+  enrollment.Cancel(), translates DomainException -> BusinessRuleViolation), and
+  ListCourseEnrollmentsService (requires tenant membership; lists only Active
+  enrollments). IEnrollmentRepository + EnrollmentRepository persist the relationship;
+  DTO projections EnrollmentListItem and EnrollmentStudentResponse are produced by
+  two-step materialization (order before projection) so the LINQ expression translates.
+- API (student, central JWT, no tenant claims): POST /api/student/enroll/
+  {teacherPublicId}/{courseId:guid} (201), GET /api/student/enrollments/{teacherPublicId},
+  DELETE /api/student/enrollments/{teacherPublicId}/{courseId:guid} (204). All
+  [Authorize] + [RequirePrincipalType("student")]. The target platform is addressed by
+  publicId and the tenant context is scoped/restored per request.
+- API (teacher, platform-scoped): GET
+  {publicId}/{slug}/api/platform/courses/{courseId:guid}/enrollments at
+  CourseEnrollmentsController, [Authorize] + [RequirePermission("Enrollment.View")];
+  only Active enrollments are returned.
+- Tests: unit 315/315 (domain Enrollment 6 + EnrollStudent 9 + ListStudent 7 + Cancel 6 +
+  ListCourse 6 service tests + prior 281); integration 64/64 (13 new EnrollmentTests
+  scenarios: enroll published 201, duplicate 422, draft 422, unknown course 404,
+  cross-tenant course reference 404, unknown platform 404, anonymous 401,
+  list across platforms, cancel 204, owner lists enrolled students, non-member 403,
+  anonymous course enrollments 401, assistant-without-Enrollment.View 403).
+- Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit tests 315/315;
+  integration tests 64/64 against a real PostgreSQL 16 Testcontainer; no Task 1-3
+  regressions.
 ```
 
 DEVIATION (approved via Tasks/Approved1.md):
