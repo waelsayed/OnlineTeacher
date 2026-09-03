@@ -760,6 +760,24 @@ Task 2 — Student Identity & Following  [x] Completed
   - Verification                        [x] Completed
 ```
 
+## Task 3 — Teacher Platform Course Content
+
+```text
+Task 3 — Course Content (Courses -> Units -> Lessons) [x] Completed
+  - Course/Unit/Lesson domain entities               [x] Completed
+  - Course lifecycle (Draft/Published)               [x] Completed
+  - Unit/Lesson explicit Position ordering           [x] Completed
+  - Tenant-scoped Course/Unit/Lesson                 [x] Completed
+  - Course.View / Course.Manage permissions          [x] Completed
+  - Course/Unit/Lesson API endpoints                 [x] Completed
+  - Application services (11)                        [x] Completed
+  - EF configurations + migration                    [x] Completed
+  - Domain tests                                     [x] Completed
+  - Application tests                                [x] Completed
+  - Integration tests (authorization + isolation)    [x] Completed
+  - Verification                                     [x] Completed
+```
+
 Example:
 
 ```text
@@ -1138,6 +1156,56 @@ Task 2 additions (central student identity & following):
 - Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit tests 221/221 passed;
   integration tests 39/39 passed against a real PostgreSQL 16 Testcontainer.
 ```
+
+Task 3 additions (Teacher Platform course content):
+
+```text
+- Domain: Course (tenant-scoped, Draft/Published lifecycle, ordered units), Unit (tenant-scoped,
+  CourseId, Position, ordered lessons), Lesson (tenant-scoped, UnitId, Position). Backing lists are
+  kept position-sorted and re-indexed contiguously on remove/move. MoveUnit/MoveLesson implemented as
+  list remove -> Insert(newPosition-1) -> reindex by list order (fixed a shift+reindex bug that
+  collapsed the intended target position).
+- Ordered Position renumbering with a DB unique index is intentionally NOT used for ordering
+  (see deviation below).
+- Domain-only ordering invariants (APPROVED via Tasks/Approved1.md): the Course/Unit aggregate is the
+  single writer for ordering; domain logic guarantees unique and contiguous positions; no application
+  path bypasses the aggregate to set Position; reordering stays atomic through the existing
+  IUnitOfWork/SaveChangesAsync; no deferrable constraints, hand-managed migration SQL, or EF snapshot
+  hacks; no replacement abstraction added.
+- Permissions: PlatformPermissions gained Course.View and Course.Manage (appended to All so the
+  PermissionSeeder auto-seeds and the Owner role auto-grants them; no new migration needed). Reads use
+  Course.View, mutations Course.Manage; application services additionally require tenant membership
+  via PlatformAccessGuard.RequireMemberAsync, so a valid cross-tenant JWT cannot manage another
+  teacher's content.
+- Repositories: ICourseRepository/CourseRepository (GetByIdAsync includes Units->Lessons and returns
+  them ordered by Position; ListAsync Title-ordered; Add/Remove). AddUnit/AddLesson explicitly register
+  the new child as Added (repository) because EF relationship fixup otherwise persists a brand-new
+  child as Modified (UPDATE on a missing row -> DbUpdateConcurrencyException).
+- Migration 20260903014302_AddCourseContent adds courses/units/lessons with tenant FKs, cascade
+  FKs, and non-unique lookup indexes; applied to the dev Docker PostgreSQL and verified. Position
+  indexes are intentionally non-unique (see deviation).
+- API: CourseContentController at {publicId}/{slug}/api/platform/courses (GET list, GET/{courseId},
+  POST, PUT/{courseId}, DELETE; /{courseId}/units POST/PUT/DELETE; units/{unitId}/lessons POST/PUT/
+  DELETE), all [Authorize] + [RequirePermission(...)]. No Course PublicId/slug/URL (internal Guid);
+  routes resolve the tenant from {publicId}/{slug} and scope every query by the resolved tenant id.
+- Ordering: Units/Lessons use an explicit 1-based contiguous integer Position unique within the
+  parent. Move/rename changes the affected rows only; atomic via one SaveChangesAsync.
+- Tests: unit 281/281 (domain Course/Unit/Lesson + CourseServices dummies), integration 51/51
+  (CourseContentTests: owner create/list/get/publish/delete/404, nested units+lessons, move-ordering,
+  blank-title 400, anonymous 401, student 403, assistant-without-permission 403, cross-tenant 403).
+```
+
+DEVIATION (approved via Tasks/Approved1.md):
+
+> DB-level unique constraints on CourseId+Position and UnitId+Position were intentionally not used
+> because EF Core's change-tracking/topological ordering conflicts with atomic reordering when those
+> unique indexes are modeled as immediate uniqueness constraints. Ordering invariants are therefore
+> enforced by the Course/Unit domain aggregates, which are the single writers of ordering state.
+
+This is a deliberate deviation from the original Task 3 planning wording (which asked for DB-level
+uniqueness on (CourseId, Position) and (UnitId, Position)). Approved decision: enforce uniqueness and
+contiguity in the domain aggregate only, keep reordering atomic, and do not add deferrable constraints,
+hand-managed migration SQL, EF snapshot hacks, or a compensating abstraction.
 
 If a decision must change:
 
