@@ -15,5 +15,12 @@ public static class PlatformPermissions
     /// </summary>
     public const string Membership = "Platform.Membership";
 
-    public static readonly IReadOnlyCollection<string> All = new[] { Access, Manage, Membership };
+    /// <summary>Grants read access to a platform's course content structure.</summary>
+    public const string CourseView = "Course.View";
+
+    /// <summary>Grants creation, update, and deletion of a platform's courses, units, and lessons.</summary>
+    public const string CourseManage = "Course.Manage";
+
+    public static readonly IReadOnlyCollection<string> All =
+        new[] { Access, Manage, Membership, CourseView, CourseManage };
 }
