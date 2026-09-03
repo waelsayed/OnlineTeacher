@@ -91,7 +91,8 @@ public sealed class CourseContentController : ControllerBase
         CancellationToken cancellationToken)
     {
         var course = await _createCourse.CreateAsync(
-            GetTeacherIdClaim(), publicId, request.Title, request.Summary, cancellationToken);
+            GetTeacherIdClaim(), publicId, request.Title, request.Summary,
+            ParsePricingType(request.PricingType), request.Price, cancellationToken);
         return Ok(CourseResponse.From(course));
     }
 
@@ -219,6 +220,21 @@ public sealed class CourseContentController : ControllerBase
         if (!Enum.TryParse<CourseStatus>(status, ignoreCase: true, out var parsed))
         {
             throw new OnlineTeacher.Application.Exceptions.ValidationException($"Unknown course status '{status}'.");
+        }
+
+        return parsed;
+    }
+
+    private static CoursePricingType? ParsePricingType(string? pricingType)
+    {
+        if (string.IsNullOrWhiteSpace(pricingType))
+        {
+            return null;
+        }
+
+        if (!Enum.TryParse<CoursePricingType>(pricingType, ignoreCase: true, out var parsed))
+        {
+            throw new OnlineTeacher.Application.Exceptions.ValidationException($"Unknown course pricing type '{pricingType}'.");
         }
 
         return parsed;

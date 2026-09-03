@@ -10,7 +10,9 @@ namespace OnlineTeacher.Application.Services;
 /// <summary>
 /// Creates a Course in Draft status within the resolved Teacher Platform. The acting teacher
 /// must hold a membership in the tenant; the Course.Manage permission is enforced by the API's
-/// permission policy. A new course is created draft with no units.
+/// permission policy. A new course is created draft with no units. A Paid course requires a
+/// positive price (EGP); a Free course carries no price. A provided pricing type is applied
+/// additively while preserving the default Free behavior.
 /// </summary>
 public sealed class CreateCourseService
 {
@@ -36,6 +38,8 @@ public sealed class CreateCourseService
         string? publicId,
         string? title,
         string? summary,
+        CoursePricingType? pricingType = null,
+        decimal? price = null,
         CancellationToken cancellationToken = default)
     {
         var platform = await PlatformResolver.ResolveAsync(_platforms, publicId, cancellationToken);
@@ -45,6 +49,11 @@ public sealed class CreateCourseService
         try
         {
             course = new Course(platform.Id, title ?? string.Empty, summary);
+
+            if (pricingType is not null)
+            {
+                course.SetPricing(pricingType.Value, price);
+            }
         }
         catch (DomainException exception)
         {
