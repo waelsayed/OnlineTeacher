@@ -37,6 +37,12 @@ public sealed class ApplicationDbContext : DbContext
 
     public DbSet<StudentFollow> StudentFollows => Set<StudentFollow>();
 
+    public DbSet<Course> Courses => Set<Course>();
+
+    public DbSet<Unit> Units => Set<Unit>();
+
+    public DbSet<Lesson> Lessons => Set<Lesson>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -44,5 +50,8 @@ public sealed class ApplicationDbContext : DbContext
         modelBuilder.Entity<Role>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<RolePermission>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<TeacherPlatformMembership>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Course>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Unit>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Lesson>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
     }
 }
