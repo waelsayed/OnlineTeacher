@@ -31,6 +31,12 @@ public static class PlatformPermissions
     /// </summary>
     public const string WalletManage = "Wallet.Manage";
 
+    /// <summary>
+    /// Grants management of student coupons: creating, listing, viewing, and revoking coupons
+    /// assigned to students within the teacher platform.
+    /// </summary>
+    public const string CouponManage = "Coupon.Manage";
+
     public static readonly IReadOnlyCollection<string> All =
-        new[] { Access, Manage, Membership, CourseView, CourseManage, EnrollmentView, WalletManage };
+        new[] { Access, Manage, Membership, CourseView, CourseManage, EnrollmentView, WalletManage, CouponManage };
 }
