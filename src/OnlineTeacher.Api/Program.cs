@@ -59,6 +59,7 @@ builder.Services.AddScoped<IPlatformMembershipRepository, PlatformMembershipRepo
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentFollowRepository, StudentFollowRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
 // Application use cases
@@ -92,6 +93,10 @@ builder.Services.AddScoped<RemoveUnitService>();
 builder.Services.AddScoped<AddLessonService>();
 builder.Services.AddScoped<UpdateLessonService>();
 builder.Services.AddScoped<RemoveLessonService>();
+builder.Services.AddScoped<EnrollStudentService>();
+builder.Services.AddScoped<ListStudentEnrollmentsService>();
+builder.Services.AddScoped<CancelEnrollmentService>();
+builder.Services.AddScoped<ListCourseEnrollmentsService>();
 
 // API-framework services
 builder.Services.AddScoped<JwtTokenFactory>();

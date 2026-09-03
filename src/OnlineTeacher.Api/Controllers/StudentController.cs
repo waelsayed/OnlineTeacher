@@ -25,6 +25,9 @@ public sealed class StudentController : ControllerBase
     private readonly UnfollowTeacherService _unfollow;
     private readonly ListFollowedTeachersService _listFollowing;
     private readonly IsFollowingTeacherService _isFollowing;
+    private readonly EnrollStudentService _enroll;
+    private readonly ListStudentEnrollmentsService _listEnrollments;
+    private readonly CancelEnrollmentService _cancelEnrollment;
     private readonly JwtTokenFactory _jwt;
 
     public StudentController(
@@ -35,6 +38,9 @@ public sealed class StudentController : ControllerBase
         UnfollowTeacherService unfollow,
         ListFollowedTeachersService listFollowing,
         IsFollowingTeacherService isFollowing,
+        EnrollStudentService enroll,
+        ListStudentEnrollmentsService listEnrollments,
+        CancelEnrollmentService cancelEnrollment,
         JwtTokenFactory jwt)
     {
         _register = register;
@@ -44,6 +50,9 @@ public sealed class StudentController : ControllerBase
         _unfollow = unfollow;
         _listFollowing = listFollowing;
         _isFollowing = isFollowing;
+        _enroll = enroll;
+        _listEnrollments = listEnrollments;
+        _cancelEnrollment = cancelEnrollment;
         _jwt = jwt;
     }
 
@@ -127,6 +136,42 @@ public sealed class StudentController : ControllerBase
         var studentId = GetStudentIdClaim();
         var result = await _isFollowing.IsFollowingAsync(studentId, teacherPublicId, cancellationToken);
         return Ok(new { follows = result });
+    }
+
+    [HttpPost("enroll/{teacherPublicId}/{courseId:guid}")]
+    [Authorize]
+    [RequirePrincipalType(PrincipalTypes.Student)]
+    public async Task<IActionResult> Enroll(
+        string teacherPublicId,
+        Guid courseId,
+        CancellationToken cancellationToken)
+    {
+        var studentId = GetStudentIdClaim();
+        var enrollmentId = await _enroll.EnrollAsync(studentId, teacherPublicId, courseId, cancellationToken);
+        return Created(string.Empty, new { enrollmentId });
+    }
+
+    [HttpGet("enrollments/{teacherPublicId}")]
+    [Authorize]
+    [RequirePrincipalType(PrincipalTypes.Student)]
+    public async Task<IActionResult> Enrollments(string teacherPublicId, CancellationToken cancellationToken)
+    {
+        var studentId = GetStudentIdClaim();
+        var enrollments = await _listEnrollments.ListAsync(studentId, teacherPublicId, cancellationToken);
+        return Ok(enrollments.Select(EnrollmentListItemResponse.From));
+    }
+
+    [HttpDelete("enrollments/{teacherPublicId}/{courseId:guid}")]
+    [Authorize]
+    [RequirePrincipalType(PrincipalTypes.Student)]
+    public async Task<IActionResult> CancelEnrollment(
+        string teacherPublicId,
+        Guid courseId,
+        CancellationToken cancellationToken)
+    {
+        var studentId = GetStudentIdClaim();
+        await _cancelEnrollment.CancelAsync(studentId, teacherPublicId, courseId, cancellationToken);
+        return NoContent();
     }
 
     private Guid GetStudentIdClaim()
