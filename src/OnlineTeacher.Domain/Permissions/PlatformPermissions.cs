@@ -21,6 +21,9 @@ public static class PlatformPermissions
     /// <summary>Grants creation, update, and deletion of a platform's courses, units, and lessons.</summary>
     public const string CourseManage = "Course.Manage";
 
+    /// <summary>Grants read access to enrollment information for a platform's courses.</summary>
+    public const string EnrollmentView = "Enrollment.View";
+
     public static readonly IReadOnlyCollection<string> All =
-        new[] { Access, Manage, Membership, CourseView, CourseManage };
+        new[] { Access, Manage, Membership, CourseView, CourseManage, EnrollmentView };
 }
