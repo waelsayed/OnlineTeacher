@@ -778,6 +778,25 @@ Task 3 — Course Content (Courses -> Units -> Lessons) [x] Completed
   - Verification                                     [x] Completed
 ```
 
+## Task 4 — Student Enrollment in Teacher Courses [Checkpoint]
+
+```text
+Task 4 — Student Enrollment [PLANNED — NOT IMPLEMENTED]
+  - Planned next capability after approved Task 3.
+  - Implementation has NOT started.
+  - A planning/reference document exists (Tasks/TASK4.md) but is planning-only.
+  - Must remain untouched until explicit human approval.
+```
+
+> **Current checkpoint:** The project is intentionally stopped after approved Task 3.
+> Task 4 (Student Enrollment in Teacher Courses) has been planned and reviewed at the
+> planning stage, but implementation has **not** started.
+>
+> - Next planned task: Task 4 — Student Enrollment in Teacher Courses.
+> - Planning reference: `Tasks/TASK4.md` (planning-only; must not be executed yet).
+> - Rule: Task 4 requires explicit human approval before any implementation,
+>   migration, or test work begins.
+
 Example:
 
 ```text
@@ -1193,6 +1212,17 @@ Task 3 additions (Teacher Platform course content):
 - Tests: unit 281/281 (domain Course/Unit/Lesson + CourseServices dummies), integration 51/51
   (CourseContentTests: owner create/list/get/publish/delete/404, nested units+lessons, move-ordering,
   blank-title 400, anonymous 401, student 403, assistant-without-permission 403, cross-tenant 403).
+```
+
+Task 4 checkpoint (project intentionally paused):
+
+```text
+- The project is intentionally stopped after approved Task 3.
+- Task 4 (Student Enrollment in Teacher Courses) is PLANNED but NOT implemented.
+- Planning reference: Tasks/TASK4.md (planning-only; must not be executed).
+- No Task 4 code, migration, tests, or API work exists.
+- Task 4 requires explicit human approval before implementation begins.
+- A complete implementation history is preserved in PROJECT_IMPLEMENTATION_HISTORY.md.
 ```
 
 DEVIATION (approved via Tasks/Approved1.md):
