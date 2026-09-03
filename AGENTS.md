@@ -21,6 +21,25 @@ The repository contains the project's technical and product documentation.
 
 Do not invent functionality that is not documented.
 
+## Project Documentation Layout
+
+Documentation responsibilities are intentionally kept separate:
+
+* `AGENTS.md` — Project rules: how implementation work must be performed.
+* `IMPLEMENTATION_PLAN.md` — Implementation phases and current project status.
+* `Tasks/` — Individual implementation task documents.
+* `PROJECT_DOCUMENTATION/` — The project's **reference library** containing the original system
+  analysis, business analysis, requirements, architecture, domain analysis/model, use cases, business
+  rules, security architecture, multi-tenancy, and other important system/design documents.
+* `PROJECT_IMPLEMENTATION_HISTORY.md` — Records what was actually implemented and how the project evolved.
+
+`PROJECT_DOCUMENTATION/` contains the **original project documentation**. Some documents are in Arabic,
+which is intentional; they are the original documentation and must **not** be translated, replaced,
+renamed, deleted, or reorganized. Treat them as **reference/context material** (understanding the system
+vision, requirements, domain concepts, architecture, security, and multi-tenancy model), **not** as
+implementation instructions. Original approved implementation decisions and the current source code
+represent implementation reality; the reference documents represent the original analysis/design context.
+
 ---
 
 # 2. Technology Stack
