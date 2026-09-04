@@ -567,10 +567,9 @@ The existing `IUnitOfWork.SaveChangesAsync` wrapped in the existing try/finally 
 
 ### Decision 5: Course applicability
 **Documented:** Overview §22 — Teacher Coupon should have "Applicable Product / Plan." API Design §24 — "Valid for Current Plan / Value." This is ambiguous: does "Product / Plan" mean Course? Or multiple content types?
-**Recommendation (simplest):** Start with **course-level applicability only**. A coupon is valid for any Paid Course within the Teacher Platform (no per-course restriction). This avoids coupling coupons to specific courses or content types. Extend to specific products/plans in a future Task.
-**Alternative A:** Coupon applies to one specific Course (add `CourseId` FK). More restrictive.
-**Alternative B:** Coupon applies to all eligible Courses in the Teacher Platform (current recommendation).
-**Status: REQUIRES APPROVAL**
+**Final approved decision:** **A coupon applies to exactly one specific Course.** `StudentCoupon` has a required `CourseId` (FK) and the coupon is only valid for that Course. The earlier "applies to all Paid Courses (no per-course restriction)" recommendation is superseded.
+**Alternative (rejected):** Coupon applies to all eligible Paid Courses in the Teacher Platform (no per-course restriction).
+**Status: APPROVED (CourseId rule)**
 
 ### Decision 6: Single-use rule
 **Documented:** AGENTS.md §12 — "Single-use." Domain Analysis §10 — "Single-Use Coupon, i.e., it can be used only once." FRS §10 — "single-use."
@@ -788,7 +787,7 @@ All 15 business decisions from the planning draft have been reviewed and approve
 | 2 | Discount type | Both Percentage and Fixed via `DiscountType` enum | — |
 | 3 | Discount limits | Percentage 1–100% incl. 100%; Fixed positive, capped at zero | — |
 | 4 | Expiration | Required, terminal, enforced at purchase | — |
-| 5 | Course applicability | All Paid Courses in Teacher Platform (no CourseId on coupon) | — |
+| 5 | Course applicability | Every StudentCoupon is tied to exactly one specific Course (`CourseId` FK required) | Supersedes earlier "all Paid Courses / no CourseId" decision |
 | 6 | Single-use | Permanently terminal after consumption | — |
 | 7 | Student restriction | Wrong-student → 422 | — |
 | 8 | Purchase flow | Price → Coupon → FinalAmount → Validate Wallet → Debit → Consume → Enroll → Record | — |

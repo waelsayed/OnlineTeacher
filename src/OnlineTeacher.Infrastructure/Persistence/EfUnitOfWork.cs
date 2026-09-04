@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
 using OnlineTeacher.Application.Exceptions;
 using OnlineTeacher.Application.Persistence;
@@ -7,8 +8,11 @@ namespace OnlineTeacher.Infrastructure.Persistence;
 
 /// <summary>
 /// Commits the changes staged by the repositories as one atomic unit (EF wraps a single
-/// SaveChanges in a transaction). Database unique-violation conflicts are translated here
-/// into application exceptions so EF/Npgsql details never leak into the API.
+/// SaveChanges in a transaction). Exposes an explicit-transaction scope so that a sequence of
+/// reads and writes (e.g. a <c>SELECT ... FOR UPDATE</c> followed by SaveChanges) run inside one
+/// connection transaction opened through the EF execution strategy (preserving retry behavior).
+/// Database unique-violation conflicts are translated here into application exceptions so
+/// EF/Npgsql details never leak into the API.
 /// </summary>
 public sealed class EfUnitOfWork : IUnitOfWork
 {
@@ -29,6 +33,22 @@ public sealed class EfUnitOfWork : IUnitOfWork
         {
             return HandleDbUpdateException(exception);
         }
+    }
+
+    public async Task ExecuteInTransactionAsync(
+        Func<CancellationToken, Task> action,
+        CancellationToken cancellationToken = default)
+    {
+        var strategy = _db.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
+        {
+            await using IDbContextTransaction transaction =
+                await _db.Database.BeginTransactionAsync(cancellationToken);
+
+            await action(cancellationToken);
+
+            await transaction.CommitAsync(cancellationToken);
+        });
     }
 
     private static int HandleDbUpdateException(DbUpdateException exception)

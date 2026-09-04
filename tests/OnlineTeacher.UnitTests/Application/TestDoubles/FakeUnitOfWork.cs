@@ -15,6 +15,8 @@ internal sealed class FakeUnitOfWork : IUnitOfWork
 
     public int SaveCount { get; private set; }
 
+    public int TransactionCount { get; private set; }
+
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         if (_onSave is not null)
@@ -29,5 +31,13 @@ internal sealed class FakeUnitOfWork : IUnitOfWork
 
         SaveCount++;
         return SaveCount;
+    }
+
+    public async Task ExecuteInTransactionAsync(
+        Func<CancellationToken, Task> action,
+        CancellationToken cancellationToken = default)
+    {
+        TransactionCount++;
+        await action(cancellationToken);
     }
 }
