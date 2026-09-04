@@ -18,6 +18,7 @@ public sealed class StudentCouponConfiguration : IEntityTypeConfiguration<Studen
         builder.Property(c => c.DiscountValue).HasColumnName("discount_value").HasColumnType("numeric(18,2)").IsRequired();
         builder.Property(c => c.ExpiresAt).HasColumnName("expires_at").IsRequired();
         builder.Property(c => c.Status).HasColumnName("status").IsRequired();
+        builder.Property(c => c.CourseId).HasColumnName("course_id").IsRequired();
         builder.Property(c => c.AssignedToStudentId).HasColumnName("assigned_to_student_id").IsRequired();
         builder.Property(c => c.ConsumedAt).HasColumnName("consumed_at");
         builder.Property(c => c.ConsumedInTransactionId).HasColumnName("consumed_in_transaction_id");
@@ -40,6 +41,13 @@ public sealed class StudentCouponConfiguration : IEntityTypeConfiguration<Studen
             .HasForeignKey(c => c.AssignedToStudentId)
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("fk_student_coupons_student");
+
+        // FK: CourseId -> courses(Id)
+        builder.HasOne<OnlineTeacher.Domain.Entities.Course>()
+            .WithMany()
+            .HasForeignKey(c => c.CourseId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_student_coupons_course");
 
         // FK: ConsumedInTransactionId -> financial_transactions(Id)
         builder.HasOne<OnlineTeacher.Domain.Entities.FinancialTransaction>()

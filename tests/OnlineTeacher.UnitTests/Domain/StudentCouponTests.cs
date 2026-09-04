@@ -9,6 +9,7 @@ public class StudentCouponTests
 {
     private static readonly Guid TenantId = Guid.NewGuid();
     private static readonly Guid StudentId = Guid.NewGuid();
+    private static readonly Guid CourseId = Guid.NewGuid();
     private static readonly Guid TeacherId = Guid.NewGuid();
     private static readonly DateTime FutureDate = DateTime.UtcNow.AddDays(30);
 
@@ -18,6 +19,7 @@ public class StudentCouponTests
         DiscountType discountType = DiscountType.Percentage,
         decimal discountValue = 50m,
         DateTime? expiresAt = null,
+        Guid? courseId = null,
         Guid? assignedToStudentId = null,
         Guid? createdByTeacherId = null) =>
         new(
@@ -26,6 +28,7 @@ public class StudentCouponTests
             discountType,
             discountValue,
             expiresAt ?? FutureDate,
+            courseId ?? CourseId,
             assignedToStudentId ?? StudentId,
             createdByTeacherId ?? TeacherId);
 
@@ -39,6 +42,7 @@ public class StudentCouponTests
         coupon.DiscountType.Should().Be(DiscountType.Percentage);
         coupon.DiscountValue.Should().Be(50m);
         coupon.Status.Should().Be(CouponStatus.Active);
+        coupon.CourseId.Should().Be(CourseId);
         coupon.AssignedToStudentId.Should().Be(StudentId);
         coupon.CreatedByTeacherId.Should().Be(TeacherId);
         coupon.ConsumedAt.Should().BeNull();
@@ -145,6 +149,14 @@ public class StudentCouponTests
     public void Create_RejectsEmptyStudentId()
     {
         var act = () => NewCoupon(assignedToStudentId: Guid.Empty);
+
+        act.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Create_RejectsEmptyCourseId()
+    {
+        var act = () => NewCoupon(courseId: Guid.Empty);
 
         act.Should().Throw<DomainException>();
     }
@@ -277,7 +289,7 @@ public class StudentCouponTests
         var coupon = NewCoupon();
         var txId = Guid.NewGuid();
 
-        coupon.Consume(StudentId, txId);
+        coupon.Consume(StudentId, CourseId, txId);
 
         coupon.Status.Should().Be(CouponStatus.Consumed);
         coupon.ConsumedAt.Should().NotBeNull();
@@ -289,9 +301,20 @@ public class StudentCouponTests
     public void Consume_AlreadyConsumed_Throws()
     {
         var coupon = NewCoupon();
-        coupon.Consume(StudentId, Guid.NewGuid());
+        coupon.Consume(StudentId, CourseId, Guid.NewGuid());
 
-        var act = () => coupon.Consume(StudentId, Guid.NewGuid());
+        var act = () => coupon.Consume(StudentId, CourseId, Guid.NewGuid());
+
+        act.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Consume_WrongCourse_Throws()
+    {
+        var coupon = NewCoupon();
+        var otherCourse = Guid.NewGuid();
+
+        var act = () => coupon.Consume(StudentId, otherCourse, Guid.NewGuid());
 
         act.Should().Throw<DomainException>();
     }
@@ -313,7 +336,7 @@ public class StudentCouponTests
         var coupon = NewCoupon();
         var otherStudent = Guid.NewGuid();
 
-        var act = () => coupon.Consume(otherStudent, Guid.NewGuid());
+        var act = () => coupon.Consume(otherStudent, CourseId, Guid.NewGuid());
 
         act.Should().Throw<DomainException>();
     }
@@ -323,7 +346,7 @@ public class StudentCouponTests
     {
         var coupon = NewCoupon();
 
-        var act = () => coupon.Consume(StudentId, Guid.Empty);
+        var act = () => coupon.Consume(StudentId, CourseId, Guid.Empty);
 
         act.Should().Throw<DomainException>();
     }
@@ -343,7 +366,7 @@ public class StudentCouponTests
     public void Revoke_AlreadyConsumed_Throws()
     {
         var coupon = NewCoupon();
-        coupon.Consume(StudentId, Guid.NewGuid());
+        coupon.Consume(StudentId, CourseId, Guid.NewGuid());
 
         var act = () => coupon.Revoke();
 

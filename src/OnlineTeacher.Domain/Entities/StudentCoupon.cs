@@ -32,6 +32,9 @@ public sealed class StudentCoupon : IAuditable, ITenantScoped
 
     public CouponStatus Status { get; private set; }
 
+    /// <summary>The specific Course this coupon is valid for, within the same Teacher Platform (tenant).</summary>
+    public Guid CourseId { get; private set; }
+
     /// <summary>The central Student this coupon is assigned to.</summary>
     public Guid AssignedToStudentId { get; private set; }
 
@@ -65,6 +68,7 @@ public sealed class StudentCoupon : IAuditable, ITenantScoped
         DiscountType discountType,
         decimal discountValue,
         DateTime expiresAt,
+        Guid courseId,
         Guid assignedToStudentId,
         Guid createdByTeacherId)
     {
@@ -105,6 +109,11 @@ public sealed class StudentCoupon : IAuditable, ITenantScoped
             throw new DomainException("Assigned student id is required.");
         }
 
+        if (courseId == Guid.Empty)
+        {
+            throw new DomainException("Course id is required.");
+        }
+
         if (createdByTeacherId == Guid.Empty)
         {
             throw new DomainException("Created by teacher id is required.");
@@ -117,6 +126,7 @@ public sealed class StudentCoupon : IAuditable, ITenantScoped
         DiscountValue = discountValue;
         ExpiresAt = expiresAt;
         Status = CouponStatus.Active;
+        CourseId = courseId;
         AssignedToStudentId = assignedToStudentId;
         CreatedByTeacherId = createdByTeacherId;
         CreatedAtUtc = DateTime.UtcNow;
@@ -124,9 +134,10 @@ public sealed class StudentCoupon : IAuditable, ITenantScoped
 
     /// <summary>
     /// Consumes this coupon for the specified student within the given transaction.
-    /// Validates that the coupon is active, not expired, and belongs to the specified student.
+    /// Validates that the coupon is active, not expired, belongs to the specified student,
+    /// and is applicable to the specified Course.
     /// </summary>
-    public void Consume(Guid studentId, Guid transactionId)
+    public void Consume(Guid studentId, Guid courseId, Guid transactionId)
     {
         if (Status != CouponStatus.Active)
         {
@@ -142,6 +153,11 @@ public sealed class StudentCoupon : IAuditable, ITenantScoped
         if (AssignedToStudentId != studentId)
         {
             throw new DomainException("This coupon is assigned to a different student.");
+        }
+
+        if (CourseId != courseId)
+        {
+            throw new DomainException("This coupon is not valid for the specified course.");
         }
 
         if (transactionId == Guid.Empty)
