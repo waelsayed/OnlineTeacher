@@ -10,11 +10,11 @@ namespace OnlineTeacher.Application.Services;
 /// <summary>
 /// Purchases a Paid Published Course for a central Student using their tenant-scoped wallet balance
 /// within a Teacher Platform. The purchase is executed as one atomic unit: it validates eligibility,
-/// debits the wallet, records a Purchase FinancialTransaction, and creates the Enrollment. A student
-/// cannot purchase a Free course here (Free courses use the direct-enrollment flow), cannot purchase
-/// without sufficient balance, and cannot be charged twice while holding an active enrollment. A new
-/// purchase is permitted after a previous enrollment reached its terminal (cancelled) state while
-/// preserving the prior history.
+/// applies an optional single-use Student Coupon, debits the wallet by the final (discounted) amount,
+/// records Purchase and CouponCredit FinancialTransactions, consumes the coupon, and creates the
+/// Enrollment. A student cannot purchase a Free course here (Free courses use the direct-enrollment
+/// flow), cannot purchase without sufficient balance, and cannot be charged twice while holding an
+/// active enrollment.
 /// </summary>
 public sealed class PurchaseCourseService
 {
@@ -24,6 +24,7 @@ public sealed class PurchaseCourseService
     private readonly IStudentWalletRepository _wallets;
     private readonly IFinancialTransactionRepository _transactions;
     private readonly IEnrollmentRepository _enrollments;
+    private readonly IStudentCouponRepository _coupons;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITenantContext _tenantContext;
 
@@ -34,6 +35,7 @@ public sealed class PurchaseCourseService
         IStudentWalletRepository wallets,
         IFinancialTransactionRepository transactions,
         IEnrollmentRepository enrollments,
+        IStudentCouponRepository coupons,
         IUnitOfWork unitOfWork,
         ITenantContext tenantContext)
     {
@@ -43,6 +45,7 @@ public sealed class PurchaseCourseService
         _wallets = wallets;
         _transactions = transactions;
         _enrollments = enrollments;
+        _coupons = coupons;
         _unitOfWork = unitOfWork;
         _tenantContext = tenantContext;
     }
@@ -51,6 +54,7 @@ public sealed class PurchaseCourseService
         Guid studentId,
         string? teacherPublicId,
         Guid courseId,
+        string? couponCode,
         CancellationToken cancellationToken = default)
     {
         TenantContextGuard.EnsureCentral(_tenantContext);
@@ -88,15 +92,6 @@ public sealed class PurchaseCourseService
                 throw new BusinessRuleViolationException("Free courses use the direct enrollment flow.");
             }
 
-            var wallet = await GetOrCreateWalletAsync(studentId, platform.Id, cancellationToken);
-
-            var price = course.Price!.Value;
-
-            if (wallet.Balance < price)
-            {
-                throw new BusinessRuleViolationException("Insufficient wallet balance.");
-            }
-
             var existing = await _enrollments.GetActiveAsync(studentId, courseId, cancellationToken);
 
             if (existing is not null)
@@ -104,31 +99,93 @@ public sealed class PurchaseCourseService
                 throw new BusinessRuleViolationException("The student already holds an active enrollment in this course.");
             }
 
-            try
+            var price = course.Price!.Value;
+            var coupon = string.IsNullOrWhiteSpace(couponCode)
+                ? null
+                : await ResolveCouponForPurchaseAsync(platform.Id, studentId, courseId, couponCode!, cancellationToken);
+
+            var discount = coupon?.CalculateDiscount(price) ?? 0m;
+            var finalAmount = coupon is null ? price : coupon.GetFinalAmount(price);
+
+            var wallet = await GetOrCreateWalletAsync(studentId, platform.Id, cancellationToken);
+
+            if (finalAmount > 0m && wallet.Balance < finalAmount)
             {
-                wallet.Debit(price);
+                throw new BusinessRuleViolationException("Insufficient wallet balance.");
             }
-            catch (DomainException exception)
+
+            FinancialTransaction? purchaseTransaction = null;
+            FinancialTransaction? couponCreditTransaction = null;
+            var balanceBeforeDebit = wallet.Balance;
+
+            if (finalAmount > 0m)
             {
-                throw new BusinessRuleViolationException(exception.Message, exception);
+                try
+                {
+                    wallet.Debit(finalAmount);
+                }
+                catch (DomainException exception)
+                {
+                    throw new BusinessRuleViolationException(exception.Message, exception);
+                }
+
+                purchaseTransaction = new FinancialTransaction(
+                    platform.Id,
+                    wallet.Id,
+                    studentId,
+                    TransactionType.Purchase,
+                    -finalAmount,
+                    balanceBeforeDebit,
+                    wallet.Balance,
+                    courseId.ToString(),
+                    studentId,
+                    "student");
+            }
+
+            if (discount > 0m)
+            {
+                // CouponCredit is informational/audit only: it records the value covered by the coupon
+                // without changing the wallet balance.
+                couponCreditTransaction = new FinancialTransaction(
+                    platform.Id,
+                    wallet.Id,
+                    studentId,
+                    TransactionType.CouponCredit,
+                    discount,
+                    balanceBeforeDebit,
+                    balanceBeforeDebit,
+                    courseId.ToString(),
+                    studentId,
+                    "student");
+            }
+
+            if (coupon is not null)
+            {
+                var referenceTransactionId = (purchaseTransaction ?? couponCreditTransaction!)!.Id;
+                try
+                {
+                    coupon.Consume(studentId, courseId, referenceTransactionId);
+                }
+                catch (DomainException exception)
+                {
+                    throw new BusinessRuleViolationException(exception.Message, exception);
+                }
             }
 
             var enrollment = new Enrollment(studentId, courseId, platform.Id);
 
-            var transaction = new FinancialTransaction(
-                platform.Id,
-                wallet.Id,
-                studentId,
-                TransactionType.Purchase,
-                -price,
-                wallet.Balance + price,
-                wallet.Balance,
-                courseId.ToString(),
-                studentId,
-                "student");
-
             _enrollments.Add(enrollment);
-            _transactions.Add(transaction);
+
+            if (purchaseTransaction is not null)
+            {
+                _transactions.Add(purchaseTransaction);
+            }
+
+            if (couponCreditTransaction is not null)
+            {
+                _transactions.Add(couponCreditTransaction);
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return enrollment.Id;
@@ -140,6 +197,39 @@ public sealed class PurchaseCourseService
                 _tenantContext.Clear();
             }
         }
+    }
+
+    private async Task<StudentCoupon?> ResolveCouponForPurchaseAsync(
+        Guid tenantId,
+        Guid studentId,
+        Guid courseId,
+        string code,
+        CancellationToken cancellationToken)
+    {
+        var coupon = await _coupons.GetByCodeForUpdateAsync(tenantId, code, cancellationToken)
+            ?? throw new BusinessRuleViolationException("Coupon does not exist.");
+
+        if (coupon.AssignedToStudentId != studentId)
+        {
+            throw new BusinessRuleViolationException("This coupon is assigned to a different student.");
+        }
+
+        if (coupon.CourseId != courseId)
+        {
+            throw new BusinessRuleViolationException("This coupon is not valid for the specified course.");
+        }
+
+        if (coupon.Status != CouponStatus.Active)
+        {
+            throw new BusinessRuleViolationException("Coupon is not active.");
+        }
+
+        if (DateTime.UtcNow > coupon.ExpiresAt)
+        {
+            throw new BusinessRuleViolationException("Coupon has expired.");
+        }
+
+        return coupon;
     }
 
     private async Task<StudentWallet> GetOrCreateWalletAsync(Guid studentId, Guid tenantId, CancellationToken cancellationToken)

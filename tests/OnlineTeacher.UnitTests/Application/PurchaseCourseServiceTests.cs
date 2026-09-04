@@ -16,11 +16,12 @@ public class PurchaseCourseServiceTests
     private readonly FakeStudentWalletRepository _wallets = new();
     private readonly FakeFinancialTransactionRepository _transactions = new();
     private readonly FakeEnrollmentRepository _enrollments = new();
+    private readonly FakeStudentCouponRepository _coupons = new();
     private readonly FakeUnitOfWork _unitOfWork = new();
     private readonly StubTenantContext _tenantContext = new();
 
     private PurchaseCourseService CreateService() =>
-        new(_platforms, _students, _courses, _wallets, _transactions, _enrollments, _unitOfWork, _tenantContext);
+        new(_platforms, _students, _courses, _wallets, _transactions, _enrollments, _coupons, _unitOfWork, _tenantContext);
 
     private (Student Student, TeacherPlatform Platform) SeedEligibleTarget(string publicId = "AbCdEf123456")
     {
@@ -48,6 +49,29 @@ public class PurchaseCourseServiceTests
         return wallet;
     }
 
+    private StudentCoupon SeedActiveCoupon(
+        TeacherPlatform platform,
+        Student student,
+        Course course,
+        Guid teacherId,
+        string code,
+        DiscountType discountType,
+        decimal discountValue,
+        DateTime? expiresAt = null)
+    {
+        var coupon = new StudentCoupon(
+            platform.Id,
+            code,
+            discountType,
+            discountValue,
+            expiresAt ?? DateTime.UtcNow.AddDays(30),
+            course.Id,
+            student.Id,
+            teacherId);
+        _coupons.Seed(coupon);
+        return coupon;
+    }
+
     [Fact]
     public async Task Purchase_PaidPublishedCourseAndEnoughBalance_DebitsWalletCreatesEnrollmentAndTransaction()
     {
@@ -55,7 +79,7 @@ public class PurchaseCourseServiceTests
         var course = SeedPaidPublishedCourse(platform, 150m);
         var wallet = SeedFundedWallet(student, platform, 200m);
 
-        var id = await CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id);
+        var id = await CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, null);
 
         var enrollment = _enrollments.Enrollments.Should().ContainSingle().Subject;
         enrollment.Id.Should().Be(id);
@@ -85,7 +109,7 @@ public class PurchaseCourseServiceTests
         var (student, platform) = SeedEligibleTarget();
         var course = SeedPaidPublishedCourse(platform, 100m);
 
-        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id);
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, null);
 
         await act.Should().ThrowAsync<BusinessRuleViolationException>()
             .WithMessage("*Insufficient wallet balance*");
@@ -103,7 +127,7 @@ public class PurchaseCourseServiceTests
         var course = SeedPaidPublishedCourse(platform, 200m);
         var wallet = SeedFundedWallet(student, platform, 100m);
 
-        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id);
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, null);
 
         await act.Should().ThrowAsync<BusinessRuleViolationException>()
             .WithMessage("*Insufficient wallet balance*");
@@ -123,7 +147,7 @@ public class PurchaseCourseServiceTests
         _courses.Seed(course);
         SeedFundedWallet(student, platform, 100m);
 
-        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id);
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, null);
 
         await act.Should().ThrowAsync<BusinessRuleViolationException>()
             .WithMessage("*direct enrollment*");
@@ -137,7 +161,7 @@ public class PurchaseCourseServiceTests
         _courses.Seed(course);
         SeedFundedWallet(student, platform, 200m);
 
-        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id);
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, null);
 
         await act.Should().ThrowAsync<BusinessRuleViolationException>()
             .WithMessage("*published*");
@@ -149,7 +173,7 @@ public class PurchaseCourseServiceTests
         var (student, platform) = SeedEligibleTarget();
         SeedFundedWallet(student, platform, 200m);
 
-        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, Guid.NewGuid());
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, Guid.NewGuid(), null);
 
         await act.Should().ThrowAsync<NotFoundException>();
     }
@@ -160,7 +184,7 @@ public class PurchaseCourseServiceTests
         var (_, platform) = SeedEligibleTarget();
         var course = SeedPaidPublishedCourse(platform);
 
-        var act = () => CreateService().PurchaseAsync(Guid.NewGuid(), platform.PublicId.Value, course.Id);
+        var act = () => CreateService().PurchaseAsync(Guid.NewGuid(), platform.PublicId.Value, course.Id, null);
 
         await act.Should().ThrowAsync<NotFoundException>();
     }
@@ -173,7 +197,7 @@ public class PurchaseCourseServiceTests
         _students.Seed(student);
         _platforms.Seed(platform);
 
-        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, Guid.NewGuid());
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, Guid.NewGuid(), null);
 
         await act.Should().ThrowAsync<BusinessRuleViolationException>()
             .WithMessage("*not active*");
@@ -184,7 +208,7 @@ public class PurchaseCourseServiceTests
     {
         var (student, _) = SeedEligibleTarget();
 
-        var act = () => CreateService().PurchaseAsync(student.Id, "not-a-public-id", Guid.NewGuid());
+        var act = () => CreateService().PurchaseAsync(student.Id, "not-a-public-id", Guid.NewGuid(), null);
 
         await act.Should().ThrowAsync<ValidationException>();
     }
@@ -194,7 +218,7 @@ public class PurchaseCourseServiceTests
     {
         var (student, _) = SeedEligibleTarget();
 
-        var act = () => CreateService().PurchaseAsync(student.Id, PublicId.Generate().Value, Guid.NewGuid());
+        var act = () => CreateService().PurchaseAsync(student.Id, PublicId.Generate().Value, Guid.NewGuid(), null);
 
         await act.Should().ThrowAsync<NotFoundException>();
     }
@@ -207,7 +231,7 @@ public class PurchaseCourseServiceTests
         var wallet = SeedFundedWallet(student, platform, 300m);
         _enrollments.Seed(new Enrollment(student.Id, course.Id, platform.Id));
 
-        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id);
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, null);
 
         await act.Should().ThrowAsync<BusinessRuleViolationException>()
             .WithMessage("*active enrollment*");
@@ -227,7 +251,7 @@ public class PurchaseCourseServiceTests
         previous.Cancel();
         _enrollments.Seed(previous);
 
-        var id = await CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id);
+        var id = await CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, null);
 
         _enrollments.Enrollments.Should().HaveCount(2);
         _enrollments.Enrollments.Should().Contain(e => e.Id == id && e.Status == EnrollmentStatus.Active);
@@ -243,8 +267,208 @@ public class PurchaseCourseServiceTests
         var course = SeedPaidPublishedCourse(platform);
         _tenantContext.TrySetTenant(platform.Id);
 
-        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id);
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, null);
 
         await act.Should().ThrowAsync<TenantMismatchException>();
+    }
+
+    [Fact]
+    public async Task Purchase_PartialCoupon_DebitsFinalAmountRecordsPurchaseAndCouponCreditAndConsumes()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 200m);
+        var coupon = SeedActiveCoupon(platform, student, course, Guid.NewGuid(), "SAVE30",
+            DiscountType.Percentage, 30m);
+
+        var id = await CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "SAVE30");
+
+        wallet.Balance.Should().Be(130m);
+        coupon.Status.Should().Be(CouponStatus.Consumed);
+        coupon.ConsumedAt.Should().NotBeNull();
+
+        _transactions.Transactions.Should().HaveCount(2);
+        var purchase = _transactions.Transactions.Should().ContainSingle(t => t.Type == TransactionType.Purchase).Subject;
+        purchase.Amount.Should().Be(-70m);
+        purchase.BalanceBefore.Should().Be(200m);
+        purchase.BalanceAfter.Should().Be(130m);
+        var credit = _transactions.Transactions.Should().ContainSingle(t => t.Type == TransactionType.CouponCredit).Subject;
+        credit.Amount.Should().Be(30m);
+        credit.BalanceBefore.Should().Be(200m);
+        credit.BalanceAfter.Should().Be(200m);
+        coupon.ConsumedInTransactionId.Should().Be(purchase.Id);
+
+        _enrollments.Enrollments.Should().ContainSingle(e => e.Id == id);
+    }
+
+    [Fact]
+    public async Task Purchase_FullDiscountCoupon_NoDebitRecordsCouponCreditOnlyAndConsumes()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 50m);
+        var coupon = SeedActiveCoupon(platform, student, course, Guid.NewGuid(), "FREE100",
+            DiscountType.Percentage, 100m);
+
+        var id = await CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "FREE100");
+
+        wallet.Balance.Should().Be(50m);
+        coupon.Status.Should().Be(CouponStatus.Consumed);
+
+        _transactions.Transactions.Should().ContainSingle();
+        var credit = _transactions.Transactions[0];
+        credit.Type.Should().Be(TransactionType.CouponCredit);
+        credit.Amount.Should().Be(100m);
+        coupon.ConsumedInTransactionId.Should().Be(credit.Id);
+
+        _enrollments.Enrollments.Should().ContainSingle(e => e.Id == id);
+    }
+
+    [Fact]
+    public async Task Purchase_FixedCouponAbovePrice_NoDebitAndConsumes()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 10m);
+        var coupon = SeedActiveCoupon(platform, student, course, Guid.NewGuid(), "FIX150",
+            DiscountType.Fixed, 150m);
+
+        var id = await CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "FIX150");
+
+        wallet.Balance.Should().Be(10m);
+        coupon.Status.Should().Be(CouponStatus.Consumed);
+        _transactions.Transactions.Should().ContainSingle(t => t.Type == TransactionType.CouponCredit);
+        _enrollments.Enrollments.Should().ContainSingle(e => e.Id == id);
+    }
+
+    [Fact]
+    public async Task Purchase_ExpiredCoupon_ThrowsAndNoSideEffects()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 200m);
+        var coupon = SeedActiveCoupon(platform, student, course, Guid.NewGuid(), "EXPR1",
+            DiscountType.Percentage, 30m);
+        var expiresAtProperty = typeof(StudentCoupon).GetProperty(nameof(StudentCoupon.ExpiresAt))!;
+        expiresAtProperty!.SetValue(coupon, DateTime.UtcNow.AddMinutes(-1));
+
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "EXPR1");
+
+        await act.Should().ThrowAsync<BusinessRuleViolationException>()
+            .WithMessage("*expired*");
+        wallet.Balance.Should().Be(200m);
+        _enrollments.Enrollments.Should().BeEmpty();
+        _transactions.Transactions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Purchase_ConsumedCoupon_ThrowsAndNoSideEffects()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 200m);
+        var coupon = SeedActiveCoupon(platform, student, course, Guid.NewGuid(), "CONS1",
+            DiscountType.Percentage, 30m);
+        coupon.Consume(student.Id, course.Id, Guid.NewGuid());
+
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "CONS1");
+
+        await act.Should().ThrowAsync<BusinessRuleViolationException>()
+            .WithMessage("*not active*");
+        wallet.Balance.Should().Be(200m);
+        _enrollments.Enrollments.Should().BeEmpty();
+        _transactions.Transactions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Purchase_WrongCourseCoupon_ThrowsAndNoSideEffects()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var otherCourse = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 200m);
+        SeedActiveCoupon(platform, student, otherCourse, Guid.NewGuid(), "WRC1",
+            DiscountType.Percentage, 30m);
+
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "WRC1");
+
+        await act.Should().ThrowAsync<BusinessRuleViolationException>()
+            .WithMessage("*not valid for the specified course*");
+        wallet.Balance.Should().Be(200m);
+        _enrollments.Enrollments.Should().BeEmpty();
+        _transactions.Transactions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Purchase_WrongStudentCoupon_ThrowsAndNoSideEffects()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 200m);
+        var otherStudent = new Student("Omar", Email.Create("omar@example.com"));
+        _students.Seed(otherStudent);
+        SeedActiveCoupon(platform, otherStudent, course, Guid.NewGuid(), "WRS1",
+            DiscountType.Percentage, 30m);
+
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "WRS1");
+
+        await act.Should().ThrowAsync<BusinessRuleViolationException>()
+            .WithMessage("*assigned to a different student*");
+        wallet.Balance.Should().Be(200m);
+        _enrollments.Enrollments.Should().BeEmpty();
+        _transactions.Transactions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Purchase_UnknownCouponCode_ThrowsAndNoSideEffects()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 200m);
+
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "NOSUCH");
+
+        await act.Should().ThrowAsync<BusinessRuleViolationException>()
+            .WithMessage("*Coupon does not exist*");
+        wallet.Balance.Should().Be(200m);
+        _enrollments.Enrollments.Should().BeEmpty();
+        _transactions.Transactions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Purchase_PartialCouponInsufficientRemainingBalance_ThrowsAndNoSideEffects()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 50m);
+        SeedActiveCoupon(platform, student, course, Guid.NewGuid(), "PART50",
+            DiscountType.Percentage, 30m);
+
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "PART50");
+
+        await act.Should().ThrowAsync<BusinessRuleViolationException>()
+            .WithMessage("*Insufficient wallet balance*");
+        wallet.Balance.Should().Be(50m);
+        _enrollments.Enrollments.Should().BeEmpty();
+        _transactions.Transactions.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Purchase_ConsumedCouponWithActiveEnrollment_ThrowsAndNoDoubleDebit()
+    {
+        var (student, platform) = SeedEligibleTarget();
+        var course = SeedPaidPublishedCourse(platform, 100m);
+        var wallet = SeedFundedWallet(student, platform, 200m);
+        var coupon = SeedActiveCoupon(platform, student, course, Guid.NewGuid(), "DOUBLE1",
+            DiscountType.Percentage, 30m);
+        _enrollments.Seed(new Enrollment(student.Id, course.Id, platform.Id));
+
+        var act = () => CreateService().PurchaseAsync(student.Id, platform.PublicId.Value, course.Id, "DOUBLE1");
+
+        await act.Should().ThrowAsync<BusinessRuleViolationException>()
+            .WithMessage("*active enrollment*");
+        wallet.Balance.Should().Be(200m);
+        coupon.Status.Should().Be(CouponStatus.Active);
+        _transactions.Transactions.Should().BeEmpty();
     }
 }

@@ -63,6 +63,7 @@ builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IStudentWalletRepository, StudentWalletRepository>();
 builder.Services.AddScoped<IFinancialTransactionRepository, FinancialTransactionRepository>();
 builder.Services.AddScoped<ITransferRequestRepository, TransferRequestRepository>();
+builder.Services.AddScoped<IStudentCouponRepository, StudentCouponRepository>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
 // Application use cases
@@ -105,6 +106,10 @@ builder.Services.AddScoped<ReviewTransferRequestService>();
 builder.Services.AddScoped<ListTransferRequestsService>();
 builder.Services.AddScoped<ListStudentWalletService>();
 builder.Services.AddScoped<PurchaseCourseService>();
+builder.Services.AddScoped<CreateCouponService>();
+builder.Services.AddScoped<ListCouponsService>();
+builder.Services.AddScoped<GetCouponService>();
+builder.Services.AddScoped<RevokeCouponService>();
 
 // API-framework services
 builder.Services.AddScoped<JwtTokenFactory>();

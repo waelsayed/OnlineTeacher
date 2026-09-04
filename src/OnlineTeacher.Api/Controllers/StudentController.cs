@@ -231,10 +231,12 @@ public sealed class StudentController : ControllerBase
     public async Task<IActionResult> Purchase(
         string teacherPublicId,
         Guid courseId,
-        CancellationToken cancellationToken)
+        [FromBody] PurchaseRequest? request = null,
+        CancellationToken cancellationToken = default)
     {
         var studentId = GetStudentIdClaim();
-        var enrollmentId = await _purchase.PurchaseAsync(studentId, teacherPublicId, courseId, cancellationToken);
+        var enrollmentId = await _purchase.PurchaseAsync(
+            studentId, teacherPublicId, courseId, request?.CouponCode, cancellationToken);
         return Created(string.Empty, new { enrollmentId });
     }
 
