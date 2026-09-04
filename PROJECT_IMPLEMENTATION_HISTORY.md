@@ -1,8 +1,7 @@
 # Online Teacher — Project Implementation History
 
 > This document reconstructs the Online Teacher project's implementation history from its
-> beginning up to the current checkpoint (after completed Task 5 — Student Wallet & Course
-> Purchase).
+> beginning up to the current checkpoint (after completed Task 6 — Student Coupons).
 >
 > It is **evidence-based**: every important rationale is classified as one of:
 >
@@ -195,7 +194,7 @@ The following principles were established throughout the project.
 # 3. Implementation Timeline
 
 The project progressed through a scaffolding phase (Steps 0–8) followed by product feature tasks
-(Tasks 1–5), and now pauses after Task 5.
+(Tasks 1–6), and now pauses after Task 6.
 
 Chronological order:
 
@@ -215,6 +214,7 @@ Task 2  — Central Student Identity & Following
 Task 3  — Teacher Platform Course Content
 Task 4  — Student Enrollment in Teacher Courses
 Task 5  — Student Wallet & Course Purchase
+Task 6  — Student Coupons (Teacher Platform Coupons)
 ```
 
 ---
@@ -485,6 +485,57 @@ Task 5  — Student Wallet & Course Purchase
 * **Verification:** Unit 387/387; integration 77/77; build `--warnaserror` 0 warnings / 0 errors; the
   re-enrollment migration was applied to the dev Docker PostgreSQL.
 
+## Task 6 — Student Coupons (Teacher Platform Coupons)
+
+* **Problem:** Paid course purchases could not be discounted. There was no way for a Teacher Platform to issue a
+  single-use, student-specific discount coupon that is applied atomically during a course purchase.
+* **Goal:** Introduce a tenant-scoped, single-use `StudentCoupon` (Percentage or Fixed discount, expiring,
+  assigned to one student, valid for exactly one Course) that a student applies during the `PurchaseCourseService`
+  flow to reduce the final amount, alongside teacher-side coupon management (create/list/get/revoke) gated by a
+  new `Coupon.Manage` permission.
+* **Design:**
+  * Domain `StudentCoupon` entity with `DiscountType` (Percentage/Fixed), `CouponStatus` (Active/Consumed/Expired)
+    lifecycle, `ExpiresAt`, `AssignedToStudentId`, a required `CourseId`, discount calculation capped so the final
+    amount never goes below zero, and terminal `Consume`/`Revoke` transitions.
+  * `PurchaseCourseService` now accepts an optional `couponCode`: it locks the coupon row with
+    `SELECT ... FOR UPDATE`, validates it, applies the discount, debits the wallet by the reduced final amount,
+    consumes the coupon, creates the Enrollment, and records Purchase + CouponCredit `FinancialTransaction` rows
+    — all inside **one explicit database transaction** so concurrency cannot double-consume a coupon.
+  * `CouponCredit` is **informational/audit only**; it records the value covered by the coupon without changing
+    the wallet balance. A 100% discount produces no zero-amount `Purchase` transaction, only a `CouponCredit`.
+  * Teacher-side coupon CRUD endpoints under `/{publicId}/{slug}/api/platform/coupons` (create/list/get/revoke),
+    gated by the new `Coupon.Manage` permission + tenant membership. Student purchase applies the coupon via
+    `POST /api/student/purchase/{publicId}/{courseId}` with an optional body `{ couponCode }`.
+* **Why this design:** Follows the approved Task 6 decisions (`Tasks/TASK6-1.md`, `TASK6-2.md`): single student,
+  tenant-scoped, single-use and permanently terminal, Percentage 1–100% + Fixed capped, **every `StudentCoupon` is
+  tied to exactly one specific Course (`CourseId` required)** — the earlier "no CourseId / all Paid Courses"
+  recommendation was superseded. The purchase integration reuses the existing `IUnitOfWork`/repository
+  architecture rather than introducing a parallel purchasing path. Coupon consumption must be atomic with
+  wallet debit, enrollment, and financial records per `AGENTS.md` §15–§16.
+* **Concurrency correction (final review):** An earlier review identified that the coupon `SELECT ... FOR UPDATE`
+  was not guaranteed to hold the lock until commit. This phase added the smallest appropriate transaction
+  abstraction — `IUnitOfWork.ExecuteInTransactionAsync(...)` — implemented by opening an explicit
+  `IDbContextTransaction` through the EF execution strategy (preserving retry behavior) and running the whole
+  purchase inside it. The coupon row lock is now held until the final `SaveChanges` + `COMMIT`, so a concurrent
+  purchase of the same coupon blocks, then observes the Consumed state and fails with a business-rule violation.
+* **Problems discovered:**
+  * An initial integration-test design set a tenant context on the service before `PurchaseAsync`, but the
+    purchase is a **central** operation that switches tenant internally; this surfaced as `TenantMismatchException`
+    ("A central operation cannot run under a teacher tenant context"). Fixed so each service under test starts with
+    a null (central) tenant scope exactly like the real API request, letting `PurchaseCourseService` switch tenant
+    internally.
+* **Decision (Course applicability correction):** Originally planned as "coupon applies to all Paid Courses (no
+  CourseId)". The final review approved **one coupon = one specific Course** (`CourseId` required, stored on the
+  coupon, enforced by domain invariant `CourseId == courseId` and by the purchase service). This supersedes the
+  earlier planning decision and is reflected across the Task 6 documentation.
+* **Decision (CouponCredit semantics):** informational/audit-only — never credits the wallet; a 100% discount
+  enrolls without a Purchase debit transaction (`ConsumedInTransactionId` references the CouponCredit transaction
+  in that case). Refunds remain deferred to Task 7.
+* **Verification:** Unit 451/451; integration 90/90 (including a new real-concurrency test that fires two
+  genuinely concurrent purchases against the same coupon on separate DB connections and asserts exactly one
+  succeeds, one enrollment, one consumption, one wallet debit, no duplicate financial transactions);
+  build `--warnaserror` 0 warnings / 0 errors; no Task 5 regressions.
+
 ---
 
 # 5. Domain Evolution
@@ -583,11 +634,30 @@ Course (gains CoursePricingType Free/Paid + Price in EGP via SetPricing)
 * The `Enrollment` unique index became **partial** (`WHERE status = Active`), enabling re-enrollment after a
   terminal cancellation while preserving history.
 
+## Added in Task 6
+
+```
+Teacher Platform
+    ↓
+StudentCoupon (tenant-scoped; AssignedToStudentId + CourseId + DiscountType/Value + ExpiresAt + Status)
+    ↓ (applied during purchase to reduce a Paid Course price)
+StudentWallet -> FinancialTransaction (Purchase/CouponCredit)
+```
+
+* `StudentCoupon` is **tenant-scoped** (`ITenantScoped`) and under the tenant query filter.
+* Coupon rules (documented): single student, single-use, expiring, non-transferable, permanently terminal after
+  consumption, and **tied to exactly one specific Course** (`CourseId` required).
+* `DiscountType` (Percentage 1–100% incl. 100%, Fixed capped at zero) and `CouponStatus` (Active/Consumed/Expired).
+* New permission: `Coupon.Manage` (teacher-side coupon management).
+* `CouponCredit` `FinancialTransaction` type is now used as an informational/audit-only record (does not change
+  wallet balance); `Refund` remains reserved for a future Task.
+
 **Relationship summary for a reader:** A Teacher owns a Platform (a tenant). The Platform owns Courses.
 Courses contain ordered Units. Units contain ordered Lessons. A Student (central identity) may follow
 Teachers (central `StudentFollow`) and may be enrolled in a tenant's Courses (tenant `Enrollment`). A
 tenant-scoped `StudentWallet` (with its `FinancialTransaction` history and `TransferRequest` credit flows)
-serves the payments/purchase path for Paid Courses.
+serves the payments/purchase path for Paid Courses, where a tenant-scoped `StudentCoupon` may be applied
+to reduce the price at purchase.
 
 ---
 
@@ -648,7 +718,7 @@ serves the payments/purchase path for Paid Courses.
 
 * Global query filters are applied **only** to `ITenantScoped` entities:
   `Role`, `RolePermission`, `TeacherPlatformMembership`, `Course`, `Unit`, `Lesson`, `Enrollment`,
-  `StudentWallet`, `FinancialTransaction`, `TransferRequest`.
+  `StudentWallet`, `FinancialTransaction`, `TransferRequest`, `StudentCoupon`.
 * **Central** entities — `Teacher`, `TeacherPlatform`, `Permission`, `Student`, `StudentFollow` — are
   **not** filtered.
 
@@ -662,7 +732,7 @@ serves the payments/purchase path for Paid Courses.
 
 * Central: Student, StudentFollow, Teacher, TeacherPlatform, Permission.
 * Tenant-scoped (filtered): Role, RolePermission, TeacherPlatformMembership, Course, Unit, Lesson,
-  Enrollment, StudentWallet, FinancialTransaction, TransferRequest.
+  Enrollment, StudentWallet, FinancialTransaction, TransferRequest, StudentCoupon.
 * Central: Student, StudentFollow, Teacher, TeacherPlatform, Permission.
 * **Why Student/StudentFollow are central:** a student has one identity across platforms and follows
   teachers cross-tenant; they are not owned by any single tenant.
@@ -776,6 +846,23 @@ All course endpoints additionally require tenant membership via `PlatformAccessG
 
 A cross-tenant transfer review returns **404** (the transfer is not resolvable in the acting tenant).
 
+## Task 6 (student coupons)
+
+**Teacher-perspective endpoints** (principal `teacher`, `Coupon.Manage` + membership):
+
+| Area | Route | Purpose |
+|------|-------|---------|
+| Create coupon | `POST /{publicId}/{slug}/api/platform/coupons` | Create a single-use, Course-specific student coupon |
+| List coupons | `GET /{publicId}/{slug}/api/platform/coupons` | List the platform's coupons |
+| Get coupon | `GET /{publicId}/{slug}/api/platform/coupons/{couponId}` | Get one coupon (incl. consumption/status) |
+| Revoke coupon | `DELETE /{publicId}/{slug}/api/platform/coupons/{couponId}` | Revoke (expire) an active coupon |
+
+**Student-perspective** — the purchase endpoint now accepts an optional body `{ couponCode }` to apply a coupon:
+
+| Area | Route | Purpose |
+|------|-------|---------|
+| Purchase with coupon | `POST /api/student/purchase/{publicId}/{courseId}` (body `{ couponCode }`) | Atomically purchase a Paid course applying an optional single-use coupon |
+
 ---
 
 # 9. Database Evolution
@@ -824,6 +911,20 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
   * Drops the full unique `ux_enrollments_student_course` index and recreates it as a **partial unique
     index** (`WHERE status = Active`) so a student may hold only one **Active** enrollment per course while
     terminal (cancelled) history may coexist — enabling re-enrollment after cancellation.
+
+## Task 6 (student coupon migrations)
+
+* `20260903221349_AddStudentCoupons`:
+  * `student_coupons` (tenant-scoped with `TenantId` FK).
+  * Unique `(TenantId, Code)` — one coupon code per tenant.
+  * `AssignedToStudentId` (FK to central students) and `CreatedByTeacherId` (FK to teachers).
+  * `DiscountType`, `DiscountValue`, `ExpiresAt`, `Status`, `ConsumedAt`, `ConsumedInTransactionId`.
+  * Lookup indexes for tenant and student.
+* `20260904005926_AddCourseIdToStudentCoupons`:
+  * Adds the required `CourseId` FK to `student_coupons` (per the approved Course-applicability correction:
+    every `StudentCoupon` is tied to exactly one specific Course).
+* The single-use rule is enforced both by application logic (`Consume` state transition) and by the
+  `SELECT ... FOR UPDATE` row lock inside the explicit purchase transaction.
 
 ## Important database design decisions
 
@@ -969,6 +1070,31 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
   permitted while prior history is preserved.
 * **Architecture change:** Yes, but a small, approved data-constraint change surfaced via AGENTS.md §30.
 
+## Coupon double-consumption race (Task 6)
+
+* **Symptom (final review):** Two concurrent purchases could both read the same coupon before either consumed it,
+  because the `SELECT ... FOR UPDATE` lock might be released before the enclosing `SaveChanges`/commit.
+* **Root cause:** The coupon FOR UPDATE read was not guaranteed to run inside the same database transaction that
+  stays open until commit.
+* **Fix:** Added the smallest appropriate transaction abstraction — `IUnitOfWork.ExecuteInTransactionAsync(...)` —
+  implemented in `EfUnitOfWork` by opening an explicit `IDbContextTransaction` through the EF execution strategy
+  (preserving retry behavior). `PurchaseCourseService` runs the entire coupon purchase (FOR UPDATE read → validate →
+  debit → consume → enroll → financial records → SaveChanges) inside this one transaction, so the row lock is held
+  until commit and a concurrent attempt observes the consumed state and fails cleanly.
+* **Architecture change:** Minor and consistent with the existing architecture — no new persistence layer, no CQRS,
+  no event bus, no parallel purchasing infrastructure.
+
+## Concurrency-test tenant-scope setup (Task 6)
+
+* **Symptom:** The first version of the concurrency integration test set a tenant context on each service before
+  calling `PurchaseAsync`, which failed with `TenantMismatchException` ("A central operation cannot run under a
+  teacher tenant context").
+* **Root cause:** `PurchaseCourseService.PurchaseAsync` is a **central** operation that refuses to run under an
+  active teacher tenant scope; it switches tenant internally via `ITenantContext.TrySetTenant`.
+* **Fix:** Each service-under-test now starts with a **null (central)** tenant scope — exactly like the real API
+  request — and lets `PurchaseCourseService` switch/restore the tenant itself.
+* **Architecture change:** None — corrected the test to match the architecture.
+
 ---
 
 # 11. Important Decisions / ADR-style Summary
@@ -998,6 +1124,12 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 | Re-enrollment after cancellation | Partial unique `(student, course)` index (`WHERE status = Active`); duplicate-check on Active only | Preserve history yet permit re-enrollment after terminal cancellation | Full unique index (rejected — blocked re-enrollment) | Approved |
 | Wallet financial types | `Refund` + `CouponCredit` `TransactionType` reserved only (not implemented) | Forward-compatible, no invented flows | Implement refunds/coupons now (rejected) | Approved |
 | Free course enrollment | Free course → direct-enroll (no wallet/purchase); purchase endpoint rejects Free | Keep Free/Paid flows distinct; do not break Free enrollment | Route all enrollments through purchase (rejected) | Approved |
+| Student coupon scope | Tenant-scoped, single-use `StudentCoupon` assigned to one student; Percentage 1–100% + Fixed capped | Personal, non-transferable, expirable, single-use per AGENTS.md §12 | Global/transferable coupons (rejected) | Approved |
+| Coupon Course applicability | Every `StudentCoupon` is tied to exactly one specific Course (`CourseId` required) | Final review approved per-course coupon; supersedes "all Paid Courses / no CourseId" | All-Paid-Courses coupon (rejected) | Approved |
+| CouponCredit semantics | Informational/audit only; never credits wallet; 100% discount yields no zero-amount Purchase tx | Records the covered value without altering balance | Credit the wallet (rejected) | Approved |
+| Coupon purchase atomicity | Whole coupon purchase in one explicit transaction; `SELECT ... FOR UPDATE` held until COMMIT | Prevent concurrent double consumption; AGENTS.md §15–§16 | App-level check only (rejected) | Approved |
+| Coupon.Manage permission | Single dynamic permission for teacher coupon create/list/get/revoke | Avoid specialized roles | Per-op roles (rejected) | Approved |
+| Coupon refund boundary | Refunds deferred to Task 7 | Task 6 does not handle refunds | Implement refunds now (rejected) | Approved |
 
 ---
 
@@ -1027,6 +1159,7 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
 | Task 3 | 281 | 51 |
 | Task 4 | 315 | 64 |
 | Task 5 | 387 | 77 |
+| Task 6 | 451 | 90 |
 
 ## Notable integration coverage
 
@@ -1042,6 +1175,12 @@ Global entities: `teachers`, `teacher_platforms`, `permissions` (not filtered).
   fund+purchase+enrollment+debit, insufficient balance 422, draft-course purchase 422, free-through-purchase
   422 + free direct-enroll, duplicate active purchase 422, repurchase-after-cancellation permitted,
   cross-tenant review 404, anonymous 401, assistant-without-`Wallet.Manage` 403, cross-student wallet 204).
+* Task 6: coupon management (create/list/get/revoke, duplicate code 422, free-course coupon 422), purchase with a
+  Partial/Fixed/100% coupon (correct final debit + CouponCredit, consumption, expiry/wrong-course/wrong-student/
+  unknown/consumed-coupon failures with no side effects), cross-tenant coupon isolation, anonymous/permission
+  authorization, and the **real-concurrency test** (`ConcurrentCouponPurchaseTests`) firing two genuinely
+  concurrent purchases against the same tenant/student/course/coupon on separate connections — exactly one
+  succeeds, one enrollment, one consumption, one wallet debit, no duplicate financial transactions.
 
 ---
 

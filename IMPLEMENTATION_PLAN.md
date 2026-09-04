@@ -839,6 +839,40 @@ Task 5 — Student Wallet & Course Purchase            [x] Completed
 > cancellation is permitted (history preserved) via a partial unique index allowing one Active
 > enrollment per (student, course). Refund and CouponCredit transaction types are reserved only.
 
+## Task 6 — Student Coupons (Teacher Platform Coupons)
+
+```text
+Task 6 — Student Coupons (Teacher Platform Coupons)   [x] Completed
+  - StudentCoupon domain entity (tenant-scoped)        [x] Completed
+  - DiscountType (Percentage 1-100% / Fixed, capped)   [x] Completed
+  - CouponStatus lifecycle (Valid/Expired/Consumed)    [x] Completed
+  - One coupon bound to exactly one Course (CourseId)  [x] Completed
+  - Single-use / expiring / student-assigned rules     [x] Completed
+  - Coupon.Manage permission                           [x] Completed
+  - Teacher coupon management API (CRUD)               [x] Completed
+  - Student purchase with optional couponCode          [x] Completed
+  - Atomic purchase + concurrency correction           [x] Completed
+  - Domain tests                                       [x] Completed
+  - Application tests                                  [x] Completed
+  - Integration tests (incl. real concurrency)         [x] Completed
+  - Documentation                                      [x] Completed
+  - Verification                                       [x] Completed
+```
+
+> Task 6 (Student Coupons) is complete and verified. A Teacher Platform Coupon is a
+> tenant-scoped `StudentCoupon` bound to exactly one specific Course (`CourseId` required);
+> it is single-use, expiring, and assigned to one student. `DiscountType` supports
+> Percentage (1-100, minimum price of zero) and Fixed (EGP), capped so the price is never
+> negative; a 100% discount enrolls for free without a zero-amount Purchase transaction.
+> Purchase treats `CouponCredit` as informational/audit-only (never credits the wallet).
+> A coupon purchase is atomic via an explicit transaction using `IUnitOfWork
+> .ExecuteInTransactionAsync` (through the EF execution strategy), with `SELECT ... FOR
+> UPDATE` locking so two genuinely concurrent purchases cannot double-consume a coupon.
+> `Coupon.Manage` gates teacher coupon CRUD. Refunds remain deferred to Task 7. Build and
+> tests verified: 0 warnings / 0 errors; unit 451/451; integration 90/90 (541 total, 0
+> failures). Commits: `f71d25c`, `ed55f12`, `ba98c61`, `9d4998c`, `33cec04`, `a8290a9`
+> (plus this closing docs commit).
+
 Example:
 
 ```text
@@ -1366,6 +1400,62 @@ Task 5 additions (student wallet & course purchase):
 - Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit 387/387;
   integration 77/77 against a real PostgreSQL 16 Testcontainer; re-enrollment migration applied
   to the dev Docker PostgreSQL.
+```
+
+Task 6 additions (student coupons & concurrency correction):
+
+```text
+- Domain: StudentCoupon (tenant-scoped; Code, Description, DiscountType, Value, ExpiresAt,
+  AssignedToStudentId, CreatedByTeacherId, ConsumedAt, ConsumedInTransactionId, Status with
+  Valid/Expired/Consumed lifecycle). Every coupon is bound to exactly one specific Course via a
+  required CourseId (this supersedes the original "No CourseId / all Paid Courses" planning
+  decision, documented in Tasks/TASK6-*.md). DiscountCalculation caps the price so it can never
+  go negative; a 100% Percentage discount yields a minimum price of zero.
+- Enums added: DiscountType (Percentage, Fixed) and CouponStatus (Valid, Expired, Consumed);
+  PlatformPermissions gained Coupon.Manage (appended to All so the PermissionSeeder auto-seeds
+  and the Owner role auto-grants it; no new migration).
+- Business rules: personal (assigned to one student), single-use, expirable, non-transferable,
+  non-reusable after consumption; one coupon per (student) is consumed once with the concurrent
+  purchase protected by a DB row lock.
+- Persistence: migrations 20260903221349_AddStudentCoupons and
+  20260904005926_AddCourseIdToStudentCoupons add student_coupons (tenant FK, unique
+  (TenantId, Code), AssignedToStudentId, CreatedByTeacherId, DiscountType/Value/ExpiresAt/
+  Status/ConsumedAt/ConsumedInTransactionId, CourseId FK) and wire StudentCoupon into the tenant
+  query filter cluster.
+- Application: PurchaseCourseService consumes an optional couponCode; a coupon purchase wraps
+  the validate-balance -> validate-coupon -> consume-coupon -> debit-wallet -> create-enrollment
+  -> record-FinancialTransaction flow in ONE explicit transaction. CouponCredit is treated as
+  informational/audit-only (never credits the wallet); a 100% discount enrolls without a
+  zero-amount Purchase transaction (referenced via ConsumedInTransactionId).
+- Concurrency correction (per Tasks/FINALAPPROVED1.md): the original coupon consumption used a
+  repository-level GetByCodeForUpdateAsync with SELECT ... FOR UPDATE, but the lock was not held
+  until commit (it released before the SaveChangesAsync), opening a double-consumption race.
+  Fixed by adding IUnitOfWork.ExecuteInTransactionAsync (opening an explicit IDbContextTransaction
+  through CreateExecutionStrategy so EF retry semantics are preserved) and wrapping the whole
+  purchase in it so the FOR UPDATE lock is held until commit. Minor, consistent architecture
+  change; no new abstraction.
+- Concurrency-test tenant-scope problem: integration tests that used an external BeginTransaction
+  raised TenantMismatchException ("A central operation cannot run under a teacher tenant context")
+  because the new explicit transaction path switches tenant scope internally; fixed by starting
+  the services in the CENTRAL/null tenant scope, exactly like a real API request.
+- API (teacher, platform-scoped, Coupon.Manage): POST /{publicId}/{slug}/api/platform/coupons,
+  GET .../coupons, GET .../coupons/{couponId}, DELETE .../coupons/{couponId}. API (student):
+  POST /api/student/purchase/{publicId}/{courseId} now accepts an optional body { couponCode }.
+- Idempotency/concurrency: single-use enforcement is guaranteed by the FOR UPDATE row lock held
+  until commit, so a coupon can never be consumed twice even under two genuinely concurrent
+  requests; invalid/expired/consumed/wrong-course/wrong-student/unknown coupon failures all
+  return 422 and never debit the wallet or create an enrollment.
+- Tests: unit 451/451; integration 90/90 (541 total, 0 failures). Additions include coupon
+  management 422s, purchase with Partial/Fixed/100% discount, consumption/expiry/wrong-course/
+  wrong-student/unknown/consumed failures, cross-tenant isolation, auth cases, and a REAL
+  concurrency test (ConcurrentCouponPurchaseTests): two genuinely concurrent purchases on
+  separate connections -> exactly one success, one enrollment, one consumption, one wallet
+  debit; the other fails with BusinessRuleViolationException. No Task 1-5 regressions.
+- Verification: dotnet build --warnaserror => 0 warnings / 0 errors; unit 451/451;
+  integration 90/90 against a real PostgreSQL 16 Testcontainer. Commits: f71d25c (domain +
+  Coupon.Manage), ed55f12 (infra + migration), ba98c61 (TASK6-DRAFT status), 9d4998c (domain
+  CourseId correction), 33cec04 (application coupon-purchase integration), a8290a9 (concurrency
+  fix + real concurrent test), plus this closing docs commit. Nothing pushed to origin.
 ```
 
 DEVIATION (approved via Tasks/Approved1.md):
