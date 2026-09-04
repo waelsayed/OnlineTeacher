@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Architecture Overview & System Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, .arch-box, .diagram-box, table {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .diagram-box {
+            background: #f5f9ff;
+            border: 1px solid #c9dff0;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 1.2rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.8;
+            color: #13354a;
+            font-size: 0.9rem;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            color: #193e59;
+            font-size: 1.05rem;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .diagram-box {
+                font-size: 0.7rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Architecture Overview & System Architecture</h1>
+            <div class="subtitle">نظرة عامة على معمارية النظام</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">📱</span> <strong>Product:</strong> Live Teacher</div>
+                <div class="meta-item"><span class="meta-icon">✍️</span> <strong>Written By:</strong> Eng. Wael Sayed</div>
+                <div class="meta-item"><span class="meta-icon">📄</span> <strong>Type:</strong> Architecture Overview</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+            </div>
+        </div>
+
+        <!-- 1. الهدف -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. الهدف من الوثيقة</h2>
+            <p>تهدف هذه الوثيقة إلى وضع التصور المعماري العام للنظام، وتحديد المكونات الرئيسية والعلاقات بينها، قبل الانتقال إلى التفاصيل التنفيذية.</p>
+            <p>تركز الوثيقة على <strong>كيف يتكون النظام وكيف تتفاعل أجزاؤه الرئيسية</strong>، مع الحفاظ على فصل واضح بين: المنصة المركزية، منصات المدرسين، الطلاب، المحتوى التعليمي، العمليات المالية، والخدمات الخارجية.</p>
+            <p>ولا تهدف هذه الوثيقة إلى تحديد تفاصيل البرمجة أو تصميم الجداول وقواعد البيانات، وإنما تمثل الأساس الذي ستبنى عليه الوثائق المعمارية والتنفيذية اللاحقة.</p>
+        </div>
+
+        <!-- 2. الرؤية المعمارية -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. الرؤية المعمارية</h2>
+            <p>النظام عبارة عن <strong>منصة تعليمية متعددة المستأجرين (Multi-Tenant Educational Platform)</strong>، تحتوي على منصة مركزية تدير مجموعة من منصات المدرسين المستقلة.</p>
+            <div class="diagram-box">Central Platform
+↓
+Teacher Platforms
+↓
+Teachers / Admins / Assistants / Students
+↓
+Educational Content & Services</div>
+            <p>كل مدرس يحصل على <strong>Teacher Platform</strong> خاصة به، ويدير من خلالها الطلاب والمحتوى والاشتراكات والاختبارات والباقات والمراجعات والعمليات المالية الخاصة به. وفي المقابل، تقوم <strong>Central Platform</strong> بإدارة المنظومة ككل، بما في ذلك المدرسين والاشتراكات والباقات والعمليات المركزية والتقارير والإدارة العامة.</p>
+        </div>
+
+        <!-- 3. المصطلحات -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. المصطلحات المعتمدة</h2>
+            <p>لمنع الالتباس بين مستويات النظام، تعتمد هذه الوثيقة المصطلحات التالية:</p>
+            <h3>Central Platform</h3>
+            <p><strong>المنصة المركزية / المنصة الأم:</strong> المنصة الرئيسية المملوكة لـ ProNileSoft، والتي تحتوي على جميع Teacher Platforms وتدير العلاقة بينها وبين النظام المركزي.</p>
+            <h3>Teacher Platform</h3>
+            <p><strong>منصة المدرس:</strong> مساحة مستقلة يحصل عليها المدرس داخل Central Platform، ويدير من خلالها العملية التعليمية الخاصة به.</p>
+            <h3>Teacher</h3>
+            <p><strong>المدرس:</strong> صاحب Teacher Platform والمسؤول الرئيسي عن إدارتها.</p>
+            <h3>Teacher Admin / Assistant</h3>
+            <p><strong>مسؤول أو مساعد المدرس:</strong> مستخدم يتم تعيينه بواسطة المدرس ومنحه صلاحيات محددة لإدارة Teacher Platform.</p>
+            <h3>Student</h3>
+            <p><strong>الطالب:</strong> المستخدم الذي ينضم إلى Teacher Platform ويصل إلى المحتوى والخدمات التعليمية المسموح بها.</p>
+        </div>
+
+        <!-- 4. الهيكل العام -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. الهيكل العام للنظام</h2>
+            <p>يمكن تصور النظام على ثلاثة مستويات رئيسية:</p>
+            <h3>المستوى الأول — Central Platform</h3>
+            <p>المستوى الإداري والتجاري المركزي. مسؤول عن: إدارة المدرسين، إدارة Teacher Platforms، إدارة اشتراكات المدرسين، إدارة باقات المدرسين، إدارة Coupons المركزية، متابعة حالة المنصات، التقارير المركزية، والإدارة العامة للنظام.</p>
+            <h3>المستوى الثاني — Teacher Platform</h3>
+            <p>لكل مدرس منصة مستقلة. وتشمل: بيانات المدرس، الصفحة الرئيسية للمدرس، الطلاب، المجموعات، Courses، Units، Chapters، Lessons، Packages، Revisions، Exams، Teacher Wall، Rules، Student Access، Wallet-related operations، Financial records، Reports.</p>
+            <h3>المستوى الثالث — Users</h3>
+            <p>وتشمل المستخدمين الذين يتعاملون مع Teacher Platform: Teacher، Teacher Admin / Assistant، Student. ويتم تحديد ما يستطيع كل مستخدم الوصول إليه وفقًا لدوره وصلاحياته.</p>
+        </div>
+
+        <!-- 5. Multi-Tenant Architecture -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. Multi-Tenant Architecture</h2>
+            <p>يعد مفهوم <strong>Multi-Tenancy</strong> من أهم المبادئ المعمارية في النظام. كل Teacher Platform تمثل مساحة مستقلة داخل النظام.</p>
+            <div class="diagram-box">Central Platform
+│
+├── Teacher Platform A
+│   ├── Students
+│   ├── Courses
+│   ├── Exams
+│   └── Financial Data
+│
+├── Teacher Platform B
+│   ├── Students
+│   ├── Courses
+│   ├── Exams
+│   └── Financial Data
+│
+└── Teacher Platform C
+    ├── Students
+    ├── Courses
+    ├── Exams
+    └── Financial Data</div>
+            <p>يجب أن يظل كل Tenant معزولًا منطقيًا عن الآخر. وبالتالي فإن وجود آلاف المدرسين لا يعني وجود آلاف أنظمة منفصلة، وإنما مجموعة من Teacher Platforms تعمل داخل منظومة مركزية واحدة.</p>
+        </div>
+
+        <!-- 6. Central Platform Domain -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. Central Platform Domain</h2>
+            <p>تمثل Central Platform المجال المركزي الذي تعتمد عليه المنظومة بالكامل. ومن أهم مسؤولياته:</p>
+            <h3>Teacher Management</h3>
+            <p>إدارة المدرسين وحالة Teacher Platforms الخاصة بهم.</p>
+            <h3>Subscription Management</h3>
+            <p>إدارة اشتراك المدرس في الخدمة: Monthly، Annual، Academic Year، وغيرها من الباقات التي يتم اعتمادها.</p>
+            <h3>Platform Plan Management</h3>
+            <p>تحديد إمكانيات كل باقة يحصل عليها المدرس.</p>
+            <h3>Central Coupon Management</h3>
+            <p>إنشاء وإدارة Coupons الخاصة بالمنصة المركزية. يمكن استخدام Coupon لمنح مدرس اشتراكًا مجانيًا أو خصمًا جزئيًا أو أي قيمة خصم يحددها النظام. ويتم تسجيل استخدام Coupon وربطه بالمدرس الذي استخدمه.</p>
+        </div>
+
+        <!-- 7. Teacher Platform Domain -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. Teacher Platform Domain</h2>
+            <p>تمثل Teacher Platform المجال التشغيلي الرئيسي للمدرس. المدرس لا يحتاج إلى إنشاء نظام مستقل من الناحية التقنية، وإنما يحصل على مساحة جاهزة داخل المنصة المركزية، ويقوم من خلالها بإدارة العملية التعليمية الخاصة به.</p>
+        </div>
+
+        <!-- 8. Educational Structure -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. Educational Structure</h2>
+            <p>يعتمد المحتوى التعليمي على هيكل هرمي.</p>
+            <div class="diagram-box">Course
+│
+├── Unit
+│   ├── Chapter
+│   │   ├── Lesson
+│   │   ├── Lesson
+│   │   └── Lesson
+│   │
+│   └── Chapter
+│
+└── Unit</div>
+            <p><strong>Course:</strong> المحتوى التعليمي الرئيسي. <strong>Unit:</strong> جزء رئيسي من Course. <strong>Chapter:</strong> جزء من Unit. <strong>Lesson:</strong> الوحدة التعليمية الفعلية التي يمكن أن تحتوي على مجموعة من العناصر التعليمية.</p>
+        </div>
+
+        <!-- 9. Learning Content -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. Learning Content</h2>
+            <p>يمكن أن تحتوي Lesson على أنواع متعددة من المحتوى، مثل: Video، Text، PDF، Images، Homework، Revision Material، Exam، وعناصر تعليمية أخرى مستقبلًا. ويجب ألا يكون النظام مرتبطًا بنوع واحد فقط من المحتوى.</p>
+        </div>
+
+        <!-- 10. Package -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. Package</h2>
+            <p>الـPackage ليست نسخة جديدة من المحتوى، بل هي <strong>تجميع تجاري لمحتوى موجود بالفعل داخل Courses</strong>.</p>
+            <p>يقوم المدرس باختيار Units أو Chapters أو أجزاء محددة من المحتوى الموجود، ثم ينشئ Package بسعر وشروط مختلفة.</p>
+            <p>الهدف الأساسي منها هو خدمة حالات مثل: الطلاب المتأخرين، الطلاب القادمين من مدرس آخر، الطلاب الذين يحتاجون مجموعة محددة من المحتوى، وتقديم عروض مختلفة.</p>
+            <div class="diagram-box">Existing Course Content
+        ↓
+Teacher selects existing content
+        ↓
+Package
+        ↓
+Different Price / Rules</div>
+            <p>ولا يتم إنشاء المحتوى التعليمي من جديد.</p>
+        </div>
+
+        <!-- 11. Revision -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. Revision</h2>
+            <p>الـRevision تمثل محتوى مخصصًا للمراجعة. يمكن للمدرس إنشاء Revision مستقلة بعد إنشاء المحتوى الأساسي. وقد تحتوي على Units وChapters وVideos وPDFs وText ومواد تعليمية أخرى. ويمكن أن يكون لها سعر مستقل عن Course الأصلي.</p>
+        </div>
+
+        <!-- 12. Exam Domain -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. Exam Domain</h2>
+            <p>الـExam عنصر مستقل يمكن استخدامه داخل العملية التعليمية. ويمكن أن يكون Online أو Offline، كما يمكن أن يكون Free أو Paid.</p>
+            <h3>Online Exam</h3>
+            <p>يمكن للطالب أداء الاختبار من خلال النظام.</p>
+            <h3>Offline Exam</h3>
+            <p>يمكن تسجيل الطالب في الاختبار، وتسجيل عملية الدفع والحجز من خلال النظام، بينما يتم تنفيذ الاختبار خارج النظام.</p>
+        </div>
+
+        <!-- 13. Student Access Management -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. Student Access Management</h2>
+            <p>لا يعتمد وصول الطالب إلى المحتوى على عملية الشراء فقط، بل يمكن أن يتأثر بمجموعة من العوامل، مثل: Enrollment، Purchase، Package، Revision، Expiration، Rules، Exam Requirements، Homework Requirements، Student Status، Manual Activation، Manual Extension. وبذلك يصبح الوصول إلى المحتوى <strong>Access Decision</strong> وليس مجرد قيمة Boolean بسيطة.</p>
+        </div>
+
+        <!-- 14. Learning Rules -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. Learning Rules</h2>
+            <p>يمكن للمدرس أو المستخدم الإداري المخول وضع Rules للتحكم في رحلة الطالب. أمثلة:</p>
+            <h3>Sequential Access</h3>
+            <p>لا يستطيع الطالب الانتقال إلى Lesson معينة قبل إكمال Lesson سابقة.</p>
+            <h3>Video Completion</h3>
+            <p>يشترط مشاهدة نسبة معينة من الفيديو.</p>
+            <h3>Homework Requirement</h3>
+            <p>يشترط إكمال Homework قبل الانتقال.</p>
+            <h3>Exam Requirement</h3>
+            <p>يشترط اجتياز Exam قبل الوصول إلى محتوى معين.</p>
+            <h3>Expiration</h3>
+            <p>يغلق المحتوى بعد مدة محددة.</p>
+            <h3>Manual Extension</h3>
+            <p>يمكن للمسؤول تمديد صلاحية الطالب.</p>
+            <h3>Manual Blocking</h3>
+            <p>يمكن تعطيل وصول الطالب عند مخالفة قواعد المنصة.</p>
+        </div>
+
+        <!-- 15. Student Activity -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. Student Activity</h2>
+            <p>يسجل النظام نشاط الطالب التعليمي للمساعدة في تطبيق Rules وإنتاج التقارير. ومن البيانات المحتملة: Video Watched، Watching Progress، Watching Duration، Watching Speed، Last Access، Lesson Completion، Homework Status، Exam Attempts، Exam Results. وتستخدم هذه البيانات لاتخاذ قرارات الوصول وعرض مستوى تقدم الطالب.</p>
+        </div>
+
+        <!-- 16. Teacher Wall -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. Teacher Wall</h2>
+            <p>يمثل Teacher Wall مساحة تواصل تعليمية داخل Teacher Platform. يمكن للمدرس نشر: سؤال، شرح، إعلان، استفسار، Poll، تقييم، طلب رأي الطلاب، معلومات عن Exam، معلومات عن موعد، محتوى تعليمي مختصر.</p>
+            <p>ويمكن للطلاب التفاعل مع المنشورات من خلال Comments وPoll Responses والتفاعلات التي يتم اعتمادها مستقبلًا. ويظل Wall مرتبطًا بالبيئة التعليمية الخاصة بالمدرس.</p>
+        </div>
+
+        <!-- 17. Offline Students -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. Offline Students</h2>
+            <p>يدعم النظام الطلاب الذين يتعاملون مع المدرس خارج المنصة التعليمية Online. يمكن للمدرس أو المسؤول إضافة مجموعة كبيرة من الطلاب باستخدام Excel بدلًا من إنشاء كل طالب يدويًا. يمكن أن يحتوي الملف على: Name، Phone Number، Parent Phone، Address، بيانات أخرى. ويقوم النظام بإنشاء الحسابات بصورة جماعية. كما يمكن للمدرس منح الطالب Offline Access إلى محتوى Online محدد.</p>
+        </div>
+
+        <!-- 18. Wallet Domain -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. Wallet Domain</h2>
+            <p>لكل Student Wallet يمكن استخدامها في العمليات المالية داخل Teacher Platform. يمكن زيادة الرصيد عن طريق:</p>
+            <ol>
+                <li>Student يقوم بالتحويل.</li>
+                <li>يرسل بيانات التحويل أو صورة إثبات الدفع.</li>
+                <li>يقوم المسؤول المخول بمراجعة العملية.</li>
+                <li>يتم اعتماد العملية.</li>
+                <li>تتم إضافة Credit إلى Wallet.</li>
+            </ol>
+            <p>بعد ذلك يمكن للطالب استخدام الرصيد في شراء Course أو Package أو Revision أو Paid Exam أو خدمات تعليمية أخرى.</p>
+        </div>
+
+        <!-- 19. Financial Transactions -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. Financial Transactions</h2>
+            <p>كل تغيير مالي يجب أن ينتج عنه Financial Transaction قابلة للتتبع.</p>
+            <div class="diagram-box">Payment Request
+      ↓
+Review
+      ↓
+Approval
+      ↓
+Wallet Credit
+      ↓
+Purchase
+      ↓
+Wallet Debit
+      ↓
+Content Access</div>
+            <p>ويجب الاحتفاظ بسجل العمليات المالية لإنتاج التقارير والمراجعة.</p>
+        </div>
+
+        <!-- 20. Teacher Financial Subsystem -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. Teacher Financial Subsystem</h2>
+            <p>لكل Teacher Platform جزء مالي خاص بها. يمكن من خلاله معرفة: الطلاب الذين اشتروا، المحتوى الذي تم شراؤه، المبالغ المدفوعة، عمليات التحويل، عمليات إضافة Credit، عمليات الخصم، إجمالي الإيرادات، تفاصيل العمليات حسب الفترة، والتقارير المالية. ويجب الفصل منطقيًا بين البيانات المالية الخاصة بالمدرس والبيانات المالية الخاصة بالمنصة المركزية.</p>
+        </div>
+
+        <!-- 21. Central Financial Domain -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>21. Central Financial Domain</h2>
+            <p>Central Platform لديها نظام مالي مستقل عن النظام المالي للمدرس. يختص بالعمليات المتعلقة بـ: اشتراكات المدرسين، Teacher Plans، Payments، Coupons، Discounts، Subscription Status، Central Reports.</p>
+            <div class="diagram-box">Central Financial Domain
+        │
+        └── Teacher Subscription
+
+Teacher Financial Domain
+        │
+        ├── Student Wallet
+        ├── Purchases
+        ├── Payments
+        └── Educational Revenue</div>
+        </div>
+
+        <!-- 22. Coupon Domain -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>22. Coupon Domain</h2>
+            <p>يدعم النظام Coupons على مستويين:</p>
+            <h3>Central Coupon</h3>
+            <p>يتم إنشاؤه من Central Platform ويمكن استخدامه مع المدرسين. يمكن أن تكون قيمة الخصم نسبة مئوية أو قيمة مالية أو خصم كامل 100%. وفي حالة الخصم الكامل تصبح القيمة المستحقة <strong>0</strong> ويتم تسجيل العملية في التقارير.</p>
+            <h3>Teacher Coupon</h3>
+            <p>يمكن للمدرس إنشاء Coupon خاص بطلابه وفقًا للقواعد التي يحددها. ويجب أن يحتوي على: Code، Discount، Expiration، Applicable Product / Plan، Usage Policy، Status.</p>
+        </div>
+
+        <!-- 23. Video Integration -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>23. Video Integration</h2>
+            <p>الفيديو ليس جزءًا أساسيًا من تخزين النظام. سيتم التعامل معه من خلال <strong>External Video Provider</strong> متخصص في Video Hosting وStreaming وContent Protection وWatermark وAccess Control. ويجب أن يكون النظام قادرًا على إرسال الفيديو إلى المزود الخارجي من خلال API والحصول على بيانات الفيديو اللازمة لتشغيله داخل المنصة. ويجب ألا يعتمد التصميم الداخلي على Provider واحد بشكل مباشر.</p>
+        </div>
+
+        <!-- 24. Content Protection -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>24. Content Protection</h2>
+            <p>عند تشغيل Video للطالب، يجب أن يستطيع النظام تمرير بيانات تعريفية مناسبة إلى خدمة الفيديو لاستخدامها في Dynamic Watermark. قد تتضمن Student ID وEmail وبيانات تعريفية أخرى. الهدف هو ردع مشاركة المحتوى وربط التسجيل أو النسخة المسربة بالحساب المستخدم في المشاهدة. وتظل الحماية مسؤولية مشتركة بين النظام وخدمة الفيديو المختارة.</p>
+        </div>
+
+        <!-- 25. Identity & Access -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>25. Identity & Access</h2>
+            <p>يحتاج النظام إلى إدارة موحدة للهوية والصلاحيات، وتشمل Authentication وAuthorization وRoles وPermissions وSessions وAccount Status. ويجب أن يتمكن النظام من تحديد:</p>
+            <blockquote>Who is the user? ← Which Teacher Platform does the user belong to? ← What is the user allowed to do?</blockquote>
+        </div>
+
+        <!-- 26. Relationship Between Central and Teacher Platforms -->
+        <div class="section-card">
+            <span class="section-number">القسم 26</span>
+            <h2>26. Relationship Between Central and Teacher Platforms</h2>
+            <div class="diagram-box">Central Platform
+        │
+        ├── Teacher Account
+        │       │
+        │       └── Teacher Platform
+        │
+        ├── Teacher Account
+        │       │
+        │       └── Teacher Platform
+        │
+        └── Teacher Account
+                │
+                └── Teacher Platform</div>
+            <p>Central Platform هي المالكة للمنظومة. Teacher Platform هي المساحة التشغيلية الخاصة بالمدرس. والمدرس مسؤول عن إدارة المساحة الخاصة به وفق الباقة والصلاحيات الممنوحة له.</p>
+        </div>
+
+        <!-- 27. Administrative Boundaries -->
+        <div class="section-card">
+            <span class="section-number">القسم 27</span>
+            <h2>27. Administrative Boundaries</h2>
+            <h3>Central Administration</h3>
+            <p>مسؤول عن النظام بالكامل. يمكنه إدارة Teachers وTeacher Platforms وPlans وCentral Coupons وCentral Payments وSystem Reports وPlatform-level configuration.</p>
+            <h3>Teacher Administration</h3>
+            <p>مسؤول عن Teacher Platform محددة. يمكنه إدارة Students وCourses وPackages وRevisions وExams وWall وRules وAssistants وFinancial Operations وReports. ويجب ألا يؤدي وجود Teacher Admin إلى منحه صلاحيات على Central Platform.</p>
+        </div>
+
+        <!-- 28. High-Level Data Flow -->
+        <div class="section-card">
+            <span class="section-number">القسم 28</span>
+            <h2>28. High-Level Data Flow</h2>
+            <p>مثال لرحلة شراء طالب:</p>
+            <div class="diagram-box">Student
+   ↓
+Teacher Platform
+   ↓
+Select Course / Package / Revision / Exam
+   ↓
+Check Wallet
+   ↓
+Financial Transaction
+   ↓
+Purchase
+   ↓
+Access Granted
+   ↓
+Content Available</div>
+            <p>وفي حالة عدم وجود رصيد كافٍ:</p>
+            <div class="diagram-box">Student
+   ↓
+Payment / Transfer
+   ↓
+Review by Authorized User
+   ↓
+Approval
+   ↓
+Wallet Credit
+   ↓
+Purchase
+   ↓
+Access</div>
+        </div>
+
+        <!-- 29. Technology Direction -->
+        <div class="section-card">
+            <span class="section-number">القسم 29</span>
+            <h2>29. Technology Direction</h2>
+            <p>التوجه التقني المعتمد للمشروع هو:</p>
+            <h3>Backend</h3>
+            <p><strong>ASP.NET Core Web API</strong></p>
+            <h3>Database</h3>
+            <p><strong>PostgreSQL</strong></p>
+            <h3>Architecture Approach</h3>
+            <p><strong>Domain-Driven Design (DDD)</strong></p>
+            <h3>Frontend</h3>
+            <p><strong>Next.js</strong> مع React للاستفادة من إمكانيات React مع دعم احتياجات الـSEO وتجربة المستخدم.</p>
+            <p>ولا تعتبر هذه الوثيقة مكانًا لتفصيل الـFrameworks أو Libraries أو بنية المشاريع البرمجية؛ سيتم توثيق ذلك في الوثائق التقنية اللاحقة.</p>
+        </div>
+
+        <!-- 30. Architectural Principles -->
+        <div class="section-card">
+            <span class="section-number">القسم 30</span>
+            <h2>30. Architectural Principles</h2>
+            <p>يعتمد التصميم على المبادئ التالية:</p>
+            <h3>Separation of Concerns</h3>
+            <p>فصل المسؤوليات بين المجالات المختلفة.</p>
+            <h3>Domain Isolation</h3>
+            <p>كل Domain مسؤول عن منطق الأعمال الخاص به.</p>
+            <h3>Multi-Tenant Isolation</h3>
+            <p>عزل بيانات كل Teacher Platform.</p>
+            <h3>Security by Design</h3>
+            <p>الأمان جزء من التصميم وليس إضافة لاحقة.</p>
+            <h3>Financial Integrity</h3>
+            <p>العمليات المالية قابلة للتتبع والمراجعة.</p>
+            <h3>External Service Independence</h3>
+            <p>تقليل الاعتماد المباشر على مزودي الخدمات الخارجية.</p>
+            <h3>Scalability</h3>
+            <p>إمكانية نمو عدد المدرسين والطلاب دون إعادة بناء النظام.</p>
+            <h3>Extensibility</h3>
+            <p>إمكانية إضافة وظائف جديدة مستقبلًا بأقل تأثير ممكن.</p>
+        </div>
+
+        <!-- 31. حدود المسؤوليات -->
+        <div class="section-card">
+            <span class="section-number">القسم 31</span>
+            <h2>31. حدود المسؤوليات</h2>
+            <h3>Central Platform مسؤولة عن</h3>
+            <ul>
+                <li>إدارة المدرسين.</li>
+                <li>إدارة Teacher Platforms.</li>
+                <li>اشتراكات المدرسين.</li>
+                <li>Plans.</li>
+                <li>Central Coupons.</li>
+                <li>الإدارة المركزية.</li>
+                <li>التقارير المركزية.</li>
+            </ul>
+            <h3>Teacher Platform مسؤولة عن</h3>
+            <ul>
+                <li>الطلاب.</li>
+                <li>المحتوى.</li>
+                <li>Courses.</li>
+                <li>Packages.</li>
+                <li>Revisions.</li>
+                <li>Exams.</li>
+                <li>Rules.</li>
+                <li>Wall.</li>
+                <li>Student Activity.</li>
+                <li>Wallet.</li>
+                <li>العمليات المالية الخاصة بالطلاب.</li>
+                <li>تقارير المدرس.</li>
+            </ul>
+            <h3>External Providers مسؤولة عن</h3>
+            <ul>
+                <li>الخدمات التي يتم تفويضها إليها مثل Video Hosting وVideo Protection.</li>
+            </ul>
+            <p>ويجب أن تبقى مسؤوليات كل طرف واضحة حتى لا ينتقل منطق العمل الأساسي للنظام إلى خدمة خارجية.</p>
+        </div>
+
+        <!-- 32. Architectural Goal -->
+        <div class="section-card">
+            <span class="section-number">القسم 32</span>
+            <h2>32. Architectural Goal</h2>
+            <p>الهدف النهائي من هذه المعمارية هو إنشاء منصة مركزية تستطيع استضافة عدد كبير من Teacher Platforms، بحيث يحصل كل مدرس على بيئة تعليمية متكاملة ومستقلة دون الحاجة إلى بناء نظام خاص به.</p>
+            <p>وفي الوقت نفسه تحتفظ ProNileSoft بالقدرة على: إدارة المنظومة بالكامل، التحكم في اشتراكات المدرسين، مراقبة حالة المنصات، استخراج التقارير المركزية، تطوير النظام بشكل مستمر، إضافة خدمات جديدة، والتوسع في عدد المدرسين والطلاب.</p>
+        </div>
+
+        <!-- 33. الخلاصة -->
+        <div class="section-card">
+            <span class="section-number">القسم 33</span>
+            <h2>33. الخلاصة المعمارية</h2>
+            <p>يمكن تلخيص النظام في النموذج التالي:</p>
+            <div class="diagram-box">                         Central Platform
+                                │
+             ┌──────────────────┼──────────────────┐
+             │                  │                  │
+        Teacher Platform   Teacher Platform   Teacher Platform
+             │                  │                  │
+       ┌─────┼─────┐      ┌─────┼─────┐      ┌─────┼─────┐
+       │     │     │      │     │     │      │     │     │
+    Students Content  Finance Students Content Finance Students ...
+       │
+       ├── Courses
+       ├── Packages
+       ├── Revisions
+       ├── Exams
+       ├── Wall
+       ├── Rules
+       ├── Activity
+       └── Wallet
+                                │
+                                ↓
+                     External Service Providers
+                         (Video / Payment)</div>
+            <p>تمثل هذه المعمارية الأساس الذي سيتم البناء عليه في الوثائق التالية، خصوصًا <strong>Bounded Contexts & Domain Architecture</strong> و<strong>Application Architecture</strong> و<strong>Database Architecture</strong> و<strong>Security Architecture</strong>.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • Architecture Overview & System Architecture v1.0 • Eng. Wael Sayed
+        </div>
+    </div>
+</body>
+</html>

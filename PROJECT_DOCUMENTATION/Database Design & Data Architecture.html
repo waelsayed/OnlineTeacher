@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Database Design & Data Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, .data-box, .diagram-box, table {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .diagram-box {
+            background: #f5f9ff;
+            border: 1px solid #c9dff0;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 1.2rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.8;
+            color: #13354a;
+            font-size: 0.9rem;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            color: #193e59;
+            font-size: 1.05rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+        }
+
+        th {
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid #1a5a72;
+        }
+
+        td {
+            padding: 0.7rem 1rem;
+            border: 1px solid #dbe4ed;
+            text-align: right;
+            background: #fcfdfe;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .diagram-box {
+                font-size: 0.7rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Database Design & Data Architecture</h1>
+            <div class="subtitle">Online Teacher Platform</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">📄</span> <strong>Type:</strong> Database & Data Architecture</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+            </div>
+        </div>
+
+        <!-- 1. Purpose -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. Purpose</h2>
+            <p>تهدف هذه الوثيقة إلى تحديد التصميم المنطقي للبيانات وقاعدة البيانات لمنصة <strong>Online Teacher</strong>، وتحديد الكيانات الرئيسية والعلاقات بينها، وحدود ملكية البيانات، وقواعد تخزين البيانات، بما يتوافق مع الـDomain Model والـBounded Contexts والـFunctional Requirements السابقة.</p>
+            <p>تعتمد المنصة على <strong>PostgreSQL</strong> كقاعدة البيانات الأساسية، مع تصميم يسمح بالتوسع مستقبلًا دون ربط الـDomain Model مباشرة بتفاصيل الـInfrastructure.</p>
+        </div>
+
+        <!-- 2. Data Architecture Principles -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. Data Architecture Principles</h2>
+            <h3>2.1 Single Student Identity</h3>
+            <p>الطالب يمتلك Account واحد فقط على الـCentral Platform. نفس الـStudent Account يمكنه التعامل مع أكثر من Teacher Platform.</p>
+            <div class="diagram-box">Student
+ ├── Teacher Platform A
+ ├── Teacher Platform B
+ └── Teacher Platform C</div>
+            <p>ولا يتم إنشاء Student Account جديد لكل Teacher.</p>
+            <h3>2.2 Teacher Platform Ownership</h3>
+            <p>كل Teacher يمتلك Teacher Platform مستقلة منطقيًا. البيانات الخاصة بالـTeacher Platform تكون مرتبطة بها، ولا يتم اعتبار الطالب مالكًا لهذه البيانات.</p>
+            <div class="diagram-box">Central Platform
+       │
+       ├── Teacher
+       │      └── Teacher Platform
+       │              ├── Courses
+       │              ├── Students
+       │              ├── Posts
+       │              ├── Exams
+       │              └── Financial Data
+       │
+       └── Other Teachers</div>
+        </div>
+
+        <!-- 3. Identity Model -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. Identity Model</h2>
+            <h3>3.1 User</h3>
+            <p>الـUser هو الـIdentity الأساسية في النظام. يمكن أن يمثل: Student أو Teacher أو Teacher Platform Admin أو Teacher Platform Assistant أو Central Platform Admin أو Central Platform Support أو Central Platform Owner. ولا يتم إنشاء Identity منفصلة للـUser عند انتقاله بين Teacher Platforms.</p>
+            <h3>3.2 Roles</h3>
+            <p>الـRole ليست هي مصدر الصلاحيات النهائي. الـRole الأساسية محدودة مثل Teacher وAdmin وAssistant. أما الصلاحيات الفعلية فتحدد بشكل Dynamic لكل User.</p>
+            <div class="diagram-box">User
+ ├── Role
+ └── Permissions</div>
+            <p>ولا يتم إنشاء Role جديدة لكل مجموعة صلاحيات.</p>
+        </div>
+
+        <!-- 4. Teacher Platform Identity -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. Teacher Platform Identity</h2>
+            <p>لكل Teacher Platform هوية عامة مستقلة عن الـDatabase Identity الداخلية. يتم استخدام <strong>Public GUID</strong> للـrouting والـpublic identification بدل استخدام الـnumeric database ID.</p>
+            <div class="diagram-box">https://liveteacher.com/{public-id}/{slug}
+
+Example:
+https://liveteacher.com/8d2e.../mr-ahmed</div>
+            <p>ويتم التحقق من الاثنين معًا: <code>PublicId + Slug</code>. ولا يعتبر الـSlug وحده كافيًا. إذا تغير الـSlug يتم تحديثه ويظل الـPublic ID ثابتًا.</p>
+        </div>
+
+        <!-- 5. Academic Structure -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. Academic Structure</h2>
+            <p>الـCourse مرتبط بالـAcademic Structure. العلاقة المنطقية:</p>
+            <div class="diagram-box">Academic Year
+      │
+      └── Subject
+             │
+             └── Grade
+                    │
+                    └── Course</div>
+            <p>الـCourse يمثل منهجًا محددًا في سنة دراسية محددة. مثال: Academic Year: 2026، Grade: First Preparatory، Study Type: Languages، Subject: Science، Term: First Term، Course: Science - First Preparatory - 2026 - Term 1. الـAcademic Year عنصر أساسي في هوية الـCourse.</p>
+        </div>
+
+        <!-- 6. Course Structure -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. Course Structure</h2>
+            <div class="diagram-box">Course
+  │
+  ├── Unit
+  │     ├── Lesson
+  │     ├── Lesson
+  │     └── Lesson
+  │
+  ├── Revision
+  │
+  └── Exams</div>
+            <h3>6.1 Course</h3>
+            <p>يمثل المنهج أو المادة التي يقدمها Teacher. ويحتوي على Teacher Platform وAcademic Year وGrade وSubject وStudy Type وTerm وTitle وDescription وStatus وVisibility وArchive State.</p>
+            <h3>6.2 Unit</h3>
+            <p>الـUnit جزء من Course محدد. ولا يتم تصميمها ككيان reusable مستقل بين المناهج.</p>
+            <h3>6.3 Lesson</h3>
+            <p>الـLesson هي الوحدة التعليمية الأساسية داخل الـUnit. يمكن أن تحتوي على Video وPDF وHomework وExam وAdditional Files وAccess Rules.</p>
+        </div>
+
+        <!-- 7. Revision -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. Revision</h2>
+            <p>الـRevision يعتبر <strong>Learning Content</strong> مرتبطًا بالـCourse، لكنه ليس Unit داخل الـCourse.</p>
+            <div class="diagram-box">Course
+ ├── Unit 1
+ ├── Unit 2
+ ├── Revision 1
+ ├── Unit 3
+ └── Revision 2</div>
+            <p>كما يمكن أن تكون Revision Free أو Paid، ويظل ارتباطها بالـCourse محفوظًا.</p>
+        </div>
+
+        <!-- 8. Content Access -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. Content Access</h2>
+            <p>يتم فصل تعريف المحتوى عن صلاحية الطالب للوصول إليه.</p>
+            <div class="diagram-box">Lesson
+   │
+   └── Access Rules
+
+Student
+   │
+   └── Student Content Access</div>
+            <p>يمكن للـLesson أن تكون Free أو Paid أو Hidden أو Disabled أو Restricted. كما يمكن أن تحتوي على Rules تعتمد على محتوى سابق مثل: Lesson 5 requires Lesson 4 completed.</p>
+        </div>
+
+        <!-- 9. Student Enrollment -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. Student Enrollment</h2>
+            <p>الـEnrollment يمثل علاقة الطالب بالمحتوى الذي حصل على Access له.</p>
+            <div class="diagram-box">Student
+    │
+    └── Enrollment
+             │
+             ├── Course
+             ├── Revision
+             └── Exam</div>
+            <p>في حالة Course Enrollment: <code>Student ← Course</code> يتم تلقائيًا إنشاء <code>Student ← Follow Teacher</code> إذا لم يكن موجودًا.</p>
+        </div>
+
+        <!-- 10. Follow Relationship -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. Follow Relationship</h2>
+            <p>الـFollow يمثل علاقة الطالب بالـTeacher Platform بهدف متابعة الـPublic وPrivate Feed وفق الصلاحيات.</p>
+            <h3>Manual Follow</h3>
+            <p>الطالب يختار Follow للـTeacher.</p>
+            <h3>Automatic Follow</h3>
+            <p>عند Enrollment في Course يتم إنشاء Follow تلقائيًا.</p>
+            <h3>Unfollow</h3>
+            <p>إذا كان الـFollow ناتجًا عن Enrollment، لا يمكن إلغاؤه طالما الـEnrollment قائم. بعد Unenrollment يمكن إزالة الـFollow.</p>
+        </div>
+
+        <!-- 11. Student Type -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. Student Type</h2>
+            <p>الطالب يمكن أن يكون Online Student أو Offline Student. الـOffline Student هو طالب تم تسجيله بواسطة Teacher أو Assistant، بهدف السماح له باستخدام المنصة بجانب الدراسة Offline. الـOffline Student ليس Group أو Class مستقل.</p>
+        </div>
+
+        <!-- 12. Offline Student Access -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. Offline Student Access</h2>
+            <p>يمكن للـTeacher تحديد ما إذا كان الـOffline Student يستطيع مشاهدة الفيديوهات.</p>
+            <div class="diagram-box">Offline Student
+      │
+      ├── Video Access Allowed
+      │
+      └── Video Access Restricted</div>
+            <p>حتى عند منع الفيديو يمكن السماح له بـPDF وHomework وWall وInternal Messages. ويمكن للـAssistant تعديل صلاحيات الوصول أو تحويل الطالب من Offline إلى Online.</p>
+        </div>
+
+        <!-- 13. Content Progress -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. Content Progress</h2>
+            <p>يتم تسجيل تقدم الطالب بشكل مستقل عن تعريف الـContent.</p>
+            <div class="diagram-box">Student
+   │
+   └── Content Progress
+          │
+          ├── Lesson
+          ├── Video
+          ├── Exam
+          └── Homework</div>
+            <p>بالنسبة للفيديو يتم الاعتماد على Video Provider للحصول على معلومات مثل Watch Progress وSession وAttempts وPlayback State. ويتم التعامل معه من خلال Abstraction Layer.</p>
+        </div>
+
+        <!-- 14. Exams -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. Exams</h2>
+            <p>الـExam مرتبط بالـCourse أو بالجزء التعليمي المناسب. خصائصه الأساسية: Online / Offline، Free / Paid، Start Date، End Date، Duration، Questions، Answers، Passing / Grading Rules. الـOnline Exam يمكن أن يكون له Timer يبدأ عند فتح الطالب للامتحان.</p>
+        </div>
+
+        <!-- 15. Exam Questions -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. Exam Questions</h2>
+            <p>الـQuestion يتم تخزينه ككيان مستقل. الـTeacher هو المسؤول عن إنشاء الأسئلة وتحديد الإجابات الصحيحة. الإصدارات الأولى تدعم Multiple Choice (إجابة واحدة صحيحة) وEssay (Text Answer).</p>
+            <div class="diagram-box">Question
+ ├── Answer A
+ ├── Answer B
+ ├── Answer C
+ └── Answer D</div>
+        </div>
+
+        <!-- 16. Exam Attempt -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. Exam Attempt</h2>
+            <p>الـExam Attempt هو سجل لمحاولة الطالب ويعتبر من أهم مصادر الـStudent Activity. يحتوي على Student وExam وStarted At وSubmitted At وDuration وStatus وScore وAnswers. ويجب الحفاظ على History المحاولات وعدم تعديل المحاولة القديمة بشكل يؤدي إلى فقدان الـAudit History.</p>
+        </div>
+
+        <!-- 17. Homework -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. Homework</h2>
+            <p>الـHomework مرتبط بالـLearning Content. في الإصدار الأول يمكن أن يعتمد على PDF وImage وUploaded File. ويستطيع الطالب رفع الحل.</p>
+            <div class="diagram-box">Homework
+      │
+      └── Submission
+              │
+              ├── Student
+              ├── File
+              └── Submitted At</div>
+            <p>يمكن لاحقًا إضافة أنواع أخرى من Homework دون تغيير الـDomain الأساسي.</p>
+        </div>
+
+        <!-- 18. Wallet -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. Wallet</h2>
+            <p>لكل Student Wallet داخل Teacher Platform. الـWallet ليست Wallet مركزية مملوكة للـCentral Platform.</p>
+            <div class="diagram-box">Teacher Platform
+      │
+      └── Student Wallet</div>
+            <p>الـCentral Platform لا يدير أموال الطالب مباشرة.</p>
+        </div>
+
+        <!-- 19. Financial Ledger -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. Financial Ledger</h2>
+            <p>لا يتم الاعتماد على <code>Wallet.Balance</code> فقط كمصدر تاريخي للعمليات. يتم إنشاء Ledger Transactions لكل عملية مالية.</p>
+            <div class="diagram-box">Wallet
+   │
+   └── Ledger
+        ├── Deposit
+        ├── Purchase
+        ├── Refund
+        ├── Coupon Credit
+        └── Adjustment</div>
+            <p>كل Transaction يجب أن تحتوي على Amount وTransaction Type وDate/Time وBalance Before وBalance After وReference وActor وStatus.</p>
+        </div>
+
+        <!-- 20. External Payment Activation -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. External Payment Activation</h2>
+            <p>المنصة لا تعتمد حاليًا على Payment Gateway Integrated. العملية تكون:</p>
+            <div class="diagram-box">Student
+   │
+   └── External Transfer
+          │
+          └── Assistant
+                │
+                └── Activation</div>
+            <p>الـAssistant يقوم بتسجيل وتأكيد العملية. بعد التأكيد يتم إنشاء Financial Transaction داخل النظام. وبذلك يمكن معرفة Amount وPayment Method وTransfer Reference وProof File وActivated By وActivation Date.</p>
+        </div>
+
+        <!-- 21. Purchase -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>21. Purchase</h2>
+            <p>عند شراء Content:</p>
+            <div class="diagram-box">Wallet
+   │
+   └── Purchase
+          │
+          ├── Amount
+          ├── Content
+          └── Enrollment</div>
+            <p>إذا كان الرصيد غير كافٍ: <code>Purchase = Rejected</code>. ولا يتم السماح للطالب بالدخول في Negative Balance.</p>
+        </div>
+
+        <!-- 22. Refund -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>22. Refund</h2>
+            <p>الـRefund يتم التعامل معه كعملية مالية مستقلة. إذا لم يتم Enrollment: Deposit ← Refund ← Wallet restored. أما إذا حدث Enrollment واستخدم الطالب جزءًا من المحتوى، فيمكن تحديد المبلغ المستحق وفق سياسة الـRefund.</p>
+            <p>بعد الـRefund: <code>Enrollment ← Unenrolled / Revoked</code> ويتم تعطيل الوصول إلى الجزء الملغي. الـRefund لا يمثل مسؤولية مالية على الـCentral Platform تجاه الطالب.</p>
+        </div>
+
+        <!-- 23. Coupons -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>23. Coupons</h2>
+            <p>الكوبون له Owner/Issuer وTarget. يوجد نوعان رئيسيان:</p>
+            <h3>Teacher Coupon</h3>
+            <p>يصدره Teacher لاستخدامه مع Student. يمكن أن يكون Fixed Amount أو Percentage، ويتم ربطه بـStudent محدد.</p>
+            <h3>Central Platform Coupon</h3>
+            <p>يصدر من Central Platform لاستخدامه مع Teacher Subscription، ويتم ربطه بـSubscription Plan.</p>
+        </div>
+
+        <!-- 24. Coupon Lifecycle -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>24. Coupon Lifecycle</h2>
+            <div class="diagram-box">Created
+   ↓
+Assigned
+   ↓
+Available
+   ↓
+Consumed
+   ↓
+Expired</div>
+            <p>الكوبون One-time use، له Expiration Date، لا يمكن إعادة استخدامه بعد Consumption، ولا يمكن Renew له بعد Expiration.</p>
+        </div>
+
+        <!-- 25. Teacher Subscription -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>25. Teacher Subscription</h2>
+            <p>الـTeacher Subscription تخص العلاقة بين Teacher وCentral Platform. ولا ترتبط مباشرة بـStudent Purchases. الـPlan يمكن أن يحدد Limits مثل Number of Courses وNumber of Exams وNumber of Assistants وStorage وVideo Usage وBandwidth وStudent Capacity. بعض الـLimits ستعتمد على Video Provider.</p>
+        </div>
+
+        <!-- 26. Subscription Lifecycle -->
+        <div class="section-card">
+            <span class="section-number">القسم 26</span>
+            <h2>26. Subscription Lifecycle</h2>
+            <div class="diagram-box">Pending
+   ↓
+Active
+   ↓
+Expired
+   ↓
+Renewed</div>
+            <p>كما يمكن: Active ← Upgraded. ولا يتم دعم Downgrade. إذا أراد Teacher تقليل الباقة، يتم إنهاء الاشتراك الحالي وبدء اشتراك جديد.</p>
+        </div>
+
+        <!-- 27. Posts / Wall -->
+        <div class="section-card">
+            <span class="section-number">القسم 27</span>
+            <h2>27. Posts / Wall</h2>
+            <p>الـPost مرتبط بالـTeacher Platform. أنواع المحتوى الأساسية: Text وImage وPoll. الـPost يمكن أن يكون Public أو Course-specific أو Hidden أو Archived أو Pinned أو Announcement. ولا يتم تحديد الـPost لطالب فردي.</p>
+        </div>
+
+        <!-- 28. Post Visibility -->
+        <div class="section-card">
+            <span class="section-number">القسم 28</span>
+            <h2>28. Post Visibility</h2>
+            <p>يمكن أن يكون الـPost: <strong>Public</strong> (يظهر في Discovery والـCentral Platform) أو <strong>Course Audience</strong> (يظهر للطلاب المسجلين في Course محدد) أو <strong>Hidden</strong>. ولا يتم دعم Student-by-Student targeting في الإصدار الأساسي.</p>
+        </div>
+
+        <!-- 29. Social Interactions -->
+        <div class="section-card">
+            <span class="section-number">القسم 29</span>
+            <h2>29. Social Interactions</h2>
+            <p>يدعم الـPost: Like وComment وReply وReport. الـComment يمكن أن يصدر من Student أو Teacher أو Assistant أو Admin حسب الصلاحيات والعلاقة مع الـTeacher Platform. يمكن لصاحب الـComment حذفه، ويمكن لصاحب الـPost حذف Comments على Post الخاص به.</p>
+        </div>
+
+        <!-- 30. Notifications -->
+        <div class="section-card">
+            <span class="section-number">القسم 30</span>
+            <h2>30. Notifications</h2>
+            <p>يوجد Notification System موحد، مع ارتباط كل Notification بالـDomain الذي أنشأها. أمثلة: Exam، Homework، Payment، Coupon، Subscription، Content Update، Message. يمكن أن يكون المستلم Student أو Parent أو Teacher أو Assistant أو Central Admin. ويتم الاحتفاظ بتاريخ الإرسال والقراءة.</p>
+        </div>
+
+        <!-- 31. Internal Messaging -->
+        <div class="section-card">
+            <span class="section-number">القسم 31</span>
+            <h2>31. Internal Messaging</h2>
+            <p>الـMessaging يسمح بالتواصل بين الأطراف المصرح لهم. الطالب يستطيع التواصل مع Teacher Platform بعد وجود العلاقة المناسبة مثل Follow/Enrollment وفق قواعد النظام. يمكن للـTeacher أو Assistant إرسال رسالة إلى Student أو مجموعة الطلاب المسجلين في Course. ولا يعتمد الإرسال الجماعي على Follow فقط عندما تكون الرسالة خاصة بالـCourse؛ بل على Enrollment.</p>
+        </div>
+
+        <!-- 32. Parent Relationship -->
+        <div class="section-card">
+            <span class="section-number">القسم 32</span>
+            <h2>32. Parent Relationship</h2>
+            <p>الـParent يمكن ربطه بالـStudent. يمكن أن يستقبل Notifications مرتبطة بالطالب مثل Exam Result وStudent Progress وPayment وImportant Notifications. ويجب أن يكون الربط بين Parent وStudent مستقلًا عن Teacher Platform.</p>
+        </div>
+
+        <!-- 33. File Management -->
+        <div class="section-card">
+            <span class="section-number">القسم 33</span>
+            <h2>33. File Management</h2>
+            <p>الملفات يتم تمثيلها كـFile Metadata داخل النظام. يمكن أن يكون مرتبطًا بـTeacher أو Course أو Lesson أو Homework أو Homework Submission أو Exam أو Post أو Payment Proof أو Teacher Profile. ويتم حفظ File ID وOwner وStorage Reference وFile Type وSize وCreated At وStatus. أما التخزين الفعلي فيمكن أن يكون في Storage Provider مستقل.</p>
+        </div>
+
+        <!-- 34. Audit Trail -->
+        <div class="section-card">
+            <span class="section-number">القسم 34</span>
+            <h2>34. Audit Trail</h2>
+            <p>كل العمليات المهمة داخل النظام يجب أن تكون قابلة للتتبع. الـAudit Event يجب أن يحتوي على Actor وActor Type وTenant / Platform وAction وEntity وEntity ID وTimestamp وIP وStation ID وDevice Information وPrevious Value وNew Value عند الحاجة.</p>
+            <div class="diagram-box">Assistant Ahmed
+    Activated Payment
+    Student: 123
+    Amount: 500
+    IP: ...
+    Station: ...
+    Device: ...
+    Time: ...</div>
+            <p>يتم تصميم الـAudit Trail بطريقة قابلة للتوسع وجمع الأحداث من مختلف الـDomains.</p>
+        </div>
+
+        <!-- 35. Security & Login History -->
+        <div class="section-card">
+            <span class="section-number">القسم 35</span>
+            <h2>35. Security & Login History</h2>
+            <p>يتم تسجيل Login History للمستخدمين. ويشمل User وLogin Time وLogout Time وIP وDevice وStation وStatus وAuthentication Result. ويطبق ذلك على Student وTeacher وAssistant وTeacher Admin وCentral Admin وCentral Support.</p>
+        </div>
+
+        <!-- 36. User Activation State -->
+        <div class="section-card">
+            <span class="section-number">القسم 36</span>
+            <h2>36. User Activation State</h2>
+            <p>لا يتم حذف المستخدم عند إيقافه. بدلًا من ذلك يتم استخدام Status مثل Active وBlocked وDeactivated وSuspended. مثال: إذا قام Teacher بإيقاف Assistant يصبح Status = Deactivated ولا يستطيع الدخول. ويتم الاحتفاظ بالـHistory والـAudit Records.</p>
+        </div>
+
+        <!-- 37. Soft Delete & Archiving -->
+        <div class="section-card">
+            <span class="section-number">القسم 37</span>
+            <h2>37. Soft Delete & Archiving</h2>
+            <p>الـBusiness Data المهمة لا يتم حذفها Hard Delete بشكل افتراضي. يتم استخدام Archived وDeleted وDeactivated وHidden بحسب نوع الكيان. خصوصًا Courses وUnits وLessons وExams وPosts وFinancial Records وAudit Records. الـFinancial وAudit Records يجب الحفاظ عليها تاريخيًا.</p>
+        </div>
+
+        <!-- 38. Multi-Platform Data Isolation -->
+        <div class="section-card">
+            <span class="section-number">القسم 38</span>
+            <h2>38. Multi-Platform Data Isolation</h2>
+            <p>يجب أن يكون هناك فصل واضح بين بيانات الـTeacher Platforms. Student واحد يمكن أن يظهر في أكثر من Platform، لكن العلاقة نفسها تكون مستقلة لكل Platform.</p>
+        </div>
+
+        <!-- 39. Central Platform Data -->
+        <div class="section-card">
+            <span class="section-number">القسم 39</span>
+            <h2>39. Central Platform Data</h2>
+            <p>الـCentral Platform owns: Teachers، Teacher Platforms، Teacher Subscriptions، Subscription Plans، Central Coupons، Teacher Payments، Central Administration، Central Reports. ولا تمتلك Student Wallet الخاصة بالـTeacher Platform.</p>
+        </div>
+
+        <!-- 40. Teacher Platform Data -->
+        <div class="section-card">
+            <span class="section-number">القسم 40</span>
+            <h2>40. Teacher Platform Data</h2>
+            <p>الـTeacher Platform owns: Students Relationships، Courses، Units، Lessons، Revisions، Exams، Homework، Student Wallets، Purchases، Refunds، Teacher Coupons، Posts، Messages، Student Progress.</p>
+        </div>
+
+        <!-- 41. Core Relationship Model -->
+        <div class="section-card">
+            <span class="section-number">القسم 41</span>
+            <h2>41. Core Relationship Model</h2>
+            <div class="diagram-box">User
+ │
+ ├── Student Profile
+ │
+ └── Teacher Profile
+        │
+        └── Teacher Platform
+                │
+                ├── Courses
+                │     ├── Units
+                │     │     └── Lessons
+                │     ├── Revisions
+                │     └── Exams
+                │
+                ├── Posts
+                ├── Coupons
+                ├── Wallets
+                ├── Financial Transactions
+                ├── Messages
+                └── Permissions
+
+Student
+ │
+ ├── Teacher Platform A
+ │      ├── Follow
+ │      ├── Enrollment
+ │      ├── Wallet
+ │      └── Progress
+ │
+ ├── Teacher Platform B
+ │      ├── Follow
+ │      ├── Enrollment
+ │      ├── Wallet
+ │      └── Progress
+ │
+ └── Teacher Platform C
+        ├── Follow
+        ├── Enrollment
+        ├── Wallet
+        └── Progress</div>
+        </div>
+
+        <!-- 42. Data Ownership Rule -->
+        <div class="section-card">
+            <span class="section-number">القسم 42</span>
+            <h2>42. Data Ownership Rule</h2>
+            <blockquote>كل Domain يملك بياناته ومسؤولية تعديلها، ولا يتم السماح للـDomain الآخر بالتعديل المباشر على بياناته.</blockquote>
+            <p>مثال: Central Platform owns Teacher Subscription. Teacher Platform owns Student Wallet. Student does not own the Wallet. وبذلك يتم الحفاظ على حدود واضحة بين الـBounded Contexts.</p>
+        </div>
+
+        <!-- 43. Database ID Strategy -->
+        <div class="section-card">
+            <span class="section-number">القسم 43</span>
+            <h2>43. Database ID Strategy</h2>
+            <p>يتم استخدام Database Primary Keys مناسبة للـInternal Relations. ولا يتم كشف الـInternal Numeric IDs في الـPublic URLs. للعناصر التي تحتاج Public Identification يتم توفير <code>PublicId = GUID</code> ثابت.</p>
+        </div>
+
+        <!-- 44. Extensibility -->
+        <div class="section-card">
+            <span class="section-number">القسم 44</span>
+            <h2>44. Extensibility</h2>
+            <p>التصميم يجب أن يسمح مستقبلًا بإضافة Payment Gateway وAdditional Video Providers وAdditional Homework Types وAdditional Exam Question Types وAI Learning Assistant وAdditional Notification Channels وAdditional Subscription Features دون إعادة تصميم الـCore Domain.</p>
+        </div>
+
+        <!-- 45. Important Architectural Decision -->
+        <div class="section-card">
+            <span class="section-number">القسم 45</span>
+            <h2>45. Important Architectural Decision</h2>
+            <p>قاعدة البيانات ليست هي الـDomain Model. يجب الفصل بين Domain Model وApplication Layer وPersistence Abstraction وPostgreSQL. ولا يتم جعل الـDomain Objects تعتمد مباشرة على EF Core أو PostgreSQL-specific implementation.</p>
+        </div>
+
+        <!-- 46. Database Technology -->
+        <div class="section-card">
+            <span class="section-number">القسم 46</span>
+            <h2>46. Database Technology</h2>
+            <p>الـPrimary Database: <strong>PostgreSQL</strong>. ويتم استخدام Relational Modeling وForeign Keys وIndexes وConstraints وTransactions وUnique Constraints وOptimistic Concurrency عند الحاجة. مع الاهتمام بالأداء في العلاقات ذات الحجم الكبير مثل Student Activity وVideo Progress وNotifications وPosts وComments وAudit Events وFinancial Transactions.</p>
+        </div>
+
+        <!-- 47. Data Consistency -->
+        <div class="section-card">
+            <span class="section-number">القسم 47</span>
+            <h2>47. Data Consistency</h2>
+            <p>العمليات المالية وعمليات Enrollment الأساسية يجب تنفيذها داخل Transactions مناسبة. مثال شراء Course:</p>
+            <div class="diagram-box">Validate Wallet
+      ↓
+Validate Content
+      ↓
+Create Financial Transaction
+      ↓
+Update Wallet
+      ↓
+Create Enrollment
+      ↓
+Create/Ensure Follow
+      ↓
+Commit</div>
+            <p>إما أن تنجح العملية كاملة أو لا يتم اعتمادها جزئيًا.</p>
+        </div>
+
+        <!-- 48. Final Data Architecture Direction -->
+        <div class="section-card">
+            <span class="section-number">القسم 48</span>
+            <h2>48. Final Data Architecture Direction</h2>
+            <p>الـDatabase architecture تعتمد على:</p>
+            <div class="diagram-box">Central Platform
+       │
+       └── Teacher
+             │
+             └── Teacher Platform
+                    │
+                    ├── Academic Content
+                    ├── Student Relationships
+                    ├── Financial Domain
+                    ├── Social Domain
+                    ├── Messaging
+                    ├── Notifications
+                    ├── Permissions
+                    └── Audit</div>
+            <p>مع الحفاظ على: <strong>Student Identity واحدة على مستوى النظام بالكامل</strong>، و<strong>Financial Ownership داخل Teacher Platform بالنسبة لعمليات الطالب</strong>، و<strong>Teacher Subscription كعلاقة مالية مستقلة بين Teacher والـCentral Platform</strong>.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • Database Design & Data Architecture v1.0
+        </div>
+    </div>
+</body>
+</html>

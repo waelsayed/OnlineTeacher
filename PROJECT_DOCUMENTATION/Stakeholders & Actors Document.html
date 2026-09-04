@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Stakeholders & Actors Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1000px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.8in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+            .role-badge {
+                background: #e9edf3 !important;
+                color: #0f172a !important;
+                border: 1px solid #94a3b8;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 2rem 0 0.8rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .section-card:hover {
+            border-right-color: #2c8cad;
+            box-shadow: 0 12px 22px rgba(0, 40, 70, 0.06);
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            background: #e7f0f9;
+            color: #16455f;
+            font-weight: 700;
+            padding: 0.25rem 1.3rem;
+            border-radius: 30px;
+            margin: 0.5rem 0;
+            font-size: 1rem;
+            border: 1px solid #c8dcef;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.2rem;
+            margin: 1.5rem 0;
+        }
+
+        .actor-card {
+            background: #f9fcff;
+            border-radius: 16px;
+            padding: 1.5rem 1.8rem;
+            border: 1px solid #dbe7f3;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.02);
+        }
+
+        .actor-title {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #143650;
+            margin-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        ul {
+            padding-right: 1.8rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        .note {
+            background: #fff8e6;
+            border-right: 6px solid #d9a406;
+            padding: 1.2rem 1.8rem;
+            border-radius: 14px;
+            margin: 1.5rem 0;
+            color: #4d3b08;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.4rem 2rem;
+            margin: 1.8rem 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #193e59;
+            font-style: italic;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Stakeholders & Actors Document</h1>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">✍️</span> <strong>Written By:</strong> Eng. Wael Sayed</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+                <div class="meta-item"><span class="meta-icon">📋</span> <strong>Status:</strong> Draft</div>
+            </div>
+        </div>
+
+        <!-- 1. مقدمة -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. مقدمة</h2>
+            <p>هذه الوثيقة تحدد <strong>الأطراف المعنية (Stakeholders)</strong> و<strong>الأدوار الفاعلة (Actors)</strong> في منصة ProNileSoft التعليمية. الهدف هو توضيح طبيعة كل طرف، وحدود مسؤوليته، وعلاقته ببقية الأطراف داخل النظام، قبل الانتقال إلى كتابة المتطلبات الوظيفية وقواعد العمل.</p>
+            <p>الأدوار هنا تمثل الكيانات البشرية أو التنظيمية التي تتفاعل مع المنصة، وهي حجر الأساس لتحديد الصلاحيات وحدود الوصول لاحقًا.</p>
+        </div>
+
+        <!-- 2. التقسيم العام -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. التقسيم العام للأطراف</h2>
+            <p>تنقسم الأطراف في المنصة إلى أربع مجموعات رئيسية:</p>
+            <div class="grid-2">
+                <div class="actor-card">
+                    <div class="actor-title">👑 مالك المنصة (System Owner)</div>
+                    <p>يمثل الإدارة العليا لـProNileSoft والمسؤول النهائي عن تشغيل الخدمة.</p>
+                </div>
+                <div class="actor-card">
+                    <div class="actor-title">👨‍🏫 المدرس (Teacher)</div>
+                    <p>صاحب المساحة التعليمية، وهو المحور الأساسي في المنصة.</p>
+                </div>
+                <div class="actor-card">
+                    <div class="actor-title">🎓 الطالب (Student)</div>
+                    <p>المستفيد النهائي من المحتوى التعليمي والخدمات المقدمة.</p>
+                </div>
+                <div class="actor-card">
+                    <div class="actor-title">🛡️ الإدارة والدعم (Admin & Support)</div>
+                    <p>يشمل فريق ProNileSoft والمساعدين الإداريين داخل منصة المدرس.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. مالك المنصة -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. مالك المنصة (System Owner / Platform Owner)</h2>
+            <p>هو الجهة المالكة والمشغلة لمنصة <strong>ProNileSoft</strong>، ويمثلها فريق الإدارة والتشغيل. لا يتدخل مباشرة في المحتوى التعليمي لكل مدرس، لكنه مسؤول عن استمرارية الخدمة والبنية التحتية.</p>
+            <h3>مسؤولياته الأساسية:</h3>
+            <ul>
+                <li>تشغيل المنصة والحفاظ على استقرارها.</li>
+                <li>إدارة الاشتراكات والباقات الخاصة بالمدرسين.</li>
+                <li>إدارة الحسابات العامة وحل النزاعات.</li>
+                <li>تطوير المنصة وتحديثها.</li>
+                <li>مراقبة الأداء العام وضمان جودة الخدمة.</li>
+                <li>حماية البيانات وحقوق الملكية الفكرية.</li>
+            </ul>
+        </div>
+
+        <!-- 4. المدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. المدرس (Teacher)</h2>
+            <p>المدرس هو <strong>المستأجر الأساسي</strong> للمساحة التعليمية داخل المنصة. كل مدرس يمتلك بيئة خاصة به، ويتحكم في إعدادها وطريقة عملها. المدرس ليس مجرد مستخدم عادي، بل هو كيان شبه مستقل داخل النظام.</p>
+            <h3>4.1 مسؤولياته:</h3>
+            <ul>
+                <li>إنشاء وإدارة ملفه التعليمي (المواد، الصفوف، الفترات).</li>
+                <li>بناء المحتوى التعليمي (وحدات، فصول، دروس، اختبارات).</li>
+                <li>إدارة طلابه (Online وOffline) وتنظيم وصولهم.</li>
+                <li>تعيين مساعدين ومنحهم صلاحيات محددة.</li>
+                <li>إدارة الـWall والتفاعل مع الطلاب.</li>
+                <li>تحديد قواعد الوصول إلى المحتوى.</li>
+                <li>إدارة الرصيد والعمليات المالية الخاصة بطلابه.</li>
+            </ul>
+            <h3>4.2 صلاحياته داخل منصته:</h3>
+            <ul>
+                <li>صلاحية كاملة على المحتوى والطلاب والمساعدين.</li>
+                <li>تخصيص الواجهة والإعدادات العامة.</li>
+                <li>التحكم في أسعار الكورسات أو الخدمات إن وجدت.</li>
+                <li>حذف أو إضافة أي عنصر تعليمي.</li>
+            </ul>
+        </div>
+
+        <!-- 5. الطالب -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. الطالب (Student)</h2>
+            <p>الطالب هو المستهلك النهائي للمحتوى والخدمات التعليمية. يمتلك حسابًا واحدًا على المنصة، يمكنه من خلاله التعامل مع أكثر من مدرس في نفس الوقت.</p>
+            <h3>5.1 مسؤولياته:</h3>
+            <ul>
+                <li>إنشاء حساب شخصي والمحافظة على بياناته.</li>
+                <li>اختيار المدرسين والانضمام إلى مساحاتهم التعليمية.</li>
+                <li>متابعة الدروس والوحدات وفق القواعد الموضوعة.</li>
+                <li>أداء الاختبارات والواجبات.</li>
+                <li>التفاعل مع المدرس عبر الـWall حسب الصلاحيات.</li>
+                <li>شحن المحفظة (Wallet) وإرسال بيانات التحويل.</li>
+            </ul>
+            <h3>5.2 علاقته بالمدرس:</h3>
+            <p>علاقة الطالب بكل مدرس <strong>مستقلة تمامًا</strong>. الطالب لا يتبع إداريًا لأي مدرس، لكنه يخضع لقواعد كل مدرس داخل مساحته التعليمية. يمكن للطالب أن يكون عضوًا في عدة مساحات في نفس الوقت.</p>
+        </div>
+
+        <!-- 6. المساعدون والإداريون -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. المساعدون والإداريون (Assistants & Admins)</h2>
+            <p>كل مدرس يمكنه تعيين <strong>Admins</strong> أو <strong>Assistants</strong> داخل منصته الخاصة. هؤلاء ليسوا مستخدمين منفصلين بالكامل، بل أدوار تُمنح لحسابات موجودة (غالبًا طلاب سابقون أو مساعدون موثوقون) للعمل داخل مساحة المدرس.</p>
+            <h3>6.1 أنواع الصلاحيات الممكنة:</h3>
+            <ul>
+                <li>إدارة الطلاب (قبول، رفض، حذف).</li>
+                <li>متابعة التقدم والنتائج.</li>
+                <li>مراجعة التحويلات المالية وتفعيل الأرصدة.</li>
+                <li>إدارة المحتوى (رفع دروس، تعديل وحدات).</li>
+                <li>الرد على استفسارات الطلاب.</li>
+                <li>إدارة المنشورات على الـWall.</li>
+            </ul>
+            <h3>6.2 حدودهم:</h3>
+            <p>نطاق عمل المساعدين <strong>محصور داخل منصة المدرس الواحد</strong> فقط. لا يستطيعون الوصول إلى بيانات مدرسين آخرين أو التدخل في إعدادات المنصة العامة. الصلاحيات تُمنح وتُسحب من قبل المدرس صاحب المساحة.</p>
+        </div>
+
+        <!-- 7. فريق ProNileSoft -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. فريق ProNileSoft (System Admin / Support)</h2>
+            <p>هذا الدور يمثل الموظفين التقنيين والإداريين التابعين لـProNileSoft نفسها، وليسوا مرتبطين بمدرس معين. هم مسؤولون عن تشغيل المنصة ككل وليس عن المحتوى التعليمي.</p>
+            <h3>7.1 مسؤولياتهم:</h3>
+            <ul>
+                <li>إدارة اشتراكات المدرسين (تفعيل، تعليق، ترقية).</li>
+                <li>مراقبة صحة النظام وتقديم الدعم الفني.</li>
+                <li>حل المشكلات المتعلقة بالحسابات العامة.</li>
+                <li>التعامل مع البلاغات والمخالفات.</li>
+                <li>إدارة وسائل الدفع على مستوى المنصة.</li>
+                <li>ضمان حماية حقوق النشر والمحتوى.</li>
+            </ul>
+        </div>
+
+        <!-- 8. العلاقة بين الأطراف -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. العلاقة بين الأطراف</h2>
+            <div class="highlight-box">
+                <p><strong>مالك المنصة (ProNileSoft)</strong> ← يدير الخدمة ويقدمها للمدرسين باشتراك.</p>
+                <p><strong>المدرس</strong> ← يستأجر مساحة تعليمية ويديرها بالكامل.</p>
+                <p><strong>الطالب</strong> ← ينضم لمساحات المدرسين ويستهلك المحتوى.</p>
+                <p><strong>المساعدون</strong> ← يساعدون المدرس داخل مساحته فقط.</p>
+                <p><strong>فريق الدعم</strong> ← يتعامل مع المنصة ككل وليس مع محتوى مدرس بعينه.</p>
+            </div>
+            <p>العلاقة ليست هرمية بالمعنى التقليدي، بل هي علاقة <strong>تعاقدية وخدمية</strong> بين المدرس والمنصة، وعلاقة <strong>تعليمية</strong> بين المدرس والطالب.</p>
+        </div>
+
+        <!-- 9. ملخص الأدوار -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. ملخص الأدوار والصلاحيات</h2>
+            <div class="grid-2">
+                <div class="actor-card">
+                    <div class="actor-title">🏛️ System Owner</div>
+                    <p>صلاحيات على المنصة كاملة، لكنها لا تشمل محتوى المدرسين.</p>
+                </div>
+                <div class="actor-card">
+                    <div class="actor-title">👨‍🏫 Teacher</div>
+                    <p>مالك مساحته التعليمية، صلاحيات كاملة داخل مساحته فقط.</p>
+                </div>
+                <div class="actor-card">
+                    <div class="actor-title">🎓 Student</div>
+                    <p>حساب واحد، وصول للمحتوى حسب قواعد كل مدرس.</p>
+                </div>
+                <div class="actor-card">
+                    <div class="actor-title">🧑‍💼 Assistant / Admin</div>
+                    <p>صلاحيات محددة يمنحها المدرس، داخل مساحة المدرس فقط.</p>
+                </div>
+                <div class="actor-card">
+                    <div class="actor-title">🛡️ ProNileSoft Support</div>
+                    <p>إدارة اشتراكات ودعم فني وحل نزاعات على مستوى المنصة.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. ملاحظة ختامية -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. ملاحظة ختامية</h2>
+            <p>تحديد الأدوار بهذا الشكل يساعد في بناء <strong>نظام صلاحيات واضح</strong> ويمنع التداخل بين المسؤوليات. الفصل بين دور المدرس ودور المساعد ودور فريق ProNileSoft ضروري لضمان أن كل طرف يعمل ضمن حدوده، وأن المنصة تبقى قابلة للتوسع والأمان.</p>
+            <p>الوثيقة التالية ستكون <strong>Functional Requirements</strong> مبنية على هذه الأدوار والعلاقات.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            ProNileSoft — Stakeholders & Actors Document v1.0 (Draft) &nbsp;•&nbsp; Eng. Wael Sayed
+        </div>
+    </div>
+</body>
+</html>

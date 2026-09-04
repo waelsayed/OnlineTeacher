@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Bounded Contexts & Domain Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, .context-box, .diagram-box, table {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .context-box {
+            background: #fafcff;
+            border: 1px solid #d5e3f0;
+            border-right: 4px solid #2c8cad;
+            border-radius: 14px;
+            padding: 1.3rem 1.6rem;
+            margin: 1.2rem 0;
+        }
+
+        .diagram-box {
+            background: #f5f9ff;
+            border: 1px solid #c9dff0;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 1.2rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.8;
+            color: #13354a;
+            font-size: 0.9rem;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            color: #193e59;
+            font-size: 1.05rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.92rem;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+        }
+
+        th {
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid #1a5a72;
+        }
+
+        td {
+            padding: 0.7rem 1rem;
+            border: 1px solid #dbe4ed;
+            text-align: right;
+            background: #fcfdfe;
+        }
+
+        tr:nth-child(even) td {
+            background: #f7fafd;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .diagram-box {
+                font-size: 0.7rem;
+                padding: 1rem;
+            }
+            table {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Bounded Contexts & Domain Architecture</h1>
+            <div class="subtitle">تحليل الـBounded Contexts ومعمارية المجال</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">📱</span> <strong>Product:</strong> Live Teacher</div>
+                <div class="meta-item"><span class="meta-icon">✍️</span> <strong>Written By:</strong> Eng. Wael Sayed</div>
+                <div class="meta-item"><span class="meta-icon">📄</span> <strong>Type:</strong> Bounded Contexts & Architecture</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+            </div>
+        </div>
+
+        <!-- 1. مقدمة -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. مقدمة</h2>
+            <p>تهدف هذه الوثيقة إلى تحديد التقسيم المنطقي لمجال النظام إلى <strong>Bounded Contexts</strong> مستقلة، وتحديد مسؤولية كل Context والعلاقات بينها.</p>
+            <p>يُعد هذا التقسيم من أهم مراحل تطبيق <strong>Domain-Driven Design (DDD)</strong>، لأنه يمنع بناء النظام ككتلة واحدة مترابطة بشدة، ويساعد على إبقاء منطق كل جزء من أجزاء النظام داخل المجال الذي ينتمي إليه.</p>
+            <blockquote>كل Bounded Context يمتلك نموذجًا واضحًا ومسؤولية محددة، ولا يتدخل في منطق مجال آخر إلا من خلال حدود وعلاقات واضحة.</blockquote>
+        </div>
+
+        <!-- 2. Core Domain -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. Core Domain</h2>
+            <p>يتمثل الـ<strong>Core Domain</strong> للنظام في تمكين المدرس من امتلاك وإدارة بيئة تعليمية متكاملة داخل المنصة المركزية، وإدارة رحلة الطالب من التسجيل وحتى الوصول إلى المحتوى ومتابعة تقدمه.</p>
+            <p>وتتركز القيمة الأساسية حول: Teacher Platform، إدارة الطلاب، إدارة المحتوى التعليمي، التحكم في صلاحيات الوصول، متابعة تقدم الطالب، الاختبارات، الباقات والمراجعات، التواصل التعليمي، والعمليات المالية داخل منصة المدرس.</p>
+            <p>أما الخدمات المركزية مثل إدارة اشتراكات المدرسين وإدارة المنصة نفسها فهي ضرورية لتشغيل المنتج، لكنها ليست جوهر العملية التعليمية نفسها.</p>
+        </div>
+
+        <!-- 3. السياق العام -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. السياق العام للمجال</h2>
+            <p>يمكن تقسيم المجال إلى مستويين رئيسيين:</p>
+            <div class="diagram-box">                    Central Platform
+                           │
+          ┌────────────────┴────────────────┐
+          │                                 │
+ Central Platform Contexts        Teacher Platform Contexts
+          │                                 │
+          │                         ┌───────┼────────┐
+          │                         │       │        │
+      Teachers                  Learning  Students  Finance
+      Plans                    Content
+      Coupons                      │
+      Platform Management          │
+                                   ├── Courses
+                                   ├── Packages
+                                   ├── Revisions
+                                   ├── Exams
+                                   └── Rules</div>
+            <p>وهذا الفصل مهم لأن <strong>Central Platform</strong> تدير العلاقة مع المدرسين، بينما <strong>Teacher Platform</strong> تدير العملية التعليمية الخاصة بكل مدرس.</p>
+        </div>
+
+        <!-- 4. Bounded Contexts الرئيسية -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. Bounded Contexts الرئيسية</h2>
+            <p>يُقترح تقسيم النظام إلى الـBounded Contexts التالية:</p>
+            <h3>Central Platform</h3>
+            <ol>
+                <li><strong>Platform Management Context</strong></li>
+                <li><strong>Teacher Management Context</strong></li>
+                <li><strong>Subscription & Plan Context</strong></li>
+                <li><strong>Central Coupon Context</strong></li>
+                <li><strong>Central Reporting Context</strong></li>
+            </ol>
+            <h3>Teacher Platform</h3>
+            <ol start="6">
+                <li><strong>Teacher Platform Management Context</strong></li>
+                <li><strong>Student Management Context</strong></li>
+                <li><strong>Learning Content Context</strong></li>
+                <li><strong>Enrollment & Access Context</strong></li>
+                <li><strong>Assessment Context</strong></li>
+                <li><strong>Learning Activity Context</strong></li>
+                <li><strong>Teacher Wall Context</strong></li>
+                <li><strong>Wallet & Financial Transactions Context</strong></li>
+                <li><strong>Teacher Reporting Context</strong></li>
+            </ol>
+            <h3>Shared / Supporting Contexts</h3>
+            <ol start="15">
+                <li><strong>Identity & Access Context</strong></li>
+                <li><strong>Notification Context</strong></li>
+                <li><strong>Media Integration Context</strong></li>
+            </ol>
+        </div>
+
+        <!-- 5. Platform Management -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. Platform Management Context</h2>
+            <p><strong>المسؤولية:</strong> هذا الـContext مسؤول عن إدارة <strong>Central Platform</strong> نفسها. ويتعامل مع: حالة النظام، الإعدادات المركزية، إدارة خصائص المنصة، إعدادات الخطط، السياسات المركزية، وإدارة المكونات التي تخص المنصة بالكامل.</p>
+            <p>لا مسؤولية له عن: محتوى Course، Student Activity، Teacher Wallet، وتفاصيل العملية التعليمية الخاصة بمدرس.</p>
+        </div>
+
+        <!-- 6. Teacher Management -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. Teacher Management Context</h2>
+            <p><strong>المسؤولية:</strong> يمثل العلاقة بين Central Platform والمدرسين. مسؤول عن: تسجيل المدرس، بيانات المدرس، حالة المدرس، إنشاء Teacher Platform، تفعيل Teacher Platform، تعطيل Teacher Platform، حالة اشتراك المدرس، والبيانات الأساسية.</p>
+            <div class="diagram-box">Central Platform
+       │
+       ↓
+    Teacher
+       │
+       ↓
+Teacher Platform</div>
+            <p>ويُعتبر هذا الـContext أحد أهم نقاط الربط بين المستوى المركزي والمستوى الخاص بالمدرس.</p>
+        </div>
+
+        <!-- 7. Subscription & Plan -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. Subscription & Plan Context</h2>
+            <p><strong>المسؤولية:</strong> هذا السياق مسؤول عن اشتراكات المدرسين في الخدمة. يشمل: Plans، Monthly Subscription، Annual Subscription، Academic Year Subscription، Subscription Start، Subscription Expiration، Subscription Status، Plan Features، Subscription Renewal.</p>
+            <p>ويحدد ما الذي يحق للمدرس استخدامه وفقًا للباقة التي اشترك بها.</p>
+            <p>هذا الـContext لا يدير اشتراكات الطلاب في Courses، لأن تلك مسؤولية مختلفة تخص Teacher Platform.</p>
+        </div>
+
+        <!-- 8. Central Coupon -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. Central Coupon Context</h2>
+            <p><strong>المسؤولية:</strong> إدارة Coupons الخاصة بـCentral Platform. يمكن للمنصة المركزية إنشاء Coupon لمدرس معين أو للاستخدام وفق سياسة محددة. يشمل: إنشاء Coupon، تحديد قيمة الخصم، تحديد مدة الصلاحية، تحديد الاستخدام، تفعيل Coupon، تسجيل المدرس الذي استخدمه، إغلاق Coupon بعد استخدامه.</p>
+            <h3>قاعدة مهمة</h3>
+            <p>Coupon المخصص لاستخدام المدرس يُستخدم <strong>مرة واحدة فقط</strong>.</p>
+            <div class="diagram-box">Coupon
+   ↓
+Redeemed
+   ↓
+Linked to Teacher
+   ↓
+Cannot be reused</div>
+        </div>
+
+        <!-- 9. Central Reporting -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. Central Reporting Context</h2>
+            <p>مسؤول عن التقارير الخاصة بـCentral Platform، مثل: عدد المدرسين، عدد Teacher Platforms، الاشتراكات، الخطط، المدفوعات، Coupons، الخصومات، المنصات النشطة، المنصات المتوقفة، مؤشرات الاستخدام العامة. هذا السياق لا يمتلك منطق الأعمال الخاص بالمجالات الأخرى، وإنما يعتمد على البيانات المنشورة أو المتاحة للتقارير.</p>
+        </div>
+
+        <!-- 10. Teacher Platform Management -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. Teacher Platform Management Context</h2>
+            <p>يمثل هذا الـContext قلب إدارة منصة المدرس. مسؤول عن: بيانات Teacher Platform، إعدادات المنصة، بيانات الصفحة الرئيسية، بيانات المدرس الظاهرة للطلاب، Admins / Assistants، صلاحياتهم داخل المنصة، مجموعات الطلاب، إعدادات Teacher Wall، والسياسات الخاصة بالمنصة. وهو السياق الذي يحدد <strong>حدود Tenant</strong> الخاصة بالمدرس.</p>
+        </div>
+
+        <!-- 11. Student Management -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. Student Management Context</h2>
+            <p><strong>المسؤولية:</strong> إدارة الطلاب داخل Teacher Platform. يشمل: إنشاء Student، بيانات الطالب، بيانات ولي الأمر، Phone Number، Address، حالة الطالب، Online / Offline Status، Groups، Student Account، Student Activation، Student Deactivation.</p>
+            <p>كما يدعم إنشاء الطلاب بصورة جماعية من Excel. يمكن للمسؤول: رفع Excel، قراءة البيانات، التحقق منها، اكتشاف الأخطاء، إنشاء الطلاب، إنشاء بيانات الدخول، إظهار نتيجة العملية.</p>
+            <p>ولا يجب أن يحتوي هذا السياق على منطق شراء المحتوى أو Wallet؛ هذه مسؤوليات سياقات أخرى.</p>
+        </div>
+
+        <!-- 12. Learning Content -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. Learning Content Context</h2>
+            <p>هذا السياق مسؤول عن تعريف وهيكلة المحتوى التعليمي.</p>
+            <div class="diagram-box">Course
+   │
+   └── Unit
+        │
+        └── Chapter
+             │
+             └── Lesson
+                  │
+                  ├── Video
+                  ├── Text
+                  ├── PDF
+                  ├── Images
+                  └── Homework</div>
+            <p>ويشمل أيضًا: Content Ordering، Publishing، Hiding Content، Content Availability، Course Structure.</p>
+        </div>
+
+        <!-- 13. Package -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. Package داخل Learning Domain</h2>
+            <p>الـPackage تمثل <strong>تجميعًا تجاريًا لمحتوى موجود بالفعل</strong>. لا تقوم بإنشاء محتوى جديد.</p>
+            <div class="diagram-box">Course
+│
+├── Unit 1
+├── Unit 2
+├── Unit 3
+└── Unit 4
+
+Package
+│
+├── Unit 1
+├── Unit 3
+└── Unit 4 / selected Chapters</div>
+            <p>وبالتالي Package تشير إلى محتوى موجود داخل Learning Content Context. لكن <strong>سعر الـPackage وقواعد بيعها ووصول الطالب إليها</strong> تدخل في سياقات أخرى. وهذا الفصل يمنع خلط تعريف المحتوى مع العملية التجارية.</p>
+        </div>
+
+        <!-- 14. Revision -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. Revision</h2>
+            <p>Revision هي نوع مستقل من المنتجات التعليمية. يمكن أن تحتوي على Units وChapters وLessons وVideos وPDFs وText ومواد تعليمية أخرى، ولها سعر مستقل.</p>
+            <p><strong>Learning Content Context</strong> يعرّف محتوى Revision، بينما <strong>Enrollment & Access Context</strong> يحدد من يستطيع الوصول إليها، و<strong>Financial Context</strong> يسجل العملية المالية المتعلقة بها.</p>
+        </div>
+
+        <!-- 15. Enrollment & Access -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. Enrollment & Access Context</h2>
+            <p>هذا من أهم الـBounded Contexts في النظام. مسؤوليته ليست إنشاء المحتوى، وإنما تحديد:</p>
+            <blockquote>هل الطالب يملك حق الوصول إلى محتوى معين الآن؟</blockquote>
+            <p>قد تعتمد الإجابة على: Enrollment، Purchase، Package، Revision، Exam، Expiration، Rules، Student Status، Manual Activation، Manual Extension.</p>
+            <div class="diagram-box">Student
+   ↓
+Has Purchase?
+   ↓
+Has Required Access?
+   ↓
+Rules Satisfied?
+   ↓
+Not Expired?
+   ↓
+Student Allowed</div>
+            <p>هذا السياق يجب أن يكون مستقلًا عن واجهة المستخدم وعن طريقة عرض المحتوى.</p>
+        </div>
+
+        <!-- 16. Access Expiration -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. Access Expiration</h2>
+            <p>يمكن أن يكون الوصول إلى Course أو Unit أو Lesson أو Video محدودًا بمدة.</p>
+            <div class="diagram-box">Student purchases Course
+        ↓
+Access starts
+        ↓
+5 Days
+        ↓
+Access expires</div>
+            <p>ويستطيع المسؤول المخول تمديد الصلاحية. ويجب تسجيل عملية التمديد باعتبارها <strong>Business Action</strong> وليس مجرد تعديل مباشر في البيانات.</p>
+        </div>
+
+        <!-- 17. Assessment -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. Assessment Context</h2>
+            <p>مسؤول عن Exams. يدعم: Online Exam، Offline Exam، Free Exam، Paid Exam، Exam Scheduling، Exam Expiration، Questions، Multiple Choice Questions، Answers، Attempts، Results، Scores، Manual Extension.</p>
+            <h3>Online Exam</h3>
+            <p>يتم تنفيذ الاختبار داخل النظام.</p>
+            <h3>Offline Exam</h3>
+            <p>يتم تسجيل الطالب في الاختبار ومتابعة عملية الحجز والدفع من خلال النظام، بينما يتم تنفيذ الاختبار خارج المنصة.</p>
+        </div>
+
+        <!-- 18. Exam Rules -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. Exam Rules</h2>
+            <p>يمكن للمدرس استخدام Exam كجزء من رحلة الطالب.</p>
+            <div class="diagram-box">Lesson 1
+   ↓
+Lesson 2
+   ↓
+Exam
+   ↓
+Pass
+   ↓
+Continue</div>
+            <p>أو:</p>
+            <div class="diagram-box">Lesson
+   ↓
+Exam
+   ↓
+Required Score
+   ↓
+Access Granted</div>
+            <p>وتظل إمكانية فرض هذه القواعد اختيارية حسب إعدادات المدرس.</p>
+        </div>
+
+        <!-- 19. Learning Activity -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. Learning Activity Context</h2>
+            <p>هذا السياق مسؤول عن تسجيل النشاط التعليمي للطالب. يشمل مثلًا: Video Started، Video Progress، Video Completed، Watching Duration، Watching Speed، Last Watching Position، Lesson Completion، Homework Status، Exam Attempts، Learning Progress.</p>
+            <p>ويتم استخدام هذه البيانات بواسطة Access Context لتطبيق بعض قواعد الوصول. هذا فصل مهم بين <strong>Tracking</strong> و<strong>Decision Making</strong>.</p>
+        </div>
+
+        <!-- 20. Teacher Wall -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. Teacher Wall Context</h2>
+            <p>مسؤول عن التواصل التعليمي بين المدرس والطلاب. يشمل: Posts، Questions، Announcements، Polls، Surveys، Comments، Student Responses. ويجب أن يكون كل Post مرتبطًا بـTeacher Platform الخاصة به. يمكن أن يكون المنشور عامًا أو مرتبطًا بمجموعة أو Course أو Unit أو مناسبة أو Exam.</p>
+        </div>
+
+        <!-- 21. Wallet & Financial -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>21. Wallet & Financial Transactions Context</h2>
+            <p>هذا السياق مسؤول عن الجانب المالي داخل Teacher Platform.</p>
+            <h3>Wallet</h3>
+            <p>تمثل الرصيد المتاح للطالب.</p>
+            <h3>Financial Transaction</h3>
+            <p>تمثل السجل المالي الذي يفسر سبب تغير الرصيد.</p>
+            <div class="diagram-box">Payment
+   ↓
+Approval
+   ↓
+Wallet Credit
+
+Purchase
+   ↓
+Wallet Debit
+   ↓
+Access Granted</div>
+            <p>ويجب ألا يكون تغيير الرصيد عملية منفصلة عن تسجيل العملية المالية.</p>
+        </div>
+
+        <!-- 22. Payment Verification -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>22. Payment Verification</h2>
+            <p>في المرحلة الأولى يمكن أن تتم عملية الدفع خارج Payment Gateway، مثل التحويل عبر الوسائل المتاحة.</p>
+            <div class="diagram-box">Student
+   ↓
+Transfer Money
+   ↓
+Submit Transfer Information
+   ↓
+Upload Proof
+   ↓
+Admin Review
+   ↓
+Approve
+   ↓
+Wallet Credit</div>
+            <p>ويجب تسجيل: القيمة، الطالب، الوقت، وسيلة التحويل، إثبات التحويل، حالة العملية، المسؤول الذي قام بالمراجعة.</p>
+        </div>
+
+        <!-- 23. Teacher Financial Reporting -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>23. Teacher Financial Reporting</h2>
+            <p>يوفر النظام تقارير مالية خاصة بكل Teacher Platform، مثل: إجمالي المبيعات، المبالغ المحولة، عمليات Wallet، Purchases، المنتجات الأكثر مبيعًا، الإيرادات حسب الفترة، الطلاب الذين قاموا بالشراء، تفاصيل العمليات. ولا يجب الخلط بين هذه التقارير وبين تقارير Central Platform.</p>
+        </div>
+
+        <!-- 24. Identity & Access -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>24. Identity & Access Context</h2>
+            <p>مسؤول عن: Authentication، Accounts، Credentials، Sessions، Roles، Permissions، Account Status. ويحدد هوية المستخدم. لكن معرفة ما يستطيع المستخدم فعله داخل Teacher Platform تعتمد أيضًا على الصلاحيات المرتبطة بالـTenant والـRole.</p>
+            <div class="diagram-box">User
+ ↓
+Identity
+ ↓
+Role
+ ↓
+Teacher Platform
+ ↓
+Permissions</div>
+        </div>
+
+        <!-- 25. Teacher Admin & Assistant -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>25. Teacher Admin & Assistant Model</h2>
+            <p>يمكن للمدرس تعيين أكثر من Admin / Assistant. كل مستخدم يحصل على مجموعة Permissions.</p>
+            <div class="diagram-box">Teacher
+│
+├── Admin A
+│   ├── Students
+│   ├── Courses
+│   └── Exams
+│
+├── Admin B
+│   ├── Students
+│   └── Support
+│
+└── Assistant C
+    ├── Payments
+    └── Wallet</div>
+            <p>وبالتالي لا يتم الاعتماد على Role واحد فقط. الـRole يحدد الفئة العامة، بينما <strong>Permissions</strong> تحدد ما يستطيع المستخدم فعله فعليًا.</p>
+        </div>
+
+        <!-- 26. Notification -->
+        <div class="section-card">
+            <span class="section-number">القسم 26</span>
+            <h2>26. Notification Context</h2>
+            <p>مسؤول عن إرسال الإشعارات الناتجة عن أحداث النظام، مثل: New Post، New Course، Exam Reminder، Exam Result، Payment Status، Wallet Credit، Content Expiration، Access Extension. ويجب أن يكون Notification Context منفصلًا عن مصدر الحدث.</p>
+            <p>مثال: <strong>Exam Context</strong> ينشئ الحدث <code>ExamPublished</code>، ثم <strong>Notification Context</strong> يتولى إرسال الإشعار المناسب.</p>
+        </div>
+
+        <!-- 27. Media Integration -->
+        <div class="section-card">
+            <span class="section-number">القسم 27</span>
+            <h2>27. Media Integration Context</h2>
+            <p>مسؤول عن التكامل مع خدمات الفيديو الخارجية. لا يملك هذا السياق منطق Course أو Lesson، بل يتعامل مع: Upload، Video Provider API، Video Identifier، Streaming URL / Playback Information، Processing Status، Watermark Configuration، Provider Responses. وبذلك يمكن تغيير مزود الفيديو مستقبلًا دون تغيير الـLearning Domain بالكامل.</p>
+        </div>
+
+        <!-- 28. Context Map -->
+        <div class="section-card">
+            <span class="section-number">القسم 28</span>
+            <h2>28. Context Map</h2>
+            <p>العلاقات الأساسية بين الـContexts يمكن تصورها كالتالي:</p>
+            <div class="diagram-box">                    ┌─────────────────────┐
+                    │   Central Platform  │
+                    └──────────┬──────────┘
+                               │
+               ┌───────────────┼────────────────┐
+               ↓               ↓                ↓
+        Teacher Management   Plans          Coupons
+               │
+               ↓
+      Teacher Platform Management
+               │
+      ┌────────┼─────────┬──────────┐
+      ↓        ↓         ↓          ↓
+ Students   Learning   Assessment   Wall
+               │           │
+               ↓           ↓
+          Learning      Results
+           Activity
+               │
+               ↓
+       Enrollment & Access
+               │
+               ↓
+            Student
+               │
+               ↓
+      Wallet & Transactions
+               │
+               ↓
+           Reporting</div>
+        </div>
+
+        <!-- 29. أهم العلاقات -->
+        <div class="section-card">
+            <span class="section-number">القسم 29</span>
+            <h2>29. أهم العلاقات بين الـContexts</h2>
+            <table>
+                <thead>
+                    <tr><th>From</th><th>To</th><th>العلاقة</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Central Platform</td><td>Teacher Management</td><td>إدارة المدرسين</td></tr>
+                    <tr><td>Teacher Management</td><td>Teacher Platform</td><td>إنشاء وتفعيل المنصة</td></tr>
+                    <tr><td>Subscription</td><td>Teacher Platform</td><td>تحديد حالة وإمكانيات المنصة</td></tr>
+                    <tr><td>Teacher Platform</td><td>Student Management</td><td>إدارة الطلاب</td></tr>
+                    <tr><td>Learning Content</td><td>Access</td><td>تحديد المحتوى المتاح</td></tr>
+                    <tr><td>Learning Activity</td><td>Access</td><td>توفير بيانات التقدم</td></tr>
+                    <tr><td>Assessment</td><td>Access</td><td>توفير نتائج ومتطلبات الاختبارات</td></tr>
+                    <tr><td>Wallet</td><td>Access</td><td>إثبات عمليات الشراء</td></tr>
+                    <tr><td>Learning Content</td><td>Media Integration</td><td>إدارة الفيديو الخارجي</td></tr>
+                    <tr><td>Teacher Platform</td><td>Wall</td><td>نشر المحتوى الاجتماعي التعليمي</td></tr>
+                    <tr><td>جميع Contexts</td><td>Notification</td><td>إرسال الأحداث القابلة للإشعار</td></tr>
+                    <tr><td>جميع Contexts</td><td>Reporting</td><td>توفير البيانات اللازمة للتقارير</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 30. قواعد التواصل -->
+        <div class="section-card">
+            <span class="section-number">القسم 30</span>
+            <h2>30. قواعد التواصل بين الـBounded Contexts</h2>
+            <p>يجب ألا تعتمد Context على التفاصيل الداخلية لـContext آخر. على سبيل المثال، لا ينبغي لـAccess Context أن يعرف كيفية تخزين Video أو كيفية إنشاء Course. بدلًا من ذلك يتعامل مع مفهوم واضح مثل <strong>Content Identity</strong> أو <strong>Access Grant</strong> أو <strong>Enrollment</strong>. وهذا يقلل الترابط بين أجزاء النظام.</p>
+        </div>
+
+        <!-- 31. Domain Events -->
+        <div class="section-card">
+            <span class="section-number">القسم 31</span>
+            <h2>31. Domain Events</h2>
+            <p>يمكن استخدام <strong>Domain Events</strong> للتواصل بين المجالات عند الحاجة. أمثلة:</p>
+            <ul>
+                <li><strong>Teacher Domain:</strong> <code>TeacherPlatformActivated</code></li>
+                <li><strong>Subscription Domain:</strong> <code>SubscriptionActivated</code></li>
+                <li><strong>Learning Domain:</strong> <code>CoursePublished</code></li>
+                <li><strong>Assessment Domain:</strong> <code>ExamCompleted</code></li>
+                <li><strong>Financial Domain:</strong> <code>WalletCredited</code></li>
+                <li><strong>Access Domain:</strong> <code>ContentAccessGranted</code></li>
+                <li><strong>Activity Domain:</strong> <code>LessonCompleted</code></li>
+                <li><strong>Coupon Domain:</strong> <code>CouponRedeemed</code></li>
+            </ul>
+            <p>هذه الأحداث تمثل حقائق حدثت داخل المجال، ويمكن أن تعتمد عليها Contexts أخرى دون الدخول في تفاصيل التنفيذ الداخلي.</p>
+        </div>
+
+        <!-- 32. مثال رحلة متكاملة -->
+        <div class="section-card">
+            <span class="section-number">القسم 32</span>
+            <h2>32. مثال على رحلة متكاملة</h2>
+            <p>عند شراء طالب Course:</p>
+            <div class="diagram-box">Student
+   ↓
+Select Course
+   ↓
+Enrollment / Purchase
+   ↓
+Wallet Context
+   ↓
+Financial Transaction
+   ↓
+Purchase Confirmed
+   ↓
+Access Context
+   ↓
+Access Granted
+   ↓
+Student watches Lesson
+   ↓
+Learning Activity
+   ↓
+Lesson Completed
+   ↓
+Access evaluates next Rule
+   ↓
+Next Lesson Available</div>
+            <p>هذا المثال يوضح لماذا لا يجب وضع كل هذه العمليات داخل Context واحد.</p>
+        </div>
+
+        <!-- 33. Domain Ownership -->
+        <div class="section-card">
+            <span class="section-number">القسم 33</span>
+            <h2>33. Domain Ownership</h2>
+            <p>يجب أن يكون لكل مفهوم رئيسي <strong>مالك واضح داخل النظام</strong>.</p>
+            <table>
+                <thead>
+                    <tr><th>Concept</th><th>Owner Context</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Teacher</td><td>Teacher Management</td></tr>
+                    <tr><td>Teacher Platform</td><td>Teacher Platform Management</td></tr>
+                    <tr><td>Subscription</td><td>Subscription & Plan</td></tr>
+                    <tr><td>Coupon</td><td>Coupon Context</td></tr>
+                    <tr><td>Student</td><td>Student Management</td></tr>
+                    <tr><td>Course</td><td>Learning Content</td></tr>
+                    <tr><td>Unit</td><td>Learning Content</td></tr>
+                    <tr><td>Chapter</td><td>Learning Content</td></tr>
+                    <tr><td>Lesson</td><td>Learning Content</td></tr>
+                    <tr><td>Package</td><td>Learning Content / Commercial Definition</td></tr>
+                    <tr><td>Revision</td><td>Learning Content</td></tr>
+                    <tr><td>Exam</td><td>Assessment</td></tr>
+                    <tr><td>Exam Result</td><td>Assessment</td></tr>
+                    <tr><td>Student Activity</td><td>Learning Activity</td></tr>
+                    <tr><td>Access</td><td>Enrollment & Access</td></tr>
+                    <tr><td>Wallet</td><td>Wallet & Financial</td></tr>
+                    <tr><td>Financial Transaction</td><td>Wallet & Financial</td></tr>
+                    <tr><td>Wall Post</td><td>Teacher Wall</td></tr>
+                    <tr><td>Identity</td><td>Identity & Access</td></tr>
+                    <tr><td>Notification</td><td>Notification</td></tr>
+                    <tr><td>Video Integration</td><td>Media Integration</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 34. عدم تكرار ملكية البيانات -->
+        <div class="section-card">
+            <span class="section-number">القسم 34</span>
+            <h2>34. قاعدة مهمة: عدم تكرار ملكية البيانات</h2>
+            <p>يجب ألا يمتلك أكثر من Context نفس الـBusiness Concept باعتباره مصدر الحقيقة الأساسي. مثال: إذا كان Student مملوكًا لـ<strong>Student Management Context</strong>، فإن Wallet Context لا ينشئ Student خاصًا به. يمكنه الاحتفاظ بمرجع إلى Student، لكنه لا يصبح مالكًا للـStudent. وينطبق الأمر نفسه على Teacher وCourse وExam وWallet وFinancial Transaction. هذه القاعدة أساسية للحفاظ على <strong>Single Source of Truth</strong> داخل المجال.</p>
+        </div>
+
+        <!-- 35. Core vs Supporting vs Generic -->
+        <div class="section-card">
+            <span class="section-number">القسم 35</span>
+            <h2>35. Core vs Supporting vs Generic</h2>
+            <h3>Core Domains</h3>
+            <p>Teacher Platform Management، Learning Content، Enrollment & Access، Learning Activity، Student Management. هذه المجالات تمثل القيمة التعليمية الأساسية للنظام.</p>
+            <h3>Supporting Domains</h3>
+            <p>Assessment، Teacher Wall، Wallet & Financial Transactions، Teacher Reporting، Teacher Management. ضرورية لعمل المنتج ولكنها ليست جميعًا مصدر التميز الأساسي.</p>
+            <h3>Generic / Infrastructure-Oriented Domains</h3>
+            <p>Identity & Access، Notification، Media Integration، Central Reporting. هذه المجالات مهمة لكنها ليست جوهر المنتج التعليمي نفسه.</p>
+        </div>
+
+        <!-- 36. DDD Strategic Principle -->
+        <div class="section-card">
+            <span class="section-number">القسم 36</span>
+            <h2>36. DDD Strategic Principle</h2>
+            <p>لا يعني تطبيق DDD أن كل Context يجب أن يتحول إلى Microservice مستقل. في المرحلة الأولى، يمكن تنفيذ النظام كـ <strong>Modular Monolith</strong> مع الحفاظ على حدود الـBounded Contexts بوضوح.</p>
+            <div class="diagram-box">One Application
+       │
+       ├── Central Platform Module
+       ├── Teacher Management Module
+       ├── Learning Module
+       ├── Assessment Module
+       ├── Access Module
+       ├── Finance Module
+       └── ...</div>
+            <p>مع الحفاظ على استقلالية منطق كل Module. وهذا يوفر تعقيدًا تشغيليًا أقل في البداية، مع الاحتفاظ بإمكانية فصل بعض Contexts مستقبلًا إذا احتاج النظام إلى ذلك.</p>
+        </div>
+
+        <!-- 37. قاعدة معمارية مهمة -->
+        <div class="section-card">
+            <span class="section-number">القسم 37</span>
+            <h2>37. قاعدة معمارية مهمة</h2>
+            <blockquote>Bounded Context ≠ Database Table ≠ API Controller ≠ Class</blockquote>
+            <p>الـBounded Context هو <strong>حد منطقي داخل الـBusiness Domain</strong>. قد يحتوي على Entities وValue Objects وAggregates وDomain Services وDomain Events وApplication Services وRepositories. لكن تفاصيل ذلك سيتم تحديدها في وثائق التصميم التفصيلية.</p>
+        </div>
+
+        <!-- 38. Aggregates لاحقًا -->
+        <div class="section-card">
+            <span class="section-number">القسم 38</span>
+            <h2>38. Aggregates لاحقًا</h2>
+            <p>بعد اعتماد الـBounded Contexts، ستكون الخطوة التالية هي تحديد <strong>Aggregates</strong> داخل كل Context.</p>
+            <p>ومن الأمثلة المحتملة:</p>
+            <ul>
+                <li><strong>Teacher Platform:</strong> <code>TeacherPlatform</code></li>
+                <li><strong>Learning:</strong> <code>Course</code>، <code>Package</code>، <code>Revision</code></li>
+                <li><strong>Assessment:</strong> <code>Exam</code></li>
+                <li><strong>Finance:</strong> <code>Wallet</code>، <code>FinancialTransaction</code></li>
+                <li><strong>Access:</strong> <code>Enrollment</code>، <code>AccessGrant</code></li>
+            </ul>
+            <p>وسيتم تحديد الـAggregate Root والحدود والقواعد الداخلية لكل Aggregate في وثيقة مستقلة.</p>
+        </div>
+
+        <!-- 39. Architectural Decision -->
+        <div class="section-card">
+            <span class="section-number">القسم 39</span>
+            <h2>39. Architectural Decision</h2>
+            <p>يعتمد النظام مبدئيًا على <strong>Domain-Driven Design + Modular Architecture</strong> مع الفصل الواضح بين <strong>Central Platform Domain</strong> و<strong>Teacher Platform Domain</strong>. ويتم التعامل مع كل Teacher Platform باعتبارها Tenant مستقلة داخل النظام. كما يتم فصل المجالات الحساسة، خصوصًا Access وFinance وLearning Activity وAssessment، عن بعضها، مع وجود علاقات واضحة بينها.</p>
+        </div>
+
+        <!-- 40. الخلاصة -->
+        <div class="section-card">
+            <span class="section-number">القسم 40</span>
+            <h2>40. الخلاصة</h2>
+            <p>القرار المعماري الأساسي هو ألا يتم بناء النظام باعتباره نظامًا واحدًا ضخمًا يحتوي على جميع الوظائف في نفس المكان. بدلًا من ذلك، يتم تقسيمه إلى مجالات واضحة، لكل منها: مسؤولية محددة، نموذج Domain خاص بها، قواعد Business واضحة، Ownership واضح للبيانات، حدود واضحة مع المجالات الأخرى.</p>
+            <div class="diagram-box">                         CENTRAL PLATFORM
+                                │
+        ┌───────────────────────┼────────────────────────┐
+        │                       │                        │
+   Teacher Management      Subscriptions            Coupons
+        │
+        ↓
+                    TEACHER PLATFORM
+                         │
+       ┌─────────────────┼──────────────────┐
+       │                 │                  │
+   Students         Learning Content      Assessment
+       │                 │                  │
+       │                 ├── Course        └── Exams
+       │                 ├── Package
+       │                 └── Revision
+       │
+       ├─────────────── Enrollment & Access
+       │                         │
+       │                    Learning Activity
+       │
+       ├─────────────── Wallet & Finance
+       │
+       └─────────────── Teacher Wall
+
+             Supporting Contexts
+       Identity │ Notification │ Media</div>
+            <p>يمثل هذا التقسيم <strong>المرجع الاستراتيجي للـDomain Architecture</strong>، وسيتم الاعتماد عليه في المرحلة التالية لتحديد الـAggregates والـEntities والـValue Objects والـDomain Services والـDomain Events، ثم الانتقال بعد ذلك إلى التصميم التفصيلي للـApplication وDatabase وAPI.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • Bounded Contexts & Domain Architecture v1.0 • Eng. Wael Sayed
+        </div>
+    </div>
+</body>
+</html>

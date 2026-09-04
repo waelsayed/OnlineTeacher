@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Non-Functional Requirements (NFR)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, .nfr-card, table, .priority-box {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .nfr-card {
+            background: #fafcff;
+            border: 1px solid #d5e3f0;
+            border-right: 4px solid #2c8cad;
+            border-radius: 14px;
+            padding: 1.5rem 1.8rem;
+            margin: 1.5rem 0;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .priority-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        .critical-priority {
+            background: #fff1f0;
+            border-right: 6px solid #d32f2f;
+            border-radius: 14px;
+            padding: 1.2rem 1.8rem;
+            margin: 1rem 0;
+        }
+
+        .high-priority {
+            background: #fff8e6;
+            border-right: 6px solid #e67e22;
+            border-radius: 14px;
+            padding: 1.2rem 1.8rem;
+            margin: 1rem 0;
+        }
+
+        .medium-priority {
+            background: #f0f7ff;
+            border-right: 6px solid #1976d2;
+            border-radius: 14px;
+            padding: 1.2rem 1.8rem;
+            margin: 1rem 0;
+        }
+
+        .example-box {
+            background: #f0f4fa;
+            border-radius: 14px;
+            padding: 1.2rem 1.8rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            border: 1px solid #d0dfee;
+            white-space: pre-line;
+            line-height: 2;
+            color: #13354a;
+            overflow-x: auto;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            color: #193e59;
+            font-size: 1.05rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+        }
+
+        th {
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid #1a5a72;
+        }
+
+        td {
+            padding: 0.7rem 1rem;
+            border: 1px solid #dbe4ed;
+            text-align: right;
+            background: #fcfdfe;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .example-box {
+                font-size: 0.75rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Non-Functional Requirements (NFR)</h1>
+            <div class="subtitle">المتطلبات غير الوظيفية</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">📱</span> <strong>Product:</strong> Live Teacher</div>
+                <div class="meta-item"><span class="meta-icon">✍️</span> <strong>Written By:</strong> Eng. Wael Sayed</div>
+                <div class="meta-item"><span class="meta-icon">📄</span> <strong>Type:</strong> Non-Functional Requirements</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+            </div>
+        </div>
+
+        <!-- 1. مقدمة -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. مقدمة</h2>
+            <p>تحدد هذه الوثيقة الخصائص العامة التي يجب أن يتمتع بها النظام، والتي لا تتعلق بوظيفة محددة، وإنما بجودة النظام وطريقة تشغيله.</p>
+            <p>تشمل هذه المتطلبات:</p>
+            <ul>
+                <li>الأداء (Performance)</li>
+                <li>الأمان (Security)</li>
+                <li>قابلية التوسع (Scalability)</li>
+                <li>الاعتمادية (Reliability)</li>
+                <li>التوافر (Availability)</li>
+                <li>حماية المحتوى (Content Protection)</li>
+                <li>سهولة الاستخدام (Usability)</li>
+                <li>قابلية الصيانة (Maintainability)</li>
+                <li>المراقبة والتتبع (Monitoring & Auditing)</li>
+                <li>النسخ الاحتياطي واستعادة البيانات (Backup & Recovery)</li>
+            </ul>
+        </div>
+
+        <!-- 2. Performance -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. Performance — الأداء</h2>
+            <p>يجب أن يوفر النظام تجربة استخدام سريعة ومستقرة، خصوصًا في العمليات المتكررة التي يقوم بها الطلاب والمدرسون.</p>
+            <h3>المتطلبات</h3>
+            <ul>
+                <li>يجب أن تكون عمليات التنقل وعرض البيانات الأساسية سريعة.</li>
+                <li>يجب ألا تعتمد سرعة واجهة المستخدم على حجم البيانات الموجودة لدى مدرس معين.</li>
+                <li>يجب تحسين عمليات البحث والتصفية وعرض الطلاب والمحتوى.</li>
+                <li>يجب التعامل بكفاءة مع أعداد كبيرة من الطلاب والـCourses والـLessons.</li>
+                <li>يجب ألا تؤثر عمليات أحد Teacher Platforms بصورة ملحوظة على Teacher Platforms الأخرى.</li>
+            </ul>
+            <h3>العمليات الحساسة للأداء</h3>
+            <p>تشمل بشكل خاص: تسجيل الدخول، تحميل بيانات Teacher Platform، عرض Courses، عرض المحتوى، البحث عن الطلاب، تحميل قوائم الطلاب، عمليات Wallet، عمليات الشراء، تسجيل Activity الخاصة بمشاهدة المحتوى، عرض النتائج والتقارير.</p>
+        </div>
+
+        <!-- 3. Scalability -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. Scalability — قابلية التوسع</h2>
+            <p>النظام مصمم منذ البداية ليكون Multi-Tenant Platform، حيث توجد Central Platform تحتوي على عدد كبير من Teacher Platforms المستقلة.</p>
+            <p>يجب أن يكون النظام قادرًا على النمو في: عدد المدرسين، عدد Teacher Platforms، عدد الطلاب، عدد المستخدمين المتصلين في نفس الوقت، عدد Courses، عدد Lessons، عدد Videos، عدد Exams، عدد Financial Transactions، وحجم التقارير والبيانات التاريخية.</p>
+            <p>ويجب ألا يتطلب نمو عدد المدرسين إعادة تصميم النظام بالكامل.</p>
+        </div>
+
+        <!-- 4. Availability -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. Availability — التوافر</h2>
+            <p>يجب أن تكون المنصة متاحة للطلاب والمدرسين في معظم الوقت.</p>
+            <p>ويجب إعطاء أولوية خاصة لتوافر الخدمات الأساسية: تسجيل الدخول، الوصول إلى Teacher Platform، مشاهدة المحتوى، Wallet، عمليات الشراء، Exams، تسجيل Activity.</p>
+            <p>وأي أعمال إدارية أو صيانة يجب أن تتم مع تقليل تأثيرها على المستخدمين.</p>
+        </div>
+
+        <!-- 5. Reliability -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. Reliability — الاعتمادية</h2>
+            <p>يجب أن يحافظ النظام على صحة البيانات وعدم فقدان العمليات المهمة، خصوصًا: عمليات Wallet، Financial Transactions، عمليات الشراء، تفعيل المحتوى، نتائج Exams، Activity الخاصة بالطلاب، صلاحيات المستخدمين، Coupons، اشتراكات المدرسين.</p>
+            <p>لا يجب أن يؤدي فشل عملية جزئية إلى إنشاء بيانات مالية غير صحيحة أو منح الطالب صلاحية غير مستحقة.</p>
+        </div>
+
+        <!-- 6. Data Integrity -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. Data Integrity — سلامة البيانات</h2>
+            <p>يجب الحفاظ على اتساق البيانات بين الأجزاء المختلفة للنظام. مثال: عند شراء Student لمحتوى بقيمة معينة:</p>
+            <div class="example-box">Wallet Balance ← Financial Transaction ← Purchase Record ← Access Grant</div>
+            <p>بحيث لا تحدث حالة يتم فيها خصم المبلغ دون منح الصلاحية، أو منح الصلاحية دون تسجيل العملية المالية.</p>
+        </div>
+
+        <!-- 7. Security -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. Security — الأمان</h2>
+            <p>الأمان من المتطلبات الأساسية للنظام بسبب احتوائه على: بيانات الطلاب، بيانات المدرسين، بيانات أولياء الأمور، بيانات الدخول، معلومات مالية، محتوى تعليمي مدفوع، نتائج Exams، بيانات Activity، وصلاحيات متعددة للمستخدمين.</p>
+            <h3>يجب أن يضمن النظام</h3>
+            <ul>
+                <li>حماية حسابات المستخدمين.</li>
+                <li>حماية كلمات المرور.</li>
+                <li>تطبيق صلاحيات الوصول.</li>
+                <li>منع المستخدم من الوصول إلى بيانات Teacher Platform أخرى.</li>
+                <li>منع Teacher Admin / Assistant من الوصول إلى وظائف غير مصرح بها.</li>
+                <li>تسجيل العمليات الحساسة.</li>
+                <li>حماية العمليات المالية.</li>
+                <li>حماية البيانات أثناء النقل.</li>
+                <li>حماية البيانات الحساسة المخزنة.</li>
+            </ul>
+        </div>
+
+        <!-- 8. Multi-Tenant Isolation -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. Multi-Tenant Isolation — عزل منصات المدرسين</h2>
+            <p>كل Teacher Platform تعتبر مساحة مستقلة داخل Central Platform. يجب ألا يستطيع:</p>
+            <ul>
+                <li>Student من Teacher Platform الوصول إلى بيانات Teacher Platform أخرى.</li>
+                <li>Teacher الوصول إلى طلاب مدرس آخر.</li>
+                <li>Assistant الوصول إلى منصة مدرس آخر.</li>
+                <li>أي مستخدم تجاوز حدود المنصة الخاصة به.</li>
+            </ul>
+            <p>ويجب أن يكون هذا العزل مطبقًا على جميع مستويات البيانات والعمليات.</p>
+        </div>
+
+        <!-- 9. RBAC -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. Role-Based Access Control — التحكم في الصلاحيات</h2>
+            <p>يجب أن يعتمد النظام على صلاحيات واضحة حسب الدور.</p>
+            <h3>Central Platform</h3>
+            <p>لها مستخدمون إداريون مسؤولون عن الإدارة المركزية.</p>
+            <h3>Teacher</h3>
+            <p>يمتلك صلاحيات إدارة Teacher Platform الخاصة به.</p>
+            <h3>Teacher Admin / Assistant</h3>
+            <p>يمتلك الصلاحيات التي يمنحها له Teacher.</p>
+            <h3>Student</h3>
+            <p>يمتلك فقط الصلاحيات الخاصة بحسابه والمحتوى المسموح له.</p>
+            <p>ويجب أن تكون الصلاحيات قابلة للتخصيص بحيث يستطيع Teacher إنشاء أكثر من Admin / Assistant بصلاحيات مختلفة.</p>
+        </div>
+
+        <!-- 10. Auditability -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. Auditability — التتبع والمراجعة</h2>
+            <p>يجب تسجيل العمليات المهمة التي تحدث داخل النظام، خصوصًا: تسجيل الدخول، تغيير الصلاحيات، إنشاء أو تعطيل المستخدمين، تفعيل أو تعطيل الطلاب، تغيير صلاحية المحتوى، تمديد صلاحية المحتوى، إنشاء Coupons، استخدام Coupons، إضافة Wallet Credit، اعتماد التحويلات، عمليات الشراء، تعديل الأسعار، إنشاء Exams، تعديل نتائج أو بيانات حساسة.</p>
+            <blockquote>Who ← Did What ← When ← On Which Resource</blockquote>
+        </div>
+
+        <!-- 11. Content Protection -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. Content Protection — حماية المحتوى</h2>
+            <p>الفيديوهات التعليمية تعتبر محتوى محميًا. لن يعتمد النظام على تخزين الفيديوهات التعليمية بصورة مباشرة داخل النظام، وإنما سيتم التكامل مع خدمة متخصصة في حماية واستضافة وتقديم الفيديو.</p>
+            <p>يجب أن تدعم الخدمة المختارة عند اعتمادها لاحقًا: Protected Video Streaming، منع أو تقليل Download المباشر، Watermark، إمكانية تمرير بيانات الطالب إلى Watermark، التحكم في الوصول إلى الفيديو، وAPI Integration.</p>
+            <p>ويجب أن يكون تصميم النظام مستقلًا قدر الإمكان عن مزود خدمة فيديو محدد حتى يمكن تغيير المزود مستقبلًا.</p>
+        </div>
+
+        <!-- 12. Dynamic Watermark -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. Dynamic Watermark</h2>
+            <p>عند مشاهدة الفيديو، يمكن عرض Watermark تحتوي على بيانات مرتبطة بالمستخدم، مثل Student ID وEmail وبيانات تعريفية أخرى.</p>
+            <p>الهدف من ذلك هو: ردع مشاركة المحتوى، زيادة صعوبة إعادة توزيع التسجيلات، ربط أي نسخة مسربة بالحساب الذي شاهد المحتوى.</p>
+            <p>ويجب عدم اعتبار Watermark وحدها وسيلة حماية مطلقة، وإنما جزء من منظومة حماية المحتوى.</p>
+        </div>
+
+        <!-- 13. Account & Session Security -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. Account & Session Security</h2>
+            <p>يجب أن يسمح النظام للطالب باستخدام أكثر من جهاز بطريقة طبيعية. وجود جهازين على نفس الشبكة لا يعتبر مخالفة تلقائيًا.</p>
+            <p>وفي الوقت نفسه، يجب أن يوفر النظام سياسات للتحكم في استخدام الحساب من بيئات متعددة. يمكن تطبيق سياسات مثل: السماح بجلسة واحدة، تسجيل خروج الجلسة السابقة عند بدء جلسة جديدة، السماح بعدد معين من الجلسات، تسجيل الأحداث غير الطبيعية للمراجعة.</p>
+            <p>ويتم تحديد السياسة المناسبة وفق إعدادات النظام أو Teacher Platform.</p>
+        </div>
+
+        <!-- 14. Privacy -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. Privacy — الخصوصية</h2>
+            <p>يجب التعامل مع بيانات الطلاب وأولياء الأمور باعتبارها بيانات خاصة. يجب ألا تظهر هذه البيانات إلا للمستخدمين الذين لديهم صلاحية حقيقية للوصول إليها. كما يجب عدم استخدام بيانات الطالب أو ولي الأمر لأغراض خارج نطاق الخدمة التعليمية دون أساس قانوني أو موافقة مناسبة.</p>
+        </div>
+
+        <!-- 15. Usability -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. Usability — سهولة الاستخدام</h2>
+            <p>النظام موجه إلى مستخدمين بمستويات مختلفة من الخبرة التقنية. لذلك يجب أن تكون العمليات الأساسية واضحة وبسيطة، خصوصًا: إنشاء الطلاب، استيراد Excel، إضافة Credit، شراء المحتوى، إنشاء Course، إنشاء Exam، إدارة المحتوى، إدارة الطلاب، وإدارة الصلاحيات. ويجب تقليل عدد الخطوات المطلوبة لإتمام العمليات المتكررة.</p>
+        </div>
+
+        <!-- 16. Responsive Design -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. Responsive Design — توافق الأجهزة</h2>
+            <p>يجب أن تعمل المنصة بشكل جيد على: Desktop، Laptop، Tablet، Mobile. مع إعطاء اهتمام خاص لتجربة الطالب على الهاتف، لأن الهاتف سيكون أحد أهم وسائل الوصول إلى المحتوى.</p>
+        </div>
+
+        <!-- 17. Localization -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. Localization — دعم اللغة</h2>
+            <p>النسخة الأساسية من النظام موجهة إلى السوق المصري. لذلك يجب أن تدعم الواجهة العربية بشكل كامل، بما في ذلك: اتجاه RTL، النصوص العربية، الأرقام والبيانات المحلية، عرض العملات، التواريخ، الرسائل والتنبيهات.</p>
+            <p>ويجب تصميم النظام بحيث يمكن إضافة اللغة الإنجليزية مستقبلًا دون إعادة بناء النظام.</p>
+        </div>
+
+        <!-- 18. Maintainability -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. Maintainability — قابلية الصيانة</h2>
+            <p>يجب أن يكون النظام قابلًا للتطوير والصيانة على المدى الطويل. يجب أن تكون أجزاء النظام واضحة ومنفصلة منطقيًا، بحيث يمكن تطوير جزء دون التأثير غير الضروري على أجزاء أخرى. ويجب تجنب الاعتماد المباشر على مزود خدمة خارجي واحد في الأجزاء التي يمكن تغييرها مستقبلًا.</p>
+        </div>
+
+        <!-- 19. Extensibility -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. Extensibility — قابلية التوسع الوظيفي</h2>
+            <p>يجب تصميم النظام بحيث يمكن إضافة خصائص مستقبلية دون إعادة بناء النظام بالكامل. أمثلة: وسائل دفع إضافية، مزود Video Hosting مختلف، أنواع جديدة من المحتوى، أنواع جديدة من Exams، طرق جديدة للتقارير، خصائص جديدة للـTeacher Wall، خدمات إضافية للمدرسين.</p>
+        </div>
+
+        <!-- 20. Financial Accuracy -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. Financial Accuracy — الدقة المالية</h2>
+            <p>العمليات المالية من أكثر أجزاء النظام حساسية. يجب تسجيل كل عملية مالية كسجل مستقل قابل للمراجعة. ويجب أن تتضمن العملية، حسب نوعها: المستخدم، Teacher Platform، القيمة، نوع العملية، التاريخ والوقت، الحالة، المرجع، مصدر العملية، الرصيد قبل العملية، الرصيد بعد العملية. ولا يجب حذف العمليات المالية السابقة بطريقة تؤدي إلى فقدان السجل المالي.</p>
+        </div>
+
+        <!-- 21. Wallet Consistency -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>21. Wallet Consistency — اتساق الـWallet</h2>
+            <p>يجب أن يكون رصيد الطالب قابلًا للمراجعة في أي وقت. أي تغيير في الرصيد يجب أن يكون ناتجًا عن Financial Transaction مسجلة.</p>
+            <div class="example-box">Credit Added ← Wallet Balance Increased
+
+Purchase ← Wallet Balance Decreased</div>
+            <p>ويجب أن يكون بالإمكان معرفة سبب كل تغيير في الرصيد.</p>
+        </div>
+
+        <!-- 22. Backup & Recovery -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>22. Backup & Recovery — النسخ الاحتياطي والاستعادة</h2>
+            <p>يجب توفير آلية منتظمة للنسخ الاحتياطي للبيانات المهمة. ويجب أن تشمل خطة النسخ الاحتياطي: بيانات المستخدمين، بيانات Teacher Platforms، Courses، Students، Wallets، Financial Transactions، Exams، Results، Permissions، Activity، System Configuration. كما يجب وجود آلية واضحة لاستعادة البيانات عند حدوث مشكلة.</p>
+        </div>
+
+        <!-- 23. Monitoring -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>23. Monitoring — المراقبة</h2>
+            <p>يجب مراقبة حالة النظام واكتشاف المشاكل مبكرًا. تشمل المراقبة: حالة الخدمات، أخطاء النظام، أداء العمليات، استخدام الموارد، محاولات الدخول غير الطبيعية، مشاكل خدمات الفيديو، مشاكل عمليات الدفع، مشاكل Wallet، فشل العمليات المهمة.</p>
+        </div>
+
+        <!-- 24. Error Handling -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>24. Error Handling — التعامل مع الأخطاء</h2>
+            <p>يجب أن تكون رسائل الخطأ واضحة للمستخدم وغير كاشفة للتفاصيل الحساسة. في حالة فشل عملية مهمة: لا يتم تسجيل عملية مالية ناقصة، لا يتم منح صلاحية غير مستحقة، لا يتم فقدان بيانات المستخدم، يتم تسجيل الخطأ للمراجعة.</p>
+        </div>
+
+        <!-- 25. Concurrency -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>25. Concurrency — التعامل مع العمليات المتزامنة</h2>
+            <p>يجب أن يتعامل النظام مع الحالات التي تحدث فيها عمليات متزامنة، خصوصًا في: Wallet، Purchases، Coupon Usage، Student Access، Exam Submission، Administrative Actions.</p>
+            <p>مثال: إذا حاول الطالب استخدام نفس Coupon مرتين في نفس الوقت، يجب أن يقبل النظام استخدامًا واحدًا فقط وفق قاعدة الاستخدام لمرة واحدة.</p>
+        </div>
+
+        <!-- 26. Coupon Integrity -->
+        <div class="section-card">
+            <span class="section-number">القسم 26</span>
+            <h2>26. Coupon Integrity — سلامة Coupons</h2>
+            <p>يجب أن يكون كل Coupon: معرفًا بشكل فريد، مرتبطًا بسياسة الخصم، مرتبطًا بتاريخ صلاحية، مرتبطًا بالمنتج أو الباقة عند الحاجة، قابلًا للتتبع، قابلًا للاستخدام وفق عدد المرات المحدد.</p>
+            <p>وفي حالة Coupons الخاصة باشتراكات المدرسين، يتم استخدام Coupon مرة واحدة فقط، وبعد استخدامه يتم تسجيل الحساب الذي استخدمه ولا يمكن إعادة استخدامه.</p>
+        </div>
+
+        <!-- 27. Content Access Consistency -->
+        <div class="section-card">
+            <span class="section-number">القسم 27</span>
+            <h2>27. Content Access Consistency — اتساق صلاحيات المحتوى</h2>
+            <p>يجب أن تكون صلاحية الطالب للوصول إلى المحتوى نتيجة واضحة لمجموعة من العوامل، مثل: Purchase، Enrollment، Package، Revision، Exam، Expiration، Rules، Student Status، Manual Extension. ولا يجوز أن يحصل الطالب على صلاحية غير مستحقة نتيجة خطأ في إحدى هذه الحالات.</p>
+        </div>
+
+        <!-- 28. Reporting Requirements -->
+        <div class="section-card">
+            <span class="section-number">القسم 28</span>
+            <h2>28. Reporting Requirements — متطلبات التقارير</h2>
+            <p>يجب أن تكون التقارير مبنية على البيانات المسجلة فعليًا داخل النظام.</p>
+            <h3>Central Platform Reports</h3>
+            <p>تشمل: المدرسين، الاشتراكات، الباقات، المدفوعات، Coupons، الخصومات، الإيرادات، حالة Teacher Platforms.</p>
+            <h3>Teacher Platform Reports</h3>
+            <p>تشمل: الطلاب، الاشتراكات والمشتريات، Wallet، Financial Transactions، Courses، Packages، Revisions، Exams، Results، Student Activity.</p>
+        </div>
+
+        <!-- 29. Traceability -->
+        <div class="section-card">
+            <span class="section-number">القسم 29</span>
+            <h2>29. Traceability — قابلية التتبع</h2>
+            <p>يجب أن يكون من الممكن الانتقال منطقيًا من العملية إلى البيانات المرتبطة بها.</p>
+            <div class="example-box">Student ← Purchase ← Financial Transaction ← Wallet Transaction ← Content Access ← Course / Package / Revision / Exam</div>
+            <p>وبذلك يمكن مراجعة العملية كاملة من بدايتها إلى نتيجتها.</p>
+        </div>
+
+        <!-- 30. Future Payment Integration -->
+        <div class="section-card">
+            <span class="section-number">القسم 30</span>
+            <h2>30. Future Payment Integration</h2>
+            <p>في المرحلة الأولى يمكن الاعتماد على وسائل التحويل المتاحة مثل: Vodafone Cash، InstaPay، وسائل تحويل أخرى يتم اعتمادها. ويتم إثبات العملية ومراجعتها بواسطة المسؤول المخول.</p>
+            <p>ويجب أن يسمح تصميم النظام بإضافة Payment Gateway مستقبلًا مثل: Fawry، Credit/Debit Cards، Other Payment Providers، دون تغيير جوهري في منطق النظام المالي.</p>
+        </div>
+
+        <!-- 31. External Service Independence -->
+        <div class="section-card">
+            <span class="section-number">القسم 31</span>
+            <h2>31. External Service Independence</h2>
+            <p>يعتمد النظام على خدمات خارجية في بعض المجالات، مثل Video Hosting / Protection، وربما Payment Providers مستقبلًا. يجب أن يكون التكامل مع هذه الخدمات منفصلًا عن منطق النظام الأساسي قدر الإمكان. وبذلك يمكن تغيير مزود الخدمة عند الحاجة دون إعادة بناء النظام بالكامل.</p>
+        </div>
+
+        <!-- 32. NFR Priority -->
+        <div class="section-card">
+            <span class="section-number">القسم 32</span>
+            <h2>32. NFR Priority</h2>
+            <p>ليست كل المتطلبات بنفس درجة الأولوية.</p>
+            <div class="critical-priority">
+                <h3>Critical</h3>
+                <ul>
+                    <li>Security</li>
+                    <li>Data Integrity</li>
+                    <li>Financial Accuracy</li>
+                    <li>Multi-Tenant Isolation</li>
+                    <li>Content Access Control</li>
+                    <li>Wallet Consistency</li>
+                    <li>Backup & Recovery</li>
+                </ul>
+            </div>
+            <div class="high-priority">
+                <h3>High</h3>
+                <ul>
+                    <li>Performance</li>
+                    <li>Availability</li>
+                    <li>Scalability</li>
+                    <li>Auditability</li>
+                    <li>Content Protection</li>
+                    <li>Reliability</li>
+                </ul>
+            </div>
+            <div class="medium-priority">
+                <h3>Medium</h3>
+                <ul>
+                    <li>Extensibility</li>
+                    <li>Reporting</li>
+                    <li>Usability</li>
+                    <li>Monitoring</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 33. الخلاصة -->
+        <div class="section-card">
+            <span class="section-number">القسم 33</span>
+            <h2>33. الخلاصة</h2>
+            <p>يجب أن يتم بناء النظام بحيث لا يكون مجرد مجموعة من الوظائف، وإنما منصة تعليمية مستقرة وآمنة وقابلة للنمو.</p>
+            <blockquote>Security + Data Integrity + Isolation + Performance + Scalability + Reliability</blockquote>
+            <p>مع الحفاظ على سهولة الاستخدام للمدرس والطالب والإدارة. وتعتبر هذه المتطلبات مرجعًا أساسيًا عند اتخاذ القرارات المعمارية والتقنية في المراحل التالية.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • Non-Functional Requirements v1.0 • Eng. Wael Sayed
+        </div>
+    </div>
+</body>
+</html>

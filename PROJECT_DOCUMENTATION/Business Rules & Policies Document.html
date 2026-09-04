@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Business Rules & Policies Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1100px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, .rule-card, table {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+            .role-badge, .badge, .rule-id {
+                background: #e9edf3 !important;
+                color: #0f172a !important;
+                border: 1px solid #94a3b8;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .section-card:hover {
+            border-right-color: #2c8cad;
+            box-shadow: 0 12px 22px rgba(0, 40, 70, 0.06);
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .rule-card {
+            background: #fafcff;
+            border: 1px solid #d5e3f0;
+            border-right: 4px solid #2c8cad;
+            border-radius: 14px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.2rem 0;
+        }
+
+        .rule-id {
+            display: inline-block;
+            background: #d9e9f5;
+            color: #0f3b5f;
+            font-weight: 800;
+            padding: 0.2rem 1.1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.6rem;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        .example-box {
+            background: #f0f4fa;
+            border-radius: 14px;
+            padding: 1.2rem 1.8rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            border: 1px solid #d0dfee;
+            white-space: pre-line;
+            line-height: 2;
+            color: #13354a;
+            overflow-x: auto;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            color: #193e59;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+        }
+
+        th {
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid #1a5a72;
+        }
+
+        td {
+            padding: 0.7rem 1rem;
+            border: 1px solid #dbe4ed;
+            text-align: right;
+            background: #fcfdfe;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Business Rules & Policies Document</h1>
+            <div class="subtitle">وثيقة قواعد العمل والسياسات</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">✍️</span> <strong>Written By:</strong> Eng. Wael Sayed</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.2</div>
+                <div class="meta-item"><span class="meta-icon">📋</span> <strong>Status:</strong> Draft</div>
+            </div>
+        </div>
+
+        <!-- 1. الهدف -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. الهدف من الوثيقة</h2>
+            <p>تحدد هذه الوثيقة القواعد الأساسية التي تحكم عمل المنصة والعلاقة بين المدرس والطلاب والمحتوى التعليمي والعمليات المالية والإدارية.</p>
+            <p>الهدف هو تحويل الرؤية والمتطلبات الوظيفية إلى قواعد واضحة يمكن الاعتماد عليها في مراحل التحليل والتصميم والتنفيذ اللاحقة.</p>
+        </div>
+
+        <!-- 2. قواعد منصة المدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. قواعد منصة المدرس</h2>
+
+            <div class="rule-card">
+                <span class="rule-id">BR-001</span>
+                <p><strong>استقلال منصة المدرس:</strong> لكل مدرس مساحة تعليمية مستقلة داخل النظام، يدير من خلالها بياناته وطلابه والمواد والمحتوى والاختبارات والمراجعات والعروض والباقات والعمليات المالية الخاصة بمنصته.</p>
+            </div>
+            <div class="rule-card">
+                <span class="rule-id">BR-002</span>
+                <p><strong>إدارة المدرس:</strong> المدرس هو المسؤول الأساسي عن إدارة منصته، ويمكنه تعيين Admins وAssistants لمساعدته في الإدارة.</p>
+            </div>
+            <div class="rule-card">
+                <span class="rule-id">BR-003</span>
+                <p><strong>تعدد المساعدين:</strong> يمكن للمدرس تعيين أكثر من Admin أو Assistant، مع إمكانية منح كل حساب صلاحيات مختلفة.</p>
+            </div>
+            <div class="rule-card">
+                <span class="rule-id">BR-004</span>
+                <p><strong>الصلاحيات:</strong> يمكن للمدرس تحديد الصلاحيات الممنوحة لكل Admin أو Assistant، مثل: إدارة الطلاب، إدارة المحتوى، إدارة الاختبارات، إدارة الـWall، دعم الطلاب، مراجعة التحويلات، إدارة Wallet الطلاب، تفعيل المحتوى، متابعة النتائج، التقارير المالية. ولا يلزم أن يمتلك جميع المساعدين نفس الصلاحيات.</p>
+            </div>
+        </div>
+
+        <!-- 3. الهيكل الأكاديمي -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. الهيكل الأكاديمي</h2>
+            <p>يعتمد تنظيم المحتوى الأساسي على التسلسل التالي:</p>
+            <div class="example-box">Subject ← Grade ← Academic Period ← Course ← Unit ← Chapter ← Lesson</div>
+
+            <div class="rule-card"><span class="rule-id">BR-005</span><p><strong>المادة:</strong> يمكن للمدرس تدريس أكثر من مادة.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-006</span><p><strong>الصف الدراسي:</strong> يمكن ربط كل مادة بصف دراسي أو أكثر.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-007</span><p><strong>الفترة الدراسية:</strong> يمكن تحديد الفترة الدراسية المناسبة، مثل الترم الأول، الترم الثاني، أو العام الدراسي الكامل.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-008</span><p><strong>Course:</strong> يمكن للمدرس إنشاء أكثر من Course وفق طريقة تنظيمه للمحتوى.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-009</span><p><strong>Unit:</strong> يمكن تقسيم Course إلى Units.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-010</span><p><strong>Chapter:</strong> يمكن تقسيم كل Unit إلى Chapters.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-011</span><p><strong>Lesson:</strong> يمكن تقسيم كل Chapter إلى Lessons.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-012</span><p><strong>ترتيب المحتوى:</strong> يمكن للمدرس تحديد ترتيب Units وChapters وLessons وتغييره عند الحاجة.</p></div>
+        </div>
+
+        <!-- 4. محتوى Lesson -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. محتوى Lesson</h2>
+            <p>يمكن أن تحتوي Lesson على واحد أو أكثر من أنواع المحتوى التالية:</p>
+            <ul>
+                <li>Video.</li>
+                <li>Text.</li>
+                <li>PDF.</li>
+                <li>Images.</li>
+                <li>Files.</li>
+                <li>Homework.</li>
+                <li>Revision Material.</li>
+                <li>Exam أو Assessment.</li>
+            </ul>
+            <p>وجود أي عنصر من هذه العناصر ليس إلزامياً.</p>
+        </div>
+
+        <!-- 5. إدارة الفيديو -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. إدارة الفيديو</h2>
+            <div class="rule-card"><span class="rule-id">BR-013</span><p>يتم التعامل مع الفيديو كمحتوى محمي يتم تشغيله من خلال خدمة متخصصة في استضافة وحماية الفيديو.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-014</span><p>يجب أن ترتبط إمكانية مشاهدة الفيديو بصلاحية الطالب في النظام.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-015</span><p>يمكن استخدام Watermark أثناء مشاهدة الطالب للفيديو.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-016</span><p>يمكن أن تتضمن الـWatermark بيانات تعريفية للطالب بهدف تتبع النسخ أو التسجيلات غير المصرح بها، وفق إمكانيات مزود خدمة الفيديو.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-017</span><p>يجب أن تتم إدارة رفع الفيديو وتشغيله من داخل المنصة دون حاجة المدرس للتعامل المباشر مع حساب منفصل لدى مزود خدمة الفيديو.</p></div>
+        </div>
+
+        <!-- 6. الطلاب -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. الطلاب</h2>
+            <div class="rule-card"><span class="rule-id">BR-018</span><p><strong>حساب الطالب:</strong> يمتلك الطالب حساباً يمكنه من خلاله التعامل مع أكثر من مدرس.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-019</span><p><strong>استقلال علاقة الطالب:</strong> لكل مدرس علاقة مستقلة مع الطالب، وتشمل الصلاحيات والمحتوى والمشتريات والتقدم والاختبارات وحالة الحساب.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-020</span><p><strong>الانضمام:</strong> إنشاء حساب الطالب لا يعني حصوله تلقائياً على محتوى المدرس. يجب أن يتم انضمامه وتفعيل صلاحياته وفق سياسة المدرس.</p></div>
+        </div>
+
+        <!-- 7. الطلاب Offline -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. الطلاب Offline</h2>
+            <div class="rule-card"><span class="rule-id">BR-021</span><p>يمكن للمدرس إدارة طلاب يدرسون معه Offline.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-022</span><p>يمكن للـAssistant إضافة الطلاب Offline بدلاً من مطالبة كل طالب بإنشاء حساب بنفسه.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-023</span><p><strong>الاستيراد الجماعي:</strong> يجب دعم إنشاء عدد كبير من الطلاب باستخدام ملف Excel. يمكن أن يحتوي الملف على بيانات مثل Name، Phone Number، Parent Phone، Address، وغيرها.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-024</span><p>يجب أن يدعم النظام التحقق من بيانات ملف Excel قبل إنشاء الحسابات.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-025</span><p>يجب إظهار الطلاب الذين فشل إنشاؤهم مع سبب الفشل.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-026</span><p>يمكن إنشاء الحسابات الصحيحة تلقائياً بعد نجاح عملية التحقق.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-027</span><p><strong>Username:</strong> يستخدم رقم الهاتف كمعرّف دخول أساسي للطالب، وفق قواعد النظام.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-028</span><p><strong>بيانات الدخول:</strong> يتم إنشاء بيانات دخول أولية للطلاب بشكل تلقائي، مع تفضيل استخدام كلمة مرور مؤقتة وإجبار الطالب على تغييرها عند أول تسجيل دخول.</p></div>
+        </div>
+
+        <!-- 8. حالة الطالب -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. إدارة حالة الطالب</h2>
+            <p>يمكن للمسؤول المخول تغيير حالة الطالب. من الحالات الأساسية: Active، Pending، Suspended، Inactive.</p>
+            <div class="rule-card"><span class="rule-id">BR-029</span><p>يمكن عمل Deactivate للطالب عند مخالفة القواعد أو لأسباب إدارية.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-030</span><p>يمكن إعادة تفعيل الطالب لاحقاً.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-031</span><p>إيقاف الطالب لا يعني حذف سجله أو بياناته التاريخية.</p></div>
+        </div>
+
+        <!-- 9. المنتجات -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. المنتجات والمحتوى التعليمي</h2>
+            <p>يدعم النظام أربعة أنواع رئيسية من العروض أو المحتوى التعليمي:</p>
+            <ul>
+                <li>Course.</li>
+                <li>Package.</li>
+                <li>Revision.</li>
+                <li>Exam.</li>
+            </ul>
+            <p>لكل نوع قواعده الخاصة.</p>
+        </div>
+
+        <!-- 10. Course -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. Course</h2>
+            <div class="rule-card"><span class="rule-id">BR-032</span><p>Course هو المسار التعليمي الأساسي الذي ينظم من خلاله المدرس المحتوى.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-033</span><p>يمكن أن يحتوي Course على Units وChapters وLessons وExams.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-034</span><p>يمكن أن توجد Exam بين Units أو في موضع مستقل داخل التسلسل التعليمي.</p></div>
+        </div>
+
+        <!-- 11. Package -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. Package</h2>
+            <div class="rule-card"><span class="rule-id">BR-035</span><p><strong>تعريف Package:</strong> الـPackage هي عرض تجاري اختياري موجه بشكل أساسي إلى الطلاب الذين لم يبدأوا من بداية التسلسل، تأخروا، انتقلوا من مدرس آخر، أو يحتاجون مجموعة محددة من المحتوى السابق.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-036</span><p><strong>مصدر محتوى Package:</strong> يتم إنشاء Package من المحتوى الموجود بالفعل داخل Course. يمكن اختيار Units كاملة أو Chapters محددة أو محتوى محدد.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-037</span><p><strong>عدم تكرار المحتوى:</strong> إنشاء Package لا يعني إنشاء نسخة جديدة من الفيديوهات أو الملفات، بل تحديد المحتوى الذي يحصل عليه الطالب ضمن العرض.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-038</span><p><strong>السعر:</strong> لكل Package سعر مستقل يحدده المدرس.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-039</span><p><strong>الهدف التجاري:</strong> يمكن استخدام Package لإعادة تقديم المحتوى السابق للطلاب الجدد أو المتأخرين بسعر مناسب.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-040</span><p>إنشاء Package واستخدامها اختياري ويعود للمدرس.</p></div>
+        </div>
+
+        <!-- 12. Revision -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. Revision</h2>
+            <div class="rule-card"><span class="rule-id">BR-041</span><p>Revision هي نوع مستقل من العروض التعليمية.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-042</span><p>يمكن للمدرس إنشاء Revision بعد إنشاء المحتوى الأساسي.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-043</span><p>يمكن أن تحتوي Revision على Videos وPDFs وText وFiles وExams وأي محتوى تعليمي آخر.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-044</span><p>يمكن إنشاء أكثر من Revision، مثل Revision 1 وRevision 2 وFinal Revision.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-045</span><p><strong>السعر:</strong> لكل Revision سعر مستقل يحدده المدرس.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-046</span><p>يمكن أن تكون Revision متاحة للطلاب الذين يحتاجون المراجعة بغض النظر عن المسار الأساسي، وفق قواعد الوصول.</p></div>
+        </div>
+
+        <!-- 13. إعادة استخدام المحتوى -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. إعادة استخدام المحتوى</h2>
+            <div class="rule-card"><span class="rule-id">BR-047</span><p>يجب أن يسمح النظام باستخدام المحتوى التعليمي الموجود في أكثر من سياق دون تكرار الملفات. مثلاً: Course Content ← Package أو Course Content ← Revision.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-048</span><p>تغيير طريقة تقديم المحتوى أو استخدامه في Package أو Revision لا يعني نسخ الفيديو أو الملف نفسه.</p></div>
+        </div>
+
+        <!-- 14. Exam -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. Exam</h2>
+            <div class="rule-card"><span class="rule-id">BR-049</span><p><strong>نوع الاختبار:</strong> يمكن أن يكون الـExam Online أو Offline.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-050</span><p><strong>Online Exam:</strong> يتم أداؤه داخل النظام، ويمكن أن يكون Free أو Paid.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-051</span><p><strong>Offline Exam:</strong> يتم أداؤه خارج النظام في المكان أو الموعد الذي يحدده المدرس، ويمكن أن يكون Free أو Paid.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-052</span><p><strong>الدفع للـOffline Exam:</strong> يمكن للطالب دفع قيمة Offline Exam من خلال النظام، ويتم تسجيل العملية كعملية دفع وحجز.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-053</span><p><strong>بيانات الاختبار:</strong> يمكن تحديد الاسم والوصف والموعد والتاريخ والسعر والنوع وشروط الدخول.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-054</span><p><strong>Expiration:</strong> إذا انتهت الفترة المحددة للاختبار، يصبح غير متاح للطالب.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-055</span><p><strong>تمديد الاختبار:</strong> يمكن للـTeacher أو الـAssistant المخول تمديد صلاحية الاختبار لطالب معين.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-056</span><p>يمكن أن يكون التمديد خاصاً بطالب معين دون تغيير تاريخ انتهاء الاختبار لباقي الطلاب.</p></div>
+        </div>
+
+        <!-- 15. Online Exam قواعد -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. قواعد Online Exam</h2>
+            <div class="rule-card"><span class="rule-id">BR-057</span><p>يمكن أن يحتوي Online Exam على أسئلة متعددة.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-058</span><p>تكون Multiple Choice من أنواع الأسئلة الأساسية.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-059</span><p>يمكن تحديد الإجابة الصحيحة لكل سؤال.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-060</span><p>يمكن تحديد درجة لكل سؤال.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-061</span><p>يمكن حساب النتيجة تلقائياً بعد انتهاء الطالب وفق إعدادات الاختبار.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-062</span><p>يمكن استخدام نتيجة الاختبار كشرط للانتقال إلى محتوى آخر إذا فعّل المدرس هذه القاعدة.</p></div>
+        </div>
+
+        <!-- 16. قواعد الوصول -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. قواعد الوصول والتقدم</h2>
+            <p>يمكن للمدرس تفعيل قواعد التحكم في تسلسل المحتوى.</p>
+            <div class="rule-card"><span class="rule-id">BR-063</span><p>يمكن منع الطالب من الوصول إلى Lesson لاحقة قبل إكمال Lesson سابقة.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-064</span><p>يمكن اشتراط مشاهدة نسبة معينة من الفيديو.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-065</span><p>يمكن اشتراط إكمال Homework.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-066</span><p>يمكن اشتراط أداء Exam.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-067</span><p>يمكن اشتراط تحقيق درجة محددة في Exam.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-068</span><p>يمكن تعطيل هذه القواعد عندما لا يحتاجها المدرس.</p></div>
+        </div>
+
+        <!-- 17. مدة الوصول -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. مدة الوصول إلى المحتوى</h2>
+            <div class="rule-card"><span class="rule-id">BR-069</span><p>يمكن للمدرس تحديد مدة صلاحية وصول الطالب إلى المحتوى. مثال: Unit متاحة لمدة 14 يوماً من تاريخ التفعيل.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-070</span><p>يمكن تطبيق مدة الصلاحية على Course أو Unit أو Chapter أو Lesson أو Package أو Revision.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-071</span><p>بعد انتهاء المدة، يتم إيقاف الوصول إلى المحتوى المتأثر.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-072</span><p>يمكن للمسؤول المخول Extend أو Reopen أو Reactivate صلاحية المحتوى لطالب محدد.</p></div>
+        </div>
+
+        <!-- 18. المراجعة وإعادة الفتح -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. المراجعة وإعادة فتح المحتوى</h2>
+            <div class="rule-card"><span class="rule-id">BR-073</span><p>يمكن للمدرس إعادة فتح محتوى سابق للطالب لغرض المراجعة.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-074</span><p>يمكن أن تشمل إعادة الفتح Lesson أو Chapter أو Unit أو مجموعة محتويات.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-075</span><p>يمكن تحديد مدة جديدة للمراجعة.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-076</span><p>إعادة فتح المحتوى لطالب لا تعني بالضرورة إعادة فتحه لباقي الطلاب.</p></div>
+        </div>
+
+        <!-- 19. Homework -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. Homework</h2>
+            <div class="rule-card"><span class="rule-id">BR-077</span><p>يمكن ربط Homework بـ Lesson أو Chapter أو Unit.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-078</span><p>يمكن أن يكون Homework اختيارياً.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-079</span><p>يمكن للمدرس جعله شرطاً للانتقال إلى محتوى لاحق.</p></div>
+        </div>
+
+        <!-- 20. متابعة النشاط -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. متابعة نشاط الطالب</h2>
+            <p>يجب تسجيل النشاط اللازم لمتابعة تقدم الطالب، ومن ذلك:</p>
+            <ul>
+                <li>بداية المشاهدة.</li>
+                <li>نسبة المشاهدة.</li>
+                <li>وقت المشاهدة الفعلي.</li>
+                <li>آخر نقطة وصل إليها.</li>
+                <li>سرعة تشغيل الفيديو.</li>
+                <li>إكمال Lesson.</li>
+                <li>أداء Exam.</li>
+                <li>نتيجة Exam.</li>
+                <li>حالة Homework.</li>
+            </ul>
+            <div class="rule-card"><span class="rule-id">BR-080</span><p>يجب أن يعتمد تحديد إكمال الفيديو على نشاط المشاهدة الفعلي وفق القواعد التي ستحدد لاحقاً.</p></div>
+        </div>
+
+        <!-- 21. Wall -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>21. Wall المدرس</h2>
+            <div class="rule-card"><span class="rule-id">BR-081</span><p>لكل مدرس Wall خاص به.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-082</span><p>يمكن للمدرس نشر Posts وQuestions وAnnouncements وPolls وSurveys وRatings وEducational Discussions.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-083</span><p>يمكن للمدرس السماح بالتعليقات أو إيقافها.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-084</span><p>يمكن للطلاب التفاعل مع المنشورات وفق الصلاحيات وإعدادات المنشور.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-085</span><p>يمكن للمدرس إدارة التعليقات والمنشورات الخاصة به.</p></div>
+        </div>
+
+        <!-- 22. Wallet -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>22. Wallet</h2>
+            <div class="rule-card"><span class="rule-id">BR-086</span><p>يمتلك الطالب Wallet تستخدم لإدارة رصيده المتاح لدى المدرس.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-087</span><p>يمكن زيادة الرصيد عن طريق طرق الدفع المتاحة، ومنها Vodafone Cash وInstaPay.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-088</span><p>يمكن للطالب إرسال إثبات التحويل.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-089</span><p>لا تتم إضافة الرصيد إلا بعد اعتماد عملية التحويل من المسؤول المخول.</p></div>
+        </div>
+
+        <!-- 23. Wallet Transactions -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>23. Wallet Transactions</h2>
+            <p>كل حركة على Wallet يجب أن تكون مرتبطة بـFinancial Transaction واضحة، مثل Credit أو Purchase أو Debit أو Refund أو Adjustment.</p>
+            <div class="rule-card"><span class="rule-id">BR-090</span><p>لا يعتمد النظام على قيمة الرصيد الحالية فقط، بل يحتفظ بسجل الحركات المالية.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-091</span><p>يجب أن يمكن معرفة سبب كل حركة ومصدرها وتاريخها.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-092</span><p>يجب أن يظهر الرصيد بعد كل حركة عند الحاجة للمراجعة.</p></div>
+        </div>
+
+        <!-- 24. Transfer Requests -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>24. Transfer Requests</h2>
+            <p>عند قيام الطالب بالتحويل، يتم إنشاء <strong>Transfer Request</strong> يحتوي على بيانات العملية، وتكون حالته: <strong>Pending ← Approved / Rejected</strong>.</p>
+            <div class="rule-card"><span class="rule-id">BR-093</span><p><strong>Approved:</strong> يتم اعتماد الطلب، وإنشاء Financial Transaction، وإضافة الرصيد إلى Wallet، وتسجيل المسؤول والتاريخ والوقت والمبلغ.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-094</span><p><strong>Rejected:</strong> يتم تسجيل العملية كـRejected، وتبقى بيانات التحويل محفوظة، ولا تتم إضافة الرصيد. الرفض لا يعني تلقائياً Refund؛ الاسترجاع عملية مالية مستقلة.</p></div>
+        </div>
+
+        <!-- 25. شراء المنتجات -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>25. شراء المنتجات التعليمية</h2>
+            <p>يمكن للطالب استخدام Wallet للحصول على المنتجات المدفوعة، مثل Course وPackage وRevision وOnline Exam وOffline Exam.</p>
+            <div class="rule-card"><span class="rule-id">BR-095</span><p>قبل إتمام الشراء يجب التأكد من كفاية الرصيد.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-096</span><p>عند نجاح العملية: يتم إنشاء Debit Transaction، وخصم قيمة المنتج، وتسجيل عملية الشراء، وتفعيل المنتج وفق قواعده.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-097</span><p>إذا كان الرصيد غير كافٍ: لا تتم عملية الشراء، ولا يتم خصم الرصيد، ولا يتم تفعيل المنتج.</p></div>
+        </div>
+
+        <!-- 26. مثال حركة Wallet -->
+        <div class="section-card">
+            <span class="section-number">القسم 26</span>
+            <h2>26. مثال على حركة Wallet</h2>
+            <div class="example-box">Opening Balance: 400 EGP
+Purchase: -350 EGP
+Remaining Balance: 50 EGP</div>
+            <p>ويجب تسجيل العملية ضمن Financial Transactions.</p>
+        </div>
+
+        <!-- 27. Accounting Subsystem -->
+        <div class="section-card">
+            <span class="section-number">القسم 27</span>
+            <h2>27. Accounting Subsystem</h2>
+            <p>يجب أن يحتوي النظام على جزء خاص بالمحاسبة الداخلية لمنصة المدرس، لتسجيل ومتابعة النشاط المالي بشكل كامل، ويشمل:</p>
+            <ul>
+                <li>التحويلات.</li>
+                <li>عمليات إضافة الرصيد.</li>
+                <li>المشتريات.</li>
+                <li>الخصومات من Wallet.</li>
+                <li>عمليات Refund.</li>
+                <li>التعديلات المالية.</li>
+                <li>إجمالي المبيعات.</li>
+                <li>عدد المبيعات.</li>
+                <li>الطلاب المشترين.</li>
+                <li>المنتجات المباعة.</li>
+                <li>إجمالي الإيرادات.</li>
+            </ul>
+        </div>
+
+        <!-- 28. التقارير المالية -->
+        <div class="section-card">
+            <span class="section-number">القسم 28</span>
+            <h2>28. التقارير المالية</h2>
+            <p>يجب أن يستطيع المدرس أو المسؤول المخول استخراج تقارير مالية.</p>
+            <h3>Sales Report</h3>
+            <p>يعرض: الطالب، المنتج، نوع المنتج، السعر، تاريخ الشراء، حالة العملية.</p>
+            <h3>Transfer Report</h3>
+            <p>يعرض: الطالب، المبلغ، طريقة الدفع، تاريخ التحويل، رقم العملية، الحالة، المسؤول عن المراجعة.</p>
+            <h3>Wallet Report</h3>
+            <p>يعرض: الرصيد السابق، قيمة الحركة، نوع الحركة، الرصيد بعد الحركة، التاريخ، السبب.</p>
+            <h3>Financial Summary</h3>
+            <p>يعرض ملخصاً للفترة المطلوبة مثل: إجمالي التحويلات المعتمدة، إجمالي المبيعات، إجمالي العمليات، عدد الطلاب المشترين، إجمالي قيمة المبيعات، إجمالي Refunds، صافي النتائج المالية.</p>
+        </div>
+
+        <!-- 29. الصلاحيات المالية -->
+        <div class="section-card">
+            <span class="section-number">القسم 29</span>
+            <h2>29. قواعد الصلاحيات المالية</h2>
+            <div class="rule-card"><span class="rule-id">BR-098</span><p>ليس كل Admin أو Assistant يستطيع الوصول إلى البيانات المالية.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-099</span><p>يمكن للمدرس منح صلاحيات مالية لمساعد محدد.</p></div>
+            <div class="rule-card"><span class="rule-id">BR-100</span><p>يمكن أن يكون Assistant مسؤولاً عن مراجعة التحويلات وإضافة الرصيد ومراجعة عمليات الدفع دون الوصول لباقي البيانات المالية.</p></div>
+        </div>
+
+        <!-- 30. Audit -->
+        <div class="section-card">
+            <span class="section-number">القسم 30</span>
+            <h2>30. قواعد التتبع Audit</h2>
+            <p>العمليات المهمة يجب أن تكون قابلة للتتبع. يجب تسجيل:</p>
+            <ul>
+                <li>من قام بالعملية.</li>
+                <li>متى تمت.</li>
+                <li>نوع العملية.</li>
+                <li>العنصر المتأثر.</li>
+                <li>القيمة قبل العملية وبعدها عند الحاجة.</li>
+            </ul>
+            <p>ويشمل ذلك خصوصاً: إضافة الرصيد، خصم الرصيد، تفعيل المحتوى، تمديد الصلاحية، إعادة فتح المحتوى، تغيير صلاحيات Assistant، تعطيل الطالب، إعادة تفعيل الطالب، اعتماد التحويل، رفض التحويل، والعمليات المالية المهمة.</p>
+        </div>
+
+        <!-- 31. القرارات البشرية -->
+        <div class="section-card">
+            <span class="section-number">القسم 31</span>
+            <h2>31. مبدأ القرارات البشرية</h2>
+            <p>يمكن للمدرس أو المسؤول المخول تجاوز بعض القواعد تلقائياً عند الحاجة، مثل:</p>
+            <ul>
+                <li>تمديد Exam.</li>
+                <li>إعادة فتح Lesson.</li>
+                <li>تمديد Unit.</li>
+                <li>إعادة فتح Revision.</li>
+                <li>السماح لطالب بتجاوز شرط.</li>
+                <li>إعادة تفعيل طالب.</li>
+                <li>تعطيل طالب.</li>
+            </ul>
+            <p>ويجب تسجيل هذه الإجراءات للحفاظ على تاريخ واضح للقرارات.</p>
+        </div>
+
+        <!-- 32. عدم تكرار المحتوى -->
+        <div class="section-card">
+            <span class="section-number">القسم 32</span>
+            <h2>32. مبدأ عدم تكرار المحتوى</h2>
+            <p>المحتوى التعليمي يتم إنشاؤه وإدارته كمحتوى مستقل، بينما طرق تقديمه للطلاب يمكن أن تختلف.</p>
+            <p>فمثلاً يمكن استخدام نفس المحتوى في <strong>Course</strong> ثم تقديم أجزاء منه لاحقاً ضمن <strong>Package</strong> أو <strong>Revision</strong> دون الحاجة إلى إنشاء نسخ مكررة من الملفات.</p>
+            <p>وهذا المبدأ سيكون أساسياً عند الانتقال إلى <strong>Domain Analysis</strong> وتصميم الـDomain Model.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • Written By: Eng. Wael Sayed • Version 1.2 — Draft
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Functional Requirements Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1100px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, table {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+            .role-badge, .badge {
+                background: #e9edf3 !important;
+                color: #0f172a !important;
+                border: 1px solid #94a3b8;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .section-card:hover {
+            border-right-color: #2c8cad;
+            box-shadow: 0 12px 22px rgba(0, 40, 70, 0.06);
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        .note-box {
+            background: #fff8e6;
+            border-right: 6px solid #d9a406;
+            padding: 1.2rem 1.8rem;
+            border-radius: 14px;
+            margin: 1.5rem 0;
+            color: #4d3b08;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+        }
+
+        th {
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.9rem 1rem;
+            text-align: center;
+            border: 1px solid #1a5a72;
+        }
+
+        td {
+            padding: 0.8rem 1rem;
+            border: 1px solid #dbe4ed;
+            text-align: center;
+            background: #fcfdfe;
+        }
+
+        tr:nth-child(even) td {
+            background: #f7fafd;
+        }
+
+        .check {
+            color: #1c7c3c;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .dash {
+            color: #6b7a88;
+        }
+
+        .flow-steps {
+            background: #f0f4fa;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 1.2rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            border: 1px solid #d0dfee;
+            white-space: pre-line;
+            line-height: 2;
+            color: #13354a;
+            overflow-x: auto;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e7f0f9;
+            color: #16455f;
+            font-weight: 700;
+            padding: 0.25rem 1.3rem;
+            border-radius: 30px;
+            margin: 0.4rem 0;
+            border: 1px solid #c8dcef;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            table {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Functional Requirements Document</h1>
+            <div class="subtitle">وثيقة المتطلبات الوظيفية</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">✍️</span> <strong>Written By:</strong> Eng. Wael Sayed</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+                <div class="meta-item"><span class="meta-icon">📋</span> <strong>Status:</strong> Draft</div>
+            </div>
+        </div>
+
+        <!-- 1. مقدمة -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. مقدمة</h2>
+            <p>تحدد هذه الوثيقة الوظائف الأساسية التي يجب أن يوفرها النظام للمستخدمين، وتوضح ما يستطيع كل طرف القيام به داخل المنصة.</p>
+            <p>تركز الوثيقة على <strong>ما الذي يجب أن يفعله النظام</strong> من منظور المستخدم والعمل، دون الدخول في تفاصيل التنفيذ البرمجي أو التقنيات المستخدمة.</p>
+        </div>
+
+        <!-- 2. إدارة حساب المدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. إدارة حساب المدرس</h2>
+            <p>يجب أن يستطيع المدرس:</p>
+            <ul>
+                <li>إنشاء حساب جديد.</li>
+                <li>تسجيل الدخول والخروج.</li>
+                <li>إدارة بياناته الشخصية.</li>
+                <li>إضافة صورته الشخصية وصورة الغلاف.</li>
+                <li>كتابة نبذة تعريفية عنه.</li>
+                <li>تحديد المواد التي يقوم بتدريسها.</li>
+                <li>تحديد الصفوف الدراسية لكل مادة.</li>
+                <li>تحديد العام الدراسي أو الترم الذي يدرسه.</li>
+                <li>تحديث بياناته في أي وقت.</li>
+            </ul>
+            <p>كما يجب أن يكون للمدرس صفحة خاصة يمكن للطلاب الوصول إليها والتعرف من خلالها على المدرس والمحتوى والخدمات التي يقدمها.</p>
+        </div>
+
+        <!-- 3. إدارة المواد والصفوف -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. إدارة المواد والصفوف الدراسية</h2>
+            <p>يجب أن يستطيع المدرس بناء الهيكل الدراسي الخاص به.</p>
+            <p>ويبدأ الهيكل من:</p>
+            <div class="flow-steps">المادة ← الصف الدراسي ← الفترة الدراسية</div>
+            <p>ويستطيع المدرس:</p>
+            <ul>
+                <li>إضافة أكثر من مادة.</li>
+                <li>ربط المادة بأكثر من صف دراسي.</li>
+                <li>تحديد الصفوف التي يدرسها لكل مادة.</li>
+                <li>تحديد الترم الأول أو الترم الثاني أو العام الدراسي الكامل.</li>
+                <li>إدارة هذه البيانات وتعديلها.</li>
+            </ul>
+        </div>
+
+        <!-- 4. إدارة المحتوى التعليمي -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. إدارة المحتوى التعليمي</h2>
+            <p>يجب أن يستطيع المدرس إنشاء وتنظيم المحتوى التعليمي داخل الهيكل الدراسي.</p>
+            <p>ويكون التنظيم:</p>
+            <div class="flow-steps">Course ← Unit ← Chapter ← Lesson</div>
+            <p>بحيث يمكن للمدرس:</p>
+            <ul>
+                <li>إنشاء Course.</li>
+                <li>إنشاء Units.</li>
+                <li>إنشاء Chapters داخل الـUnit.</li>
+                <li>إنشاء Lessons داخل الـChapter.</li>
+                <li>إعادة ترتيب المحتوى.</li>
+                <li>تعديل المحتوى.</li>
+                <li>إخفاء المحتوى.</li>
+                <li>إتاحة المحتوى أو إيقافه.</li>
+            </ul>
+            <p>ولا يشترط أن تكون جميع العناصر بنفس الشكل في كل مادة، وإنما يحدد المدرس طريقة تنظيم المحتوى بما يتناسب مع المادة التي يقوم بتدريسها.</p>
+        </div>
+
+        <!-- 5. إدارة الدروس -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. إدارة الدروس</h2>
+            <p>يمكن للمدرس إنشاء درس يحتوي على واحد أو أكثر من العناصر التعليمية التالية:</p>
+            <ul>
+                <li>فيديو.</li>
+                <li>شرح نصي.</li>
+                <li>PDF.</li>
+                <li>صور أو ملفات تعليمية.</li>
+                <li>Homework.</li>
+                <li>Revision.</li>
+                <li>Exam أو Assessment.</li>
+            </ul>
+            <p>ويجب أن يستطيع المدرس:</p>
+            <ul>
+                <li>إضافة المحتوى.</li>
+                <li>تعديل المحتوى.</li>
+                <li>ترتيب عناصر الدرس.</li>
+                <li>إخفاء عناصر معينة.</li>
+                <li>تحديد ما إذا كان المحتوى متاحاً للطلاب أم لا.</li>
+            </ul>
+        </div>
+
+        <!-- 6. إدارة الفيديوهات -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. إدارة الفيديوهات</h2>
+            <p>يجب أن يستطيع المدرس إضافة الفيديو إلى الدرس من خلال النظام.</p>
+            <p>ويتعامل النظام مع الفيديو كمحتوى يتم استضافته وتشغيله من خلال خدمة متخصصة في حماية وتشغيل الفيديو.</p>
+            <p>ويجب أن يدعم النظام، وفق إمكانيات خدمة الفيديو المستخدمة:</p>
+            <ul>
+                <li>تشغيل الفيديو داخل المنصة.</li>
+                <li>التحكم في صلاحية مشاهدة الفيديو.</li>
+                <li>حماية رابط الفيديو.</li>
+                <li>تطبيق وسائل حماية المحتوى.</li>
+                <li>إظهار Watermark مرتبطة بالطالب أثناء المشاهدة.</li>
+            </ul>
+            <p>وسيتم تحديد تفاصيل التكامل مع مزود خدمة الفيديو في وثيقة مستقلة.</p>
+        </div>
+
+        <!-- 7. إدارة الطلاب -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. إدارة الطلاب</h2>
+            <p>يجب أن يستطيع المدرس:</p>
+            <ul>
+                <li>مشاهدة قائمة الطلاب المرتبطين به.</li>
+                <li>قبول أو رفض طلبات الانضمام.</li>
+                <li>إضافة طالب عند الحاجة.</li>
+                <li>معرفة حالة الطالب.</li>
+                <li>تصنيف الطلاب.</li>
+                <li>إنشاء مجموعات للطلاب.</li>
+                <li>نقل الطالب بين المجموعات.</li>
+                <li>إيقاف أو تفعيل وصول الطالب.</li>
+                <li>متابعة تقدم الطالب.</li>
+                <li>مشاهدة نتائج الطالب.</li>
+                <li>إدارة المحتوى المتاح لكل طالب عند الحاجة.</li>
+            </ul>
+        </div>
+
+        <!-- 8. انضمام الطالب -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. انضمام الطالب إلى المدرس</h2>
+            <p>يجب أن يستطيع الطالب:</p>
+            <ol>
+                <li>إنشاء حساب.</li>
+                <li>البحث عن المدرس أو الوصول إلى صفحته.</li>
+                <li>طلب الانضمام إلى منصة المدرس.</li>
+                <li>انتظار موافقة المدرس عند الحاجة.</li>
+                <li>الوصول إلى المحتوى بعد تفعيل صلاحياته.</li>
+            </ol>
+            <p>ويمكن للطالب الانضمام إلى أكثر من مدرس باستخدام نفس الحساب.</p>
+        </div>
+
+        <!-- 9. الطلاب Offline -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. الطلاب Offline</h2>
+            <p>يجب أن يدعم النظام الطلاب الذين يدرسون مع المدرس Offline.</p>
+            <p>يمكن للمدرس:</p>
+            <ul>
+                <li>تسجيل الطالب كطالب Offline.</li>
+                <li>الموافقة على حساب الطالب.</li>
+                <li>تحديد المحتوى الذي يستطيع الوصول إليه.</li>
+                <li>منح الطالب إمكانية الوصول إلى كل المحتوى أو جزء منه.</li>
+                <li>إيقاف هذه الصلاحية أو تعديلها لاحقاً.</li>
+            </ul>
+            <p>ولا يشترط أن تتم عملية الدفع الخاصة بالطالب Offline من خلال النظام؛ يمكن أن تتم خارج المنصة، ثم يقوم المدرس أو المساعد بتفعيل صلاحية الطالب داخل النظام.</p>
+        </div>
+
+        <!-- 10. إدارة الـWall -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. إدارة الـWall</h2>
+            <p>يجب أن يستطيع المدرس إنشاء منشورات على الـWall الخاص به.</p>
+            <p>ويمكن أن يكون المنشور:</p>
+            <ul>
+                <li>نصاً.</li>
+                <li>سؤالاً.</li>
+                <li>إعلاناً.</li>
+                <li>معلومة تعليمية.</li>
+                <li>استطلاعاً.</li>
+                <li>تصويتاً.</li>
+                <li>تقييماً.</li>
+                <li>محتوى يحتاج إلى تفاعل الطلاب.</li>
+            </ul>
+            <p>ويجب أن يستطيع المدرس:</p>
+            <ul>
+                <li>السماح بالتعليقات أو إيقافها.</li>
+                <li>تعديل المنشور.</li>
+                <li>حذف المنشور.</li>
+                <li>متابعة تعليقات الطلاب.</li>
+                <li>إدارة التفاعل على المنشور.</li>
+            </ul>
+            <p>ويستطيع الطالب، وفق الصلاحيات المتاحة:</p>
+            <ul>
+                <li>مشاهدة المنشورات.</li>
+                <li>التعليق.</li>
+                <li>المشاركة في Polls.</li>
+                <li>الإجابة عن الأسئلة.</li>
+                <li>التفاعل مع المحتوى.</li>
+            </ul>
+        </div>
+
+        <!-- 11. إدارة الاختبارات -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. إدارة الاختبارات</h2>
+            <p>يجب أن يستطيع المدرس إنشاء Exam داخل النظام.</p>
+            <p>ويجب أن يستطيع:</p>
+            <ul>
+                <li>إنشاء الأسئلة.</li>
+                <li>تحديد الإجابات الصحيحة.</li>
+                <li>تحديد درجات الأسئلة.</li>
+                <li>تحديد مدة الاختبار عند الحاجة.</li>
+                <li>تحديد عدد مرات أداء الاختبار عند الحاجة.</li>
+                <li>تحديد موعد بداية ونهاية الاختبار عند الحاجة.</li>
+                <li>نشر الاختبار أو إخفائه.</li>
+            </ul>
+            <p>وتكون أسئلة Multiple Choice من الأنواع الأساسية في المرحلة الأولى.</p>
+        </div>
+
+        <!-- 12. أداء الطالب للاختبار -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. أداء الطالب للاختبار</h2>
+            <p>يجب أن يستطيع الطالب:</p>
+            <ul>
+                <li>فتح الاختبار المتاح له.</li>
+                <li>الإجابة عن الأسئلة.</li>
+                <li>إنهاء الاختبار.</li>
+                <li>معرفة النتيجة وفق إعدادات الاختبار.</li>
+            </ul>
+            <p>ويستطيع المدرس متابعة:</p>
+            <ul>
+                <li>درجة الطالب.</li>
+                <li>الاختبارات التي أداها.</li>
+                <li>أداء الطالب.</li>
+                <li>نتائج مجموعة من الطلاب.</li>
+            </ul>
+        </div>
+
+        <!-- 13. Homework والـRevision -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. Homework والـRevision</h2>
+            <p>يجب أن يستطيع المدرس إضافة Homework مرتبط بدرس أو Chapter أو Unit.</p>
+            <p>كما يستطيع إضافة محتوى Revision عند الحاجة.</p>
+            <p>ويمكن استخدام إكمال الواجب أو المراجعة كجزء من رحلة الطالب التعليمية وفق القواعد التي يحددها المدرس.</p>
+        </div>
+
+        <!-- 14. قواعد الوصول إلى المحتوى -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. قواعد الوصول إلى المحتوى</h2>
+            <p>يجب أن يستطيع المدرس تفعيل قواعد اختيارية للتحكم في وصول الطلاب إلى المحتوى.</p>
+            <p>ومن أمثلتها:</p>
+            <ul>
+                <li>عدم فتح Lesson جديدة قبل إكمال Lesson سابقة.</li>
+                <li>اشتراط مشاهدة نسبة معينة من الفيديو.</li>
+                <li>اشتراط إكمال Homework.</li>
+                <li>اشتراط أداء Exam.</li>
+                <li>اشتراط تحقيق درجة معينة في Exam.</li>
+                <li>تحديد مدة صلاحية المحتوى.</li>
+                <li>إغلاق المحتوى بعد انتهاء المدة.</li>
+                <li>إعادة فتح المحتوى للمراجعة.</li>
+                <li>تحديد محتوى مختلف لمجموعات مختلفة.</li>
+                <li>تحديد محتوى مختلف لطلاب محددين.</li>
+            </ul>
+            <p>ويتم تفصيل جميع قواعد الوصول وآلية تطبيقها في <strong>Business Rules Document</strong> مستقلة.</p>
+        </div>
+
+        <!-- 15. متابعة نشاط الطالب -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. متابعة نشاط الطالب</h2>
+            <p>يجب أن يستطيع النظام تسجيل المعلومات اللازمة لمتابعة تقدم الطالب في المحتوى.</p>
+            <p>ومن ذلك، حسب طبيعة المحتوى:</p>
+            <ul>
+                <li>هل بدأ الطالب الدرس؟</li>
+                <li>هل أكمل الدرس؟</li>
+                <li>نسبة مشاهدة الفيديو.</li>
+                <li>آخر نقطة وصل إليها.</li>
+                <li>وقت المشاهدة الفعلي.</li>
+                <li>سرعة تشغيل الفيديو.</li>
+                <li>آخر نشاط للطالب.</li>
+                <li>الاختبارات التي أداها.</li>
+                <li>درجات الاختبارات.</li>
+                <li>حالة الواجبات.</li>
+            </ul>
+            <p>وتستخدم هذه البيانات لمساعدة المدرس في متابعة الطلاب وتطبيق قواعد الوصول إلى المحتوى.</p>
+        </div>
+
+        <!-- 16. مدة صلاحية المحتوى -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. مدة صلاحية المحتوى</h2>
+            <p>يجب أن يستطيع المدرس تحديد مدة زمنية للوصول إلى المحتوى.</p>
+            <p>ويمكن أن تكون المدة مرتبطة بـ:</p>
+            <ul>
+                <li>Course.</li>
+                <li>Unit.</li>
+                <li>Chapter.</li>
+                <li>Lesson.</li>
+            </ul>
+            <p>وعند انتهاء المدة، يتم إيقاف وصول الطالب وفق إعدادات المحتوى.</p>
+            <p>كما يجب أن يستطيع المدرس أو الشخص المخول:</p>
+            <ul>
+                <li>تمديد المدة.</li>
+                <li>إعادة فتح المحتوى.</li>
+                <li>تحديد مدة جديدة.</li>
+                <li>إعادة السماح بالمشاهدة خلال فترة المراجعة.</li>
+            </ul>
+        </div>
+
+        <!-- 17. إدارة الـWallet -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. إدارة الـWallet</h2>
+            <p>يجب أن يمتلك كل طالب Wallet خاصة به.</p>
+            <p>وتستخدم المحفظة لتسجيل الرصيد المالي المتاح للطالب واستخدامه للحصول على المحتوى أو الخدمات التي يحددها المدرس.</p>
+            <p>ويجب أن يستطيع الطالب:</p>
+            <ul>
+                <li>معرفة الرصيد الحالي.</li>
+                <li>مشاهدة عمليات الإضافة.</li>
+                <li>مشاهدة عمليات الخصم.</li>
+                <li>معرفة تفاصيل كل عملية.</li>
+            </ul>
+        </div>
+
+        <!-- 18. إضافة الرصيد يدوياً -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. إضافة الرصيد يدوياً</h2>
+            <p>في المرحلة الأولى يجب دعم إضافة الرصيد من خلال التحويلات المالية خارج النظام، مثل:</p>
+            <ul>
+                <li>Vodafone Cash.</li>
+                <li>InstaPay.</li>
+            </ul>
+            <p>ويقوم الطالب بإرسال:</p>
+            <ul>
+                <li>قيمة التحويل.</li>
+                <li>رقم العملية أو بيانات التحويل.</li>
+                <li>صورة إثبات التحويل.</li>
+            </ul>
+            <p>ثم يقوم الـTeacher أو الـAdmin أو الـAssistant المخول بمراجعة العملية.</p>
+            <p>بعد التأكد من التحويل يستطيع المسؤول:</p>
+            <ul>
+                <li>قبول العملية.</li>
+                <li>رفض العملية.</li>
+                <li>إضافة الرصيد إلى Wallet الطالب.</li>
+            </ul>
+            <p>ويتم تسجيل العملية بحيث يمكن الرجوع إليها لاحقاً.</p>
+        </div>
+
+        <!-- 19. تفعيل المحتوى -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. تفعيل المحتوى</h2>
+            <p>بعد توفر الرصيد أو إتمام عملية الدفع، يمكن للمدرس أو الشخص المخول تفعيل المحتوى للطالب.</p>
+            <p>على سبيل المثال:</p>
+            <div class="flow-steps">Student ← Purchase Unit 1 ← Payment Verified ← Unit 1 Activated</div>
+            <p>وقد تحتوي Unit 1 على عدة Chapters، ويصبح الطالب قادراً على الوصول إليها وفق قواعد الوصول التي حددها المدرس.</p>
+        </div>
+
+        <!-- 20. إدارة المساعدين -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. إدارة المساعدين والإداريين</h2>
+            <p>يجب أن يستطيع المدرس:</p>
+            <ul>
+                <li>إضافة Admin أو Assistant.</li>
+                <li>تحديد بيانات الحساب.</li>
+                <li>تحديد الصلاحيات.</li>
+                <li>تعديل الصلاحيات.</li>
+                <li>إيقاف الحساب.</li>
+                <li>إعادة تفعيله.</li>
+                <li>حذف أو إنهاء صلاحية الحساب.</li>
+            </ul>
+            <p>ويجب أن يكون من الممكن إعطاء كل حساب مجموعة مختلفة من الصلاحيات.</p>
+            <p>ومن أمثلة الصلاحيات:</p>
+            <ul>
+                <li>إدارة الطلاب.</li>
+                <li>دعم الطلاب.</li>
+                <li>إدارة الـWall.</li>
+                <li>إدارة المحتوى.</li>
+                <li>إدارة الاختبارات.</li>
+                <li>متابعة النتائج.</li>
+                <li>مراجعة التحويلات.</li>
+                <li>إدارة Wallet الطلاب.</li>
+                <li>تفعيل المحتوى.</li>
+                <li>إدارة مستخدمين آخرين وفق الصلاحية الممنوحة.</li>
+            </ul>
+        </div>
+
+        <!-- 21. دعم الطلاب -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>21. دعم الطلاب</h2>
+            <p>يجب أن يستطيع الطالب التواصل مع المسؤولين عن منصة المدرس عند وجود مشكلة أو استفسار.</p>
+            <p>ويستطيع المسؤول المخول التعامل مع حالات مثل:</p>
+            <ul>
+                <li>مشكلة في الحساب.</li>
+                <li>مشكلة في الدفع.</li>
+                <li>مشكلة في تفعيل الرصيد.</li>
+                <li>مشكلة في الوصول إلى المحتوى.</li>
+                <li>تمديد صلاحية محتوى.</li>
+                <li>إعادة فتح درس أو Unit.</li>
+                <li>الاستفسارات العامة المتعلقة بالمنصة.</li>
+            </ul>
+        </div>
+
+        <!-- 22. الحساب الشخصي للطالب -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>22. إدارة الحساب الشخصي للطالب</h2>
+            <p>يجب أن يستطيع الطالب:</p>
+            <ul>
+                <li>إدارة بيانات حسابه.</li>
+                <li>تغيير بياناته المسموح بتعديلها.</li>
+                <li>تغيير كلمة المرور.</li>
+                <li>متابعة المدرسين الذين انضم إليهم.</li>
+                <li>متابعة الكورسات والمحتوى المتاح له.</li>
+                <li>متابعة تقدمه.</li>
+                <li>مشاهدة نتائجه.</li>
+                <li>متابعة Wallet الخاصة به.</li>
+            </ul>
+        </div>
+
+        <!-- 23. الصفحة العامة للمدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>23. الصفحة العامة للمدرس</h2>
+            <p>يجب أن يكون للمدرس صفحة عامة يستطيع من خلالها عرض المعلومات التي يختار إظهارها.</p>
+            <p>وقد تشمل:</p>
+            <ul>
+                <li>اسم المدرس.</li>
+                <li>الصورة الشخصية.</li>
+                <li>صورة الغلاف.</li>
+                <li>نبذة عنه.</li>
+                <li>المواد التي يدرسها.</li>
+                <li>الصفوف الدراسية.</li>
+                <li>الكورسات أو المحتوى المتاح.</li>
+                <li>المواعيد أو الأحداث التي يعلن عنها.</li>
+                <li>المنشورات العامة المسموح بعرضها.</li>
+            </ul>
+            <p>وتكون هذه الصفحة هي الواجهة التي يستطيع الطالب الوصول إليها للتعرف على المدرس والانضمام إليه.</p>
+        </div>
+
+        <!-- 24. إدارة المجموعات -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>24. إدارة المجموعات</h2>
+            <p>يجب أن يستطيع المدرس إنشاء مجموعات للطلاب وتنظيمهم وفق احتياجاته.</p>
+            <p>يمكن استخدام المجموعات مثلاً لتقسيم الطلاب حسب:</p>
+            <ul>
+                <li>الصف الدراسي.</li>
+                <li>المادة.</li>
+                <li>المستوى.</li>
+                <li>المجموعة التعليمية.</li>
+                <li>Online / Offline.</li>
+                <li>أي تصنيف يراه المدرس مناسباً.</li>
+            </ul>
+            <p>ويستطيع المدرس استخدام المجموعات لتسهيل إدارة الطلاب وتحديد المحتوى أو القواعد المناسبة لكل مجموعة.</p>
+        </div>
+
+        <!-- 25. إدارة المحتوى للمجموعات -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>25. إدارة المحتوى للمجموعات والطلاب</h2>
+            <p>يجب أن يستطيع المدرس تطبيق إعدادات المحتوى على أكثر من مستوى.</p>
+            <p>فقد يحدد المحتوى لـ:</p>
+            <ul>
+                <li>جميع طلابه.</li>
+                <li>مجموعة معينة.</li>
+                <li>طالب معين.</li>
+            </ul>
+            <p>وهذا يسمح له بالتعامل مع الحالات المختلفة دون الحاجة إلى تطبيق نفس القواعد على جميع الطلاب.</p>
+        </div>
+
+        <!-- 26. إدارة النتائج والتقدم -->
+        <div class="section-card">
+            <span class="section-number">القسم 26</span>
+            <h2>26. إدارة النتائج والتقدم</h2>
+            <p>يجب أن يوفر النظام للمدرس رؤية واضحة عن مستوى الطلاب.</p>
+            <p>ويمكن أن تشمل المتابعة:</p>
+            <ul>
+                <li>نسبة إكمال الكورس.</li>
+                <li>الدروس المكتملة.</li>
+                <li>الدروس المتبقية.</li>
+                <li>نتائج الاختبارات.</li>
+                <li>الواجبات.</li>
+                <li>نشاط الطالب.</li>
+                <li>حالة الوصول إلى المحتوى.</li>
+            </ul>
+            <p>كما يمكن للمدرس متابعة مجموعة من الطلاب بدلاً من متابعة كل طالب بشكل منفصل.</p>
+        </div>
+
+        <!-- 27. جدول المتطلبات حسب المستخدم -->
+        <div class="section-card">
+            <span class="section-number">القسم 27</span>
+            <h2>27. المتطلبات الوظيفية الأساسية حسب المستخدم</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>الوظيفة</th>
+                        <th>المدرس</th>
+                        <th>Admin / Assistant</th>
+                        <th>الطالب</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>إدارة البيانات الشخصية</td><td class="check">✓</td><td class="check">✓ حسب الصلاحية</td><td class="check">✓</td></tr>
+                    <tr><td>إدارة المواد والصفوف</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="dash">—</td></tr>
+                    <tr><td>إدارة المحتوى</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="dash">—</td></tr>
+                    <tr><td>إدارة الطلاب</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="dash">—</td></tr>
+                    <tr><td>إدارة المجموعات</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="dash">—</td></tr>
+                    <tr><td>إدارة الاختبارات</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="check">أداء</td></tr>
+                    <tr><td>إدارة الـWall</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="check">تفاعل</td></tr>
+                    <tr><td>إدارة Wallet الطلاب</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="check">عرض</td></tr>
+                    <tr><td>مراجعة التحويلات</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="check">إرسال</td></tr>
+                    <tr><td>تفعيل المحتوى</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="dash">—</td></tr>
+                    <tr><td>متابعة تقدم الطلاب</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="check">تقدمه فقط</td></tr>
+                    <tr><td>إدارة المساعدين</td><td class="check">✓</td><td class="check">حسب الصلاحية</td><td class="dash">—</td></tr>
+                    <tr><td>مشاهدة المحتوى</td><td class="dash">—</td><td class="check">حسب الصلاحية</td><td class="check">✓</td></tr>
+                    <tr><td>أداء Homework</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+                    <tr><td>أداء Exams</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 28. مبدأ الصلاحيات -->
+        <div class="section-card">
+            <span class="section-number">القسم 28</span>
+            <h2>28. مبدأ الصلاحيات</h2>
+            <p>لا تعتمد وظائف Admin وAssistant على دور ثابت فقط، وإنما على الصلاحيات التي يمنحها المدرس لكل حساب.</p>
+            <p>وبالتالي يجب أن يكون النظام قادراً على التعامل مع صلاحيات دقيقة، بحيث يمكن للمدرس إنشاء أكثر من مساعد، مع اختلاف المهام المسموح بها لكل منهم.</p>
+            <p>ويظل المدرس صاحب الصلاحية الأساسية على منصته.</p>
+        </div>
+
+        <!-- 29. مبدأ التفاعل -->
+        <div class="section-card">
+            <span class="section-number">القسم 29</span>
+            <h2>29. مبدأ التفاعل بين المدرسين والطلاب</h2>
+            <p>يجب أن يحافظ النظام على استقلالية كل منصة مدرس.</p>
+            <p>الطالب يستطيع أن يكون مرتبطاً بعدة مدرسين، ولكن:</p>
+            <ul>
+                <li>محتوى كل مدرس مستقل.</li>
+                <li>Wallet الخاصة بالطالب يمكن أن ترتبط بالعمليات الخاصة بكل مدرس وفق النموذج المالي المعتمد.</li>
+                <li>صلاحيات الطالب لدى كل مدرس مستقلة.</li>
+                <li>تقدم الطالب لدى كل مدرس مستقل.</li>
+                <li>المساعدون التابعون لمدرس لا يصلون إلى منصة مدرس آخر.</li>
+            </ul>
+        </div>
+
+        <!-- 30. نطاق الوثيقة التالية -->
+        <div class="section-card">
+            <span class="section-number">القسم 30</span>
+            <h2>30. نطاق الوثيقة التالية</h2>
+            <p>هذه الوثيقة تحدد <strong>الوظائف الأساسية</strong> للنظام.</p>
+            <p>أما التفاصيل الدقيقة مثل:</p>
+            <ul>
+                <li>شروط الانتقال بين الدروس.</li>
+                <li>قواعد مشاهدة الفيديو.</li>
+                <li>انتهاء الصلاحية.</li>
+                <li>قواعد الاختبارات.</li>
+                <li>قواعد الـWallet.</li>
+                <li>حالات تفعيل المحتوى.</li>
+                <li>الصلاحيات التفصيلية.</li>
+                <li>الحالات الاستثنائية.</li>
+            </ul>
+            <p>فسوف يتم تحديدها في وثيقة <strong>Business Rules & Policies</strong>، بحيث تكون كل قاعدة واضحة وقابلة للتحويل لاحقاً إلى متطلبات النظام.</p>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • Written By: Eng. Wael Sayed • Version 1.0 — Draft
+        </div>
+    </div>
+</body>
+</html>

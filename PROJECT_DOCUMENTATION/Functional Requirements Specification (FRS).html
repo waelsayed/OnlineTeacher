@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Functional Requirements Specification (FRS)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, .fr-card, .diagram-box, table {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .fr-card {
+            background: #fafcff;
+            border: 1px solid #d5e3f0;
+            border-right: 4px solid #2c8cad;
+            border-radius: 14px;
+            padding: 1.2rem 1.6rem;
+            margin: 1rem 0;
+        }
+
+        .fr-id {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.2rem 1.1rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .diagram-box {
+            background: #f5f9ff;
+            border: 1px solid #c9dff0;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 1.2rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.8;
+            color: #13354a;
+            font-size: 0.9rem;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            color: #193e59;
+            font-size: 1.05rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+        }
+
+        th {
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid #1a5a72;
+        }
+
+        td {
+            padding: 0.7rem 1rem;
+            border: 1px solid #dbe4ed;
+            text-align: right;
+            background: #fcfdfe;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .diagram-box {
+                font-size: 0.7rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Functional Requirements Specification (FRS)</h1>
+            <div class="subtitle">Online Teacher Platform</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+                <div class="meta-item"><span class="meta-icon">📋</span> <strong>Status:</strong> Draft – Business Requirements Baseline</div>
+            </div>
+        </div>
+
+        <!-- 1. Document Purpose -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. Document Purpose</h2>
+            <p>تهدف هذه الوثيقة إلى تحديد <strong>المتطلبات الوظيفية</strong> لمنصة Online Teacher، وتوضيح ما يجب أن يقدمه النظام من وظائف وسلوكيات على مستوى الـBusiness Domains.</p>
+            <p>المنصة عبارة عن نظام SaaS تعليمي يعتمد على نموذج قريب من منصات التعليم مثل Udemy، مع فصل واضح بين:</p>
+            <ul>
+                <li><strong>Central Platform:</strong> المنصة الرئيسية التي تدير المدرسين والاشتراكات الخاصة بهم.</li>
+                <li><strong>Teacher Platform:</strong> منصة تعليمية مستقلة لكل Teacher.</li>
+                <li><strong>Student Account:</strong> حساب موحد للطالب يستطيع من خلاله التعامل مع عدة Teacher Platforms.</li>
+            </ul>
+        </div>
+
+        <!-- 2. Actors -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. Actors</h2>
+            <h3>2.1 Student</h3>
+            <p>الطالب لديه <strong>حساب واحد فقط</strong> على المنصة المركزية، ويمكنه الوصول إلى عدة Teacher Platforms. يستطيع الطالب: Follow Teacher، Browse public content/posts، Enroll in courses، Access free content، Purchase paid content باستخدام Wallet، استخدام Coupon إذا كان مخصصًا له، متابعة تقدمه، مشاهدة الفيديوهات وفق Access Rules، أداء Online Exams أو التسجيل في Offline Exams، إرسال Homework، إرسال Internal Messages، استقبال Notifications، تقييم Teacher Platform بعد الـEnrollment، طلب Refund وفق قواعد النظام.</p>
+
+            <h3>2.2 Teacher</h3>
+            <p>الـTeacher هو <strong>Owner</strong> لمنصته التعليمية. مسؤول عن: إنشاء وإدارة المحتوى، إنشاء Courses، إنشاء Units وLessons، إنشاء Revisions، إنشاء Exams، إدارة الطلاب، إنشاء Coupons للطلاب، إدارة Posts، إدارة Assistants، تحديد Permissions لكل Assistant، إدارة إعدادات المنصة، متابعة التقارير المالية والتعليمية.</p>
+
+            <h3>2.3 Assistant</h3>
+            <p>الـAssistant يعمل داخل Teacher Platform. لا توجد مجموعة صلاحيات ثابتة مرتبطة بمجرد كونه Assistant. بدلًا من ذلك: يتم إنشاء User بدور Assistant، ثم يمنحه الـTeacher مجموعة Permissions محددة بشكل Dynamic.</p>
+
+            <h3>2.4 Central Administrator</h3>
+            <p>مسؤول عن Central Platform. يستطيع: إدارة Teachers، إدارة Teacher Subscriptions، إنشاء وتفعيل Plans، إنشاء Coupons للTeachers، مراجعة وتحويلات الاشتراكات، إدارة Teacher Platforms، إيقاف أو Deactivate Teacher، إدارة المحتوى العام وفق صلاحياته، الوصول إلى التقارير المركزية.</p>
+
+            <h3>2.5 Support</h3>
+            <p>يمتلك صلاحيات محددة حسب الـPermission Configuration. يمكنه تنفيذ عمليات الدعم المسموح بها مثل: تمديد Content Access، إعادة فتح Content، معالجة بعض مشاكل الوصول، مساعدة المستخدمين.</p>
+        </div>
+
+        <!-- 3. Central Platform -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. Central Platform</h2>
+            <div class="fr-card">
+                <span class="fr-id">FR-CP-001</span>
+                <p><strong>Teacher Registration:</strong> يجب أن يسمح النظام بإنشاء Teacher Account من خلال الـCentral Platform. بعد إنشاء الحساب، يمكن إنشاء Teacher Platform مرتبطة بالـTeacher.</p>
+            </div>
+            <div class="fr-card">
+                <span class="fr-id">FR-CP-002</span>
+                <p><strong>Teacher Platform Identity:</strong> كل Teacher Platform يجب أن تمتلك Internal Database ID وPublic ID غير متسلسل وPlatform Name وSlug. ويستخدم الـPublic URL بالشكل: <code>/{publicId}/{slug}</code>. يجب أن يتحقق النظام من Public ID + Slug معًا عند الـRouting.</p>
+            </div>
+            <div class="fr-card">
+                <span class="fr-id">FR-CP-003</span>
+                <p><strong>Teacher Subscription:</strong> يجب أن تدعم المنصة اشتراكات Teacher مختلفة. الـPlan قد يحدد حدودًا مثل Number of Courses وNumber of Students وNumber of Exams وNumber of Assistants وStorage وVideo/Bandwidth limits. القيم الفعلية الخاصة بالـVideo تعتمد على مزود استضافة الفيديو.</p>
+            </div>
+            <div class="fr-card">
+                <span class="fr-id">FR-CP-004</span>
+                <p><strong>Subscription Period:</strong> يدعم النظام Monthly Subscription وAcademic-Year Subscription وRenewal وUpgrade. لا يدعم Downgrade. في حالة الحاجة إلى Plan أقل، يتم إنهاء الاشتراك الحالي وإنشاء اشتراك جديد.</p>
+            </div>
+            <div class="fr-card">
+                <span class="fr-id">FR-CP-005</span>
+                <p><strong>Subscription Activation:</strong> لا يوجد Payment Gateway متكامل. عملية الدفع تتم خارجيًا. يقوم Teacher بإرسال بيانات التحويل، ثم Central Admin بمراجعة التحويل وتنفيذ Activation. يتم تسجيل Amount وPayment Evidence وActivation Date وActivating Administrator وSubscription Plan وTransaction Details.</p>
+            </div>
+        </div>
+
+        <!-- 4. Academic Structure -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. Academic Structure</h2>
+            <p>الهيكل الأكاديمي الأساسي:</p>
+            <div class="diagram-box">Academic Year ← Subject ← Grade ← Course ← Unit ← Lesson</div>
+            <div class="fr-card"><span class="fr-id">FR-AC-001</span><p><strong>Academic Year:</strong> كل Course يجب أن يكون مرتبطًا بـAcademic Year. الـAcademic Year الحالي هو الافتراضي في Discovery/Search.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-AC-002</span><p><strong>Subject:</strong> كل Course مرتبط بمادة تعليمية محددة مثل Science وMathematics وArabic.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-AC-003</span><p><strong>Grade:</strong> كل Course مرتبط بصف دراسي محدد.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-AC-004</span><p><strong>Course:</strong> الـCourse يمثل المنهج أو المادة التعليمية التي يقدمها Teacher. يمكن أن يحتوي على Units وLessons وExams وRevisions وLearning Content.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-AC-005</span><p><strong>Unit:</strong> الـUnit جزء من Course ولا يتم التعامل معها ككيان مستقل عن Course.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-AC-006</span><p><strong>Lesson:</strong> الـLesson جزء من Unit. يمكن أن تحتوي على Video وPDF وHomework وExam وAdditional Learning Content.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-AC-007</span><p><strong>Revision:</strong> الـRevision هو Learning Content مرتبط بالـCourse. يمكن أن يكون Revision بين Units أو لوحدة أو لعدة Units أو شامل للـCourse. ويمكن أن يكون Free أو Paid.</p></div>
+        </div>
+
+        <!-- 5. Content Access -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. Content Access</h2>
+            <p>كل Content يمكن أن يكون <strong>Free</strong> أو <strong>Paid</strong>. ولا يتم تصميم النظام على أساس Content Types متعددة في الـPayment Model.</p>
+            <div class="fr-card"><span class="fr-id">FR-CA-001</span><p><strong>Prerequisite:</strong> يمكن للـLesson أو Exam أو Homework أن تعتمد على Content سابق. إذا لم توجد Dependency، يمكن للطالب الوصول مباشرة.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-CA-002</span><p><strong>Completion Requirement:</strong> يمكن تحديد أن Content معين يجب أن يتم قبل فتح Content آخر، مثل مشاهدة Lesson أو إنهاء Exam أو تسليم Homework.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-CA-003</span><p><strong>Video Completion:</strong> في الإصدار الأول لا يتم الاعتماد على نسبة مشاهدة معينة. يتم التعامل مع الفيديو باعتباره Completed عند إتمام مشاهدته وفق البيانات التي يوفرها Video Provider.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-CA-004</span><p><strong>Video Expiration:</strong> يمكن أن يكون للفيديو Access Expiration. بعد انتهاء الفترة يتم منع الوصول. يمكن للـAssistant أو Support عمل Extend Access أو Reopen Access.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-CA-005</span><p><strong>Video Attempts:</strong> يمكن تحديد عدد مرات مشاهدة الفيديو إذا كان Video Provider يدعم هذه الخاصية. النظام يجب أن يبني abstraction يسمح بدعم هذه الخاصية.</p></div>
+        </div>
+
+        <!-- 6. Student Enrollment -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. Student Enrollment</h2>
+            <div class="fr-card"><span class="fr-id">FR-SE-001</span><p><strong>Student Identity:</strong> كل Student يمتلك Account واحد فقط. يمكن للحساب الواحد الوصول إلى عدة Teacher Platforms.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-SE-002</span><p><strong>Follow Teacher:</strong> الطالب يستطيع Follow Teacher بدون شراء Course. الـFollow يستخدم لإظهار محتوى Teacher في Student Home Feed.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-SE-003</span><p><strong>Automatic Follow:</strong> عند قيام الطالب بـEnroll في Course لدى Teacher: Enrollment ← Automatic Follow. يصبح Unfollow غير متاح طالما هناك Enrollment نشط. بعد انتهاء/إلغاء الـEnrollment يمكن Unfollow.</p></div>
+            <div class="fr-card"><span class="fr-id">FR-SE-004</span><p><strong>Enrollment:</strong> في الإصدار الحالي: Enroll Course = Purchase Course. عندما ينجح الطالب في شراء Course يتم إنشاء Enrollment تلقائيًا.</p></div>
+        </div>
+
+        <!-- 7. Offline Student -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. Offline Student</h2>
+            <p>الـOffline Student هو Student مسجل لدى Teacher باعتباره طالبًا يتابع Teacher خارج المنصة. ليس المقصود إنشاء Group منفصل. الـOffline هي <strong>حالة/Business Relationship للطالب</strong>.</p>
+            <p>يمكن للـTeacher السماح له بمشاهدة Videos مجانًا أو الوصول إلى PDFs أو Homework أو Wall أو Messages. أو منع Video Access مع السماح بباقي المحتوى. يمكن تحويل الطالب من Offline إلى Online عن طريق Teacher/Assistant وفق الصلاحيات.</p>
+        </div>
+
+        <!-- 8. Wallet -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. Wallet</h2>
+            <p>لكل Student Wallet داخل Teacher Platform. تستخدم في شراء المحتوى المدفوع. إذا كان الرصيد غير كافٍ: Purchase ← Rejected ← Insufficient Balance. ولا يتم تنفيذ Purchase تلقائيًا بمجرد إضافة أموال.</p>
+            <div class="fr-card"><span class="fr-id">FR-WL-001</span><p><strong>External Payment:</strong> الطالب يمكنه إرسال أموال خارجيًا ثم تقديم إثبات التحويل. الـAssistant يقوم بمراجعة التحويل وتفعيل الرصيد. يسجل النظام Amount وPayment Evidence وDate وActivating Assistant وTransaction وWallet Balance.</p></div>
+        </div>
+
+        <!-- 9. Refund -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. Refund</h2>
+            <p>الـRefund يتم التعامل معه كعملية بين <strong>Student ↔ Teacher/Assistant</strong> وليس بين Student وCentral Platform.</p>
+            <p>إذا لم يحدث Enrollment: يتم Refund للمبلغ وتحديث Wallet وتسجيل Refund. إذا حدث Enrollment واستخدم الطالب جزءًا من المحتوى: يمكن حساب المبلغ المسترد وفق المحتوى المستخدم حسب سياسة Teacher. بعد Refund يتم Unenroll وإلغاء Access للمحتوى غير المستحق.</p>
+        </div>
+
+        <!-- 10. Coupons -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. Coupons</h2>
+            <h3>Teacher Coupons</h3>
+            <p>Teacher يستطيع إنشاء Coupons للطلاب. كل Coupon مرتبط بـTeacher ومخصص لـStudent محدد وSingle-use وله Expiration Date وValue أو Discount ويصبح Consumed بعد الاستخدام. لا يمكن استخدام نفس Coupon بواسطة Student آخر.</p>
+            <h3>Central Coupons</h3>
+            <p>Central Platform تستطيع إنشاء Coupons للTeachers. هذه Coupons مرتبطة بـTeacher Subscription Plan. ولا تستخدم لشراء Course أو Exam.</p>
+        </div>
+
+        <!-- 11. Exams -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. Exams</h2>
+            <p>الـExam يمكن أن يكون Online أو Offline، ويمكن أن يكون Free أو Paid.</p>
+            <h3>Online Exam</h3>
+            <p>يدعم: Start Date وEnd Date وTime Limit وMultiple Choice وSingle Correct Answer وEssay Questions وAutomatic grading للأسئلة الموضوعية وTeacher-defined Answers. عند بدء Exam مؤقت: Timer starts immediately عند فتح الامتحان، ولا يتم إيقافه بسبب انقطاع الإنترنت أو الجهاز.</p>
+            <h3>Exam Attempts</h3>
+            <p>يتم تسجيل Exam Attempt كـActivity مهمة. يتم حفظ Start وSubmission وAnswers وScore وAttempt status وTime information.</p>
+        </div>
+
+        <!-- 12. Homework -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. Homework</h2>
+            <p>في الإصدار الأول يدعم Homework: PDF وImage/File Submission. يمكن للطالب: فتح Homework، حل الواجب، تصويره أو تجهيز PDF، Upload، Submit. ولا يتم إدخال Form-based Homework في الإصدار الأول.</p>
+        </div>
+
+        <!-- 13. Course Progress & Completion -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. Course Progress & Completion</h2>
+            <p>يتم حساب Student Progress اعتمادًا على Content Progress وLessons وExams وExam Scores. يمكن استخدام Exam Scores في حساب مستوى الطالب.</p>
+            <p>لكن <strong>Course Completed</strong> لا يعني مجرد انتهاء جميع Lessons. يعتبر Course مكتملًا وفق Business Lifecycle الخاص بالـAcademic Year وقرار Teacher بإغلاق/تعطيل الـCourse. قد يظل متاحًا بعد نهاية السنة لأغراض Summer Study.</p>
+        </div>
+
+        <!-- 14. Teacher Wall -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. Teacher Wall</h2>
+            <p>Teacher Wall هي Social/Communication Layer إضافية للمنصة. Post يمكن أن يحتوي على Text وImage وPoll. يدعم Like وComment وReply وEdit وDelete وArchive وPin وReport وHide/Show وNotifications.</p>
+            <h3>Post Visibility</h3>
+            <p>يمكن أن يكون Post Public أو Course-targeted. لا يتم اختيار Students بشكل فردي. مثال: Post ← Course A فيظهر للطلاب الذين لديهم Enrollment في Course A.</p>
+            <h3>Public Posts</h3>
+            <p>Public Posts يمكن أن تظهر في Teacher Platform وStudent Home/Feed وCentral Platform Discovery.</p>
+            <h3>Poll</h3>
+            <p>Poll في الإصدار الأول: غير Anonymous ويمكن أن يكون له Expiration ولا يتم دعم Poll Forms المعقدة.</p>
+        </div>
+
+        <!-- 15. Internal Messaging -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. Internal Messaging</h2>
+            <p>Student يستطيع إرسال Message إلى Teacher Platform عندما يكون لديه علاقة مناسبة مثل Enrollment. يمكن أن يرسل Student ← Teacher / Assistant / Admin. كما يمكن للـTeacher/Assistant إرسال Message إلى جميع الطلاب المسجلين في Course. الرسائل الجماعية تعتمد على Enrollment وليس Follow.</p>
+        </div>
+
+        <!-- 16. Notifications -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. Notifications</h2>
+            <p>يتم إنشاء Notification System مركزي، مع بقاء كل Domain مسؤولًا عن إنشاء Notifications الخاصة به. أمثلة: Exam submitted وExam result وHomework submitted وPayment activated وCoupon assigned وCoupon consumed وContent updated وContent reopened وSubscription activated وSubscription expiring.</p>
+            <p>ويمكن أن تصل Notification إلى Student وParent وTeacher وAssistant وCentral Admin.</p>
+        </div>
+
+        <!-- 17. Permissions -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. Permissions</h2>
+            <p>النظام لا يعتمد على Static Permission Matrix مرتبطة بالـRole فقط. الأدوار الأساسية: Teacher Platform (Teacher, Assistant) وCentral Platform (Owner, Admin, Support). لكن الصلاحيات نفسها Dynamic.</p>
+            <div class="diagram-box">Ahmed = Assistant
+Permissions:
+• Activate Payment
+• View Students
+• View Transactions
+
+لا يمتلك:
+• Extend Video Access</div>
+            <p>الـOwner/Teacher هو المسؤول عن إدارة Permissions داخل Teacher Platform.</p>
+        </div>
+
+        <!-- 18. Security & Audit -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. Security & Audit</h2>
+            <p>يجب تسجيل العمليات المهمة داخل النظام كـAudit Events. يتم تسجيل معلومات مثل: User وRole وStation ID وDevice Information وIP Address وTimestamp وEvent وTarget Entity وResult. يتم تطبيق ذلك على Student وTeacher وAssistant وCentral Admin وSupport.</p>
+            <h3>Account Blocking</h3>
+            <p>يمكن عمل Block أو Deactivate. ولا يتم الاعتماد على Delete لإخراج User من النظام. عند Deactivate/Block: User يفقد القدرة على الوصول إلى الموارد المسموح بها.</p>
+        </div>
+
+        <!-- 19. File Management -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. File Management</h2>
+            <p>النظام يدعم إدارة Videos وPDFs وImages وTeacher Images وHomework Files وExternal File References. كل File يجب أن يكون مرتبطًا بالـOwner/Domain المناسب. وتخضع عمليات Upload وEdit وDelete وArchive للـDynamic Permissions.</p>
+        </div>
+
+        <!-- 20. Video Provider Integration -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. Video Provider Integration</h2>
+            <p>يتم إنشاء <strong>Video Provider Abstraction</strong>. الـDomain لا يعتمد مباشرة على API الخاصة بمزود فيديو واحد. يجب أن يسمح الـAbstraction مستقبلًا بالتعامل مع Video Upload وVideo ID وPlayback وProgress وCompletion وAttempts وExpiration وBandwidth/Usage.</p>
+        </div>
+
+        <!-- 21. Discovery & Search -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>21. Discovery & Search</h2>
+            <p>Central Platform تعرض Teacher Platforms للطلاب. الـDiscovery يمكن أن يعتمد على Grade وStudy Type وSubject وTeacher Name وTeacher Platform Name وPopularity وReviews وActivity/Load وTrial/Public Content. الـAcademic Year الحالية هي الافتراضية في البحث.</p>
+        </div>
+
+        <!-- 22. Reviews -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>22. Reviews</h2>
+            <p>Student يستطيع تقييم Teacher Platform بعد عمل Enrollment. Review مرتبطة بالـTeacher Platform وليس بالـCentral Platform ككيان مستقل.</p>
+        </div>
+
+        <!-- 23. Financial Reports -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>23. Financial Reports</h2>
+            <h3>Teacher Reports</h3>
+            <p>Teacher يستطيع رؤية: Students وEnrollments وPurchases وPaid Courses وFree Courses وCoupon Usage وDiscounts وPayments وRefunds وOffline Payments وOnline Payments وRevenue by period وDaily transactions.</p>
+            <h3>Central Reports</h3>
+            <p>Central Administration تستطيع رؤية: Teachers وActive Subscriptions وSubscription Payments وRenewals وCoupons وRevenue وActivations وPayments by period. ولا تعتبر أموال Student داخل Teacher Platform Revenue للـCentral Platform.</p>
+        </div>
+
+        <!-- 24. Business Boundary -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>24. Business Boundary</h2>
+            <p>هذه نقطة أساسية في النظام:</p>
+            <h3>Central Platform</h3>
+            <p>تتعامل ماليًا وإداريًا مع <strong>Teachers</strong>.</p>
+            <h3>Teacher Platform</h3>
+            <p>تتعامل ماليًا وتعليميًا مع <strong>Students</strong>.</p>
+            <p>وبالتالي الـCentral Platform لا تصبح Payment Provider للطلاب، ولا تستقبل أموال الطالب الخاصة بشراء Courses من Teacher.</p>
+        </div>
+
+        <!-- 25. Functional Scope Principle -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>25. Functional Scope Principle</h2>
+            <p>الإصدار الأول يركز على: <strong>Education + Content + Enrollment + Access + Wallet + Activation + Communication + Reporting</strong>.</p>
+            <p>ويتم تأجيل الوظائف التي تضيف تعقيدًا غير ضروري، مثل: Complex interactive homework forms، Advanced polling، Complex payment gateway integrations، Overly granular video analytics، وFeatures لا ترتبط مباشرة بالـCore Educational Workflow.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • Functional Requirements Specification (FRS) v1.0 — Draft
+        </div>
+    </div>
+</body>
+</html>

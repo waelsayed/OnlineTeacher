@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | API Design & Application Layer Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, .api-box, .diagram-box, table {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .api-box {
+            background: #fafcff;
+            border: 1px solid #d5e3f0;
+            border-right: 4px solid #2c8cad;
+            border-radius: 14px;
+            padding: 1.2rem 1.6rem;
+            margin: 1rem 0;
+        }
+
+        .diagram-box {
+            background: #f5f9ff;
+            border: 1px solid #c9dff0;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 1.2rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.8;
+            color: #13354a;
+            font-size: 0.9rem;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            color: #193e59;
+            font-size: 1.05rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+        }
+
+        th {
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid #1a5a72;
+        }
+
+        td {
+            padding: 0.7rem 1rem;
+            border: 1px solid #dbe4ed;
+            text-align: right;
+            background: #fcfdfe;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .diagram-box {
+                font-size: 0.7rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">API Design & Application Layer Architecture</h1>
+            <div class="subtitle">Online Teacher Platform</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">📄</span> <strong>Type:</strong> API & Application Architecture</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+            </div>
+        </div>
+
+        <!-- 1. Purpose -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. Purpose</h2>
+            <p>تهدف هذه الوثيقة إلى تحديد تصميم طبقة الـAPI وطبقة الـApplication في منصة <strong>Online Teacher</strong>، وتوضيح كيفية تحويل الـBusiness Use Cases والـDomain Rules إلى عمليات قابلة للتنفيذ من خلال الـASP.NET Core Web API.</p>
+            <p>تركز الوثيقة على: API Structure، Application Layer، Use Cases، Commands & Queries، DTOs، Validation، Authorization، Transactions، Error Handling، Pagination، Idempotency، Background Processing، Integration Boundaries.</p>
+            <p>ولا تهدف هذه الوثيقة إلى تحديد تفاصيل الـUI أو الـDatabase Schema التفصيلية.</p>
+        </div>
+
+        <!-- 2. Technology Stack -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. Technology Stack</h2>
+            <p>الـBackend الأساسي:</p>
+            <div class="diagram-box">ASP.NET Core Web API
+PostgreSQL
+Entity Framework Core / Persistence Abstraction</div>
+            <p>مع إمكانية استخدام Redis عند الحاجة، Background Job Processing، External Video Provider APIs، External Storage Provider، Notification Providers. ويجب ألا تعتمد الـDomain Layer مباشرة على أي Technology-specific implementation.</p>
+        </div>
+
+        <!-- 3. Architectural Layers -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. Architectural Layers</h2>
+            <p>يتم تقسيم الـBackend إلى طبقات واضحة:</p>
+            <div class="diagram-box">Presentation / API
+        ↓
+Application
+        ↓
+Domain
+        ↓
+Infrastructure
+        ↓
+External Systems</div>
+            <p><strong>Presentation / API:</strong> HTTP, Authentication, Authorization, Routing, Model Binding, Request/Response, API Errors.</p>
+            <p><strong>Application:</strong> Use Cases, Commands, Queries, Orchestration, Transactions, DTOs, Application Validation.</p>
+            <p><strong>Domain:</strong> Business Rules, Entities, Value Objects, Domain Services, Domain Events.</p>
+            <p><strong>Infrastructure:</strong> PostgreSQL, EF Core, File Storage, Video Provider, Notification Providers, External Integrations.</p>
+        </div>
+
+        <!-- 4. API Boundary -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. API Boundary</h2>
+            <p>الـAPI هي الـPublic Entry Point للنظام.</p>
+            <div class="diagram-box">Client
+  ↓
+ASP.NET Core API
+  ↓
+Application Layer
+  ↓
+Domain</div>
+            <p>ولا يتم السماح للـClient بالتعامل مباشرة مع Database أو Domain Entities أو External Video Provider أو Storage Provider.</p>
+        </div>
+
+        <!-- 5. API Organization -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. API Organization</h2>
+            <p>يتم تنظيم الـAPI حسب الـDomain وليس حسب نوع الـHTTP Method.</p>
+            <div class="diagram-box">/api/auth
+/api/students
+/api/teachers
+/api/platforms
+/api/courses
+/api/units
+/api/lessons
+/api/revisions
+/api/exams
+/api/homework
+/api/enrollments
+/api/follows
+/api/wallet
+/api/payments
+/api/refunds
+/api/coupons
+/api/posts
+/api/comments
+/api/messages
+/api/notifications
+/api/subscriptions
+/api/admin</div>
+            <p>والتقسيم النهائي يمكن تعديله أثناء التنفيذ حسب الـBounded Contexts.</p>
+        </div>
+
+        <!-- 6. Central Platform vs Teacher Platform -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. Central Platform vs Teacher Platform</h2>
+            <p>يجب التمييز بوضوح بين العمليات الخاصة بالـCentral Platform والعمليات الخاصة بالـTeacher Platform.</p>
+            <div class="diagram-box">Central Platform
+    Teacher Registration
+    Teacher Subscription
+    Teacher Activation
+    Central Coupons
+    Central Reports
+    Platform Administration
+
+Teacher Platform
+    Courses
+    Students
+    Enrollment
+    Wallet
+    Exams
+    Homework
+    Posts
+    Teacher Coupons
+    Teacher Reports</div>
+            <p>ولا يجب أن تختلط مسؤوليات الاثنين داخل نفس الـApplication Service بدون سبب.</p>
+        </div>
+
+        <!-- 7. Application Use Cases -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. Application Use Cases</h2>
+            <p>كل عملية Business مهمة يتم تمثيلها كـUse Case. أمثلة: Enroll Student in Course، Activate External Payment، Create Coupon، Submit Exam، Submit Homework، Refund Purchase، Create Teacher Subscription، Publish Post، Extend Content Access.</p>
+            <p>الـController لا يحتوي على Business Logic لهذه العمليات.</p>
+            <div class="diagram-box">Controller
+   ↓
+Command / Query
+   ↓
+Handler / Application Service
+   ↓
+Domain</div>
+        </div>
+
+        <!-- 8. Commands -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. Commands</h2>
+            <p>الـCommand يمثل عملية تؤدي إلى تغيير في الـSystem State. أمثلة: CreateCourseCommand، EnrollCourseCommand، ActivatePaymentCommand، RefundPaymentCommand، CreateCouponCommand، SubmitExamCommand، SubmitHomeworkCommand، CreatePostCommand.</p>
+            <p>الـCommand لا يعيد Domain Entity مباشرة، بل يعيد Result أو Identifier أو DTO أو Operation Status بحسب العملية.</p>
+        </div>
+
+        <!-- 9. Queries -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. Queries</h2>
+            <p>الـQuery لا يجب أن تغير حالة النظام. أمثلة: GetCourseQuery، GetStudentProgressQuery، GetTeacherStudentsQuery، GetWalletQuery، GetFinancialReportQuery، GetNotificationsQuery، GetTeacherPostsQuery، SearchTeachersQuery، GetExamResultQuery.</p>
+            <p>ويتم تصميم الـQueries بحيث تكون optimized للقراءة ولا تعتمد بالضرورة على نفس شكل الـDomain Entities.</p>
+        </div>
+
+        <!-- 10. DTOs -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. DTOs</h2>
+            <p>لا يتم expose الـDomain Entities مباشرة من الـAPI.</p>
+            <div class="diagram-box">HTTP Request
+   ↓
+Request DTO
+   ↓
+Application
+   ↓
+Domain
+   ↓
+Response DTO
+   ↓
+HTTP Response</div>
+            <p>هذا يمنع تسريب تفاصيل الـDomain أو الـDatabase إلى الـAPI.</p>
+        </div>
+
+        <!-- 11. API Routing -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. API Routing</h2>
+            <p>يتم استخدام RESTful routing قدر الإمكان. لكن العمليات التي تمثل Business Actions يمكن التعبير عنها بوضوح.</p>
+            <div class="diagram-box">GET    /api/courses/{id}
+POST   /api/courses
+PUT    /api/courses/{id}
+DELETE /api/courses/{id}
+
+POST /api/courses/{id}/enroll
+POST /api/courses/{id}/archive
+POST /api/exams/{id}/submit
+POST /api/payments/{id}/activate
+POST /api/enrollments/{id}/refund</div>
+            <p>الهدف هو أن يكون الـAPI واضحًا وليس الالتزام الحرفي بـCRUD عندما لا يمثل الـBusiness Operation الحقيقي.</p>
+        </div>
+
+        <!-- 12. Teacher Platform Routing -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. Teacher Platform Routing</h2>
+            <p>يجب التعامل مع الـTeacher Platform من خلال Public Identity الخاصة بها: <code>/{public-id}/{slug}</code>. ويتم التحقق من PublicId وSlug معًا. الـSlug ليس هو الـIdentity. لا يسمح باستخدام Public ID صحيح مع Slug يخص Teacher Platform أخرى.</p>
+        </div>
+
+        <!-- 13. Authentication -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. Authentication</h2>
+            <p>Authentication مسؤول عن تحديد هوية الـUser. بعد Authentication يتم بناء User Context يحتوي على UserId وRole وPlatform Context وPermissions وStatus.</p>
+        </div>
+
+        <!-- 14. Authorization -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. Authorization</h2>
+            <p>Authorization في النظام لا يعتمد فقط على الـRole. يتم تطبيق Role + Dynamic Permissions + Resource Ownership + Platform Context.</p>
+            <div class="diagram-box">Ahmed
+Role = Assistant
+
+Permission:
+ActivatePayment = true
+
+Permission:
+ExtendVideoAccess = false</div>
+            <p>وبالتالي لا يستطيع Ahmed تنفيذ Extend Video Access حتى لو كان Assistant آخر يستطيع ذلك.</p>
+        </div>
+
+        <!-- 15. Platform Context -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. Platform Context</h2>
+            <p>كل Request يحتاج إلى معرفة الـContext الذي يعمل بداخله عند الحاجة: Central Platform Context أو Teacher Platform Context. ويجب منع User من الوصول إلى بيانات Teacher Platform لا يملك علاقة صحيحة بها.</p>
+        </div>
+
+        <!-- 16. Resource Authorization -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. Resource Authorization</h2>
+            <p>حتى مع وجود Permission يجب التحقق من ملكية الـResource. مثال: Assistant A لديه Permission = Edit Course، لكن هذا لا يعني أنه يستطيع تعديل Course الخاص بـTeacher B. يجب التحقق من Permission + Course.PlatformId == CurrentPlatformId.</p>
+        </div>
+
+        <!-- 17. Student Access Rules -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. Student Access Rules</h2>
+            <div class="diagram-box">Request
+ ↓
+Authentication
+ ↓
+Platform Access
+ ↓
+Enrollment / Free Access
+ ↓
+Lesson Availability
+ ↓
+Prerequisites
+ ↓
+Expiration
+ ↓
+Attempts / Rules
+ ↓
+Allow / Deny</div>
+            <p>ولا يتم وضع هذه القواعد داخل الـController.</p>
+        </div>
+
+        <!-- 18. Enrollment -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. Enrollment</h2>
+            <p>Enrollment عملية Business مهمة. عند Enrollment في Course:</p>
+            <div class="diagram-box">Validate Course
+       ↓
+Validate Availability
+       ↓
+Validate Payment / Coupon / Free
+       ↓
+Create Enrollment
+       ↓
+Ensure Follow
+       ↓
+Create Financial Records
+       ↓
+Create Notification</div>
+            <p>يتم تنفيذ العمليات المطلوبة ضمن Transaction مناسبة.</p>
+        </div>
+
+        <!-- 19. Automatic Follow -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. Automatic Follow</h2>
+            <p>عند إنشاء Course Enrollment: إذا كان Student لا يتبع Teacher يتم إنشاء Follow. ولا يحتاج الـClient إلى تنفيذ Follow بشكل منفصل. إذا كان الـStudent enrolled، لا يسمح له بإلغاء الـFollow الناتج عن Enrollment طالما أن الـEnrollment قائم.</p>
+        </div>
+
+        <!-- 20. Payment Activation -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. Payment Activation</h2>
+            <p>عملية الدفع في الإصدار الحالي ليست Payment Gateway. الـStudent يرسل بيانات التحويل.</p>
+            <div class="diagram-box">Student
+ ↓
+Payment Request
+ ↓
+External Transfer
+ ↓
+Payment Proof
+ ↓
+Assistant
+ ↓
+Activation
+ ↓
+Wallet Transaction</div>
+            <p>الـAPI يجب أن تفصل بين Payment Request وPayment Activation لأن الـAssistant هو الذي يعتمد العملية.</p>
+        </div>
+
+        <!-- 21. Wallet Transactions -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>21. Wallet Transactions</h2>
+            <p>أي تعديل على Wallet يجب أن ينتج عنه Ledger Transaction. أمثلة: Deposit، Purchase، Refund، Adjustment، Coupon Credit. لا يسمح للـApplication Layer بتعديل Balance بطريقة غير مرتبطة بسجل مالي.</p>
+        </div>
+
+        <!-- 22. Purchase Transaction -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>22. Purchase Transaction</h2>
+            <p>عملية شراء Course يجب أن تكون Atomic قدر الإمكان.</p>
+            <div class="diagram-box">Validate Price
+      ↓
+Validate Wallet Balance
+      ↓
+Create Purchase
+      ↓
+Debit Wallet
+      ↓
+Create Enrollment
+      ↓
+Ensure Follow
+      ↓
+Notify Student</div>
+            <p>إذا فشلت خطوة أساسية يتم Rollback للعملية.</p>
+        </div>
+
+        <!-- 23. Insufficient Balance -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>23. Insufficient Balance</h2>
+            <p>إذا كان Wallet Balance أقل من Required Amount فالشراء يفشل. ولا يتم إنشاء Enrollment أو خصم جزئي أو Negative Balance. ويتم إرجاع Error واضح للـClient.</p>
+        </div>
+
+        <!-- 24. Coupon Application -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>24. Coupon Application</h2>
+            <div class="diagram-box">Coupon Exists
+↓
+Not Expired
+↓
+Not Consumed
+↓
+Belongs to Current Target
+↓
+Valid for Current Plan / Value
+↓
+Consume</div>
+            <p>Coupon الخاص بالTeacher Student يكون مخصصًا لطالب محدد. Coupon الخاص بالCentral Platform يكون مرتبطًا بالـTeacher Subscription Plan.</p>
+        </div>
+
+        <!-- 25. Refund Application Flow -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>25. Refund Application Flow</h2>
+            <div class="diagram-box">Validate Refund Eligibility
+       ↓
+Calculate Refund Amount
+       ↓
+Deactivate / Unenroll Content
+       ↓
+Create Refund Record
+       ↓
+Record External Refund
+       ↓
+Update Financial History
+       ↓
+Notify Student</div>
+            <p>إذا كان الـRefund خارجيًا، لا يعاد المبلغ إلى Student Wallet تلقائيًا.</p>
+        </div>
+
+        <!-- 26. Exam Submission -->
+        <div class="section-card">
+            <span class="section-number">القسم 26</span>
+            <h2>26. Exam Submission</h2>
+            <div class="diagram-box">Open Exam
+ ↓
+Create Attempt
+ ↓
+Start Timer
+ ↓
+Answer Questions
+ ↓
+Submit
+ ↓
+Validate Attempt
+ ↓
+Grade Objective Questions
+ ↓
+Store Result
+ ↓
+Notify Student
+ ↓
+Notify Parent if applicable</div>
+            <p>بعد Submit لا يتم السماح بتعديل الإجابات في الـOnline Exam.</p>
+        </div>
+
+        <!-- 27. Exam Time Limit -->
+        <div class="section-card">
+            <span class="section-number">القسم 27</span>
+            <h2>27. Exam Time Limit</h2>
+            <p>الـTimer يعتمد على وقت بدء الـAttempt المسجل في Server، ولا يعتمد على Clock الموجود على جهاز الطالب.</p>
+            <div class="diagram-box">Attempt.StartedAt
++
+Exam.Duration
+=
+Attempt.Deadline</div>
+            <p>وبالتالي انقطاع الإنترنت أو إغلاق الجهاز لا يؤدي إلى تمديد الوقت.</p>
+        </div>
+
+        <!-- 28. Homework Submission -->
+        <div class="section-card">
+            <span class="section-number">القسم 28</span>
+            <h2>28. Homework Submission</h2>
+            <p>الإصدار الأول يدعم File-based Submission.</p>
+            <div class="diagram-box">Upload File
+ ↓
+Validate File
+ ↓
+Store File
+ ↓
+Create Submission
+ ↓
+Notify Teacher</div>
+            <p>يمكن دعم أنواع أخرى مستقبلًا دون تغيير الـApplication Architecture الأساسية.</p>
+        </div>
+
+        <!-- 29. Video Provider Abstraction -->
+        <div class="section-card">
+            <span class="section-number">القسم 29</span>
+            <h2>29. Video Provider Abstraction</h2>
+            <p>لا يتعامل الـApplication Layer مباشرة مع Video Provider معين. يتم تعريف Interface مثل <code>IVideoProvider</code> ويتم تنفيذها في Infrastructure. أمثلة العمليات: GetVideoProgress، GetPlaybackSession، GetAttempts، GetExpiration. وبالتالي يمكن تغيير Video Provider مستقبلًا.</p>
+        </div>
+
+        <!-- 30. Video Access -->
+        <div class="section-card">
+            <span class="section-number">القسم 30</span>
+            <h2>30. Video Access</h2>
+            <div class="diagram-box">Validate Student
+       ↓
+Validate Content Access
+       ↓
+Validate Expiration
+       ↓
+Validate Attempts
+       ↓
+Request Provider Session
+       ↓
+Return Playback Information</div>
+            <p>ولا يتم كشف credentials الخاصة بالـVideo Provider للـClient.</p>
+        </div>
+
+        <!-- 31. File Management API -->
+        <div class="section-card">
+            <span class="section-number">القسم 31</span>
+            <h2>31. File Management API</h2>
+            <p>يتم فصل File Metadata عن Storage. مثال: <code>POST /api/files</code> ثم يتم استخدام File Reference داخل Lesson وHomework وPost وPayment وTeacher Profile. الـStorage Provider يمكن تغييره دون تعديل الـDomain.</p>
+        </div>
+
+        <!-- 32. Notifications -->
+        <div class="section-card">
+            <span class="section-number">القسم 32</span>
+            <h2>32. Notifications</h2>
+            <p>الـNotification Creation يجب ألا تجعل الـBusiness Operation تعتمد بشكل مباشر على إرسال Push/Email/SMS.</p>
+            <div class="diagram-box">Exam Submitted
+       ↓
+Create Notification Event
+       ↓
+Notification Processing
+       ↓
+Push / Email / In-App</div>
+            <p>وهذا يسمح بإضافة Notification Channels مستقبلًا.</p>
+        </div>
+
+        <!-- 33. Background Processing -->
+        <div class="section-card">
+            <span class="section-number">القسم 33</span>
+            <h2>33. Background Processing</h2>
+            <p>العمليات التي لا تحتاج إلى إكمالها قبل HTTP Response يمكن تنفيذها بشكل asynchronous/background. مثل Notifications وReport Generation وAudit Processing وVideo Synchronization وFile Processing وEmail Sending. لكن العمليات المالية الأساسية لا تعتمد على Background Job وحده.</p>
+        </div>
+
+        <!-- 34. Error Handling -->
+        <div class="section-card">
+            <span class="section-number">القسم 34</span>
+            <h2>34. Error Handling</h2>
+            <p>يجب استخدام Error Response موحد.</p>
+            <div class="diagram-box">{
+    code: "INSUFFICIENT_BALANCE",
+    message: "Wallet balance is insufficient."
+}</div>
+            <p>ويتم الفصل بين Business Error وValidation Error وAuthentication Error وAuthorization Error وNot Found وConflict وSystem Error. ولا يتم إرجاع Exception Details الداخلية للـClient.</p>
+        </div>
+
+        <!-- 35. Validation -->
+        <div class="section-card">
+            <span class="section-number">القسم 35</span>
+            <h2>35. Validation</h2>
+            <p>يتم تنفيذ Validation على أكثر من مستوى: API Validation للتحقق من شكل البيانات، Application Validation للتحقق من شروط الـUse Case، Domain Validation للتحقق من Business Invariants.</p>
+            <div class="diagram-box">API:
+Amount > 0
+
+Application:
+Wallet belongs to Student
+
+Domain:
+Wallet cannot become negative</div>
+        </div>
+
+        <!-- 36. Concurrency -->
+        <div class="section-card">
+            <span class="section-number">القسم 36</span>
+            <h2>36. Concurrency</h2>
+            <p>العمليات الحساسة يجب أن تراعي Concurrent Requests، خصوصًا Wallet وCoupon Consumption وEnrollment وExam Attempt وSubscription Activation. مثال: إذا حاول الطالب استخدام نفس Coupon مرتين في نفس الوقت، يجب أن ينجح Request واحد فقط.</p>
+        </div>
+
+        <!-- 37. Idempotency -->
+        <div class="section-card">
+            <span class="section-number">القسم 37</span>
+            <h2>37. Idempotency</h2>
+            <p>العمليات الحساسة التي يمكن إرسالها أكثر من مرة يجب أن تدعم Idempotency عند الحاجة، خصوصًا Payment Activation وPurchase وRefund وCoupon Consumption وExam Submission. مثال: إذا أعاد Client إرسال Purchase Request بسبب Network Timeout، لا يجب خصم المبلغ مرتين.</p>
+        </div>
+
+        <!-- 38. Pagination -->
+        <div class="section-card">
+            <span class="section-number">القسم 38</span>
+            <h2>38. Pagination</h2>
+            <p>الـAPI تستخدم Pagination للبيانات الكبيرة مثل Students وPosts وComments وNotifications وTransactions وAudit Logs وSearch Results. الـPagination ليست بالضرورة Page Numbers. يمكن استخدام Cursor / Continuation Token خصوصًا في الـFeed والـSocial Content.</p>
+        </div>
+
+        <!-- 39. Search -->
+        <div class="section-card">
+            <span class="section-number">القسم 39</span>
+            <h2>39. Search</h2>
+            <p>Search APIs تدعم حسب الحاجة: Teacher، Subject، Grade، Study Type، Course، Post. بالنسبة للـCentral Platform يتم دعم Teacher Discovery بناءً على Grade وStudy Type وSubject وTeacher Name / Platform Name. والـAcademic Year الحالية هي الـdefault context.</p>
+        </div>
+
+        <!-- 40. Reporting APIs -->
+        <div class="section-card">
+            <span class="section-number">القسم 40</span>
+            <h2>40. Reporting APIs</h2>
+            <p>الـReports يتم التعامل معها كـQueries متخصصة. أمثلة: GetTeacherStudentsReport، GetTeacherSalesReport، GetTeacherPaymentsReport، GetTeacherCouponsReport، GetTeacherRevenueSummary، GetCentralTeachersReport، GetCentralSubscriptionRevenue. ويجب عدم إعادة استخدام Entity Queries البسيطة لبناء Reports معقدة إذا كان ذلك سيؤثر على الأداء.</p>
+        </div>
+
+        <!-- 41. Audit Logging -->
+        <div class="section-card">
+            <span class="section-number">القسم 41</span>
+            <h2>41. Audit Logging</h2>
+            <p>كل Application Operation مهمة تنتج Audit Event. أمثلة: PaymentActivated، CourseArchived، AssistantPermissionChanged، CouponConsumed، RefundApproved، SubscriptionActivated، PostDeleted. ويتم تسجيل Actor وPlatform وAction وEntity وEntityId وTimestamp وIP وStation وDevice.</p>
+        </div>
+
+        <!-- 42. API Security Pipeline -->
+        <div class="section-card">
+            <span class="section-number">القسم 42</span>
+            <h2>42. API Security Pipeline</h2>
+            <div class="diagram-box">HTTP Request
+      ↓
+HTTPS
+      ↓
+Authentication
+      ↓
+User Status
+      ↓
+Platform Context
+      ↓
+Authorization
+      ↓
+Validation
+      ↓
+Application Use Case
+      ↓
+Domain Rules</div>
+        </div>
+
+        <!-- 43. User Status Enforcement -->
+        <div class="section-card">
+            <span class="section-number">القسم 43</span>
+            <h2>43. User Status Enforcement</h2>
+            <p>إذا كان User Blocked أو Deactivated أو Suspended يجب ألا يستطيع تنفيذ العمليات المحمية حتى لو كانت لديه Permissions محفوظة. وبالتالي: Active + Permission + Valid Context = Allowed.</p>
+        </div>
+
+        <!-- 44. API Versioning -->
+        <div class="section-card">
+            <span class="section-number">القسم 44</span>
+            <h2>44. API Versioning</h2>
+            <p>يجب تصميم الـAPI بحيث تسمح بإصدارات مستقبلية. الاتجاه المبدئي: <code>/api/v1/...</code> ويتم الانتقال إلى <code>/api/v2/...</code> عند وجود Breaking Changes حقيقية. ولا يتم إنشاء Version جديد لمجرد إضافة Field غير مؤثر.</p>
+        </div>
+
+        <!-- 45. Dependency Injection -->
+        <div class="section-card">
+            <span class="section-number">القسم 45</span>
+            <h2>45. Dependency Injection</h2>
+            <p>يتم استخدام ASP.NET Core Dependency Injection لربط Application Interfaces مع Infrastructure Implementations. مثل IVideoProvider وIFileStorage وINotificationService وIEmailService وIUnitOfWork. ولا يتم إنشاء Infrastructure Services مباشرة داخل الـDomain.</p>
+        </div>
+
+        <!-- 46. Transaction Boundary -->
+        <div class="section-card">
+            <span class="section-number">القسم 46</span>
+            <h2>46. Transaction Boundary</h2>
+            <p>الـTransaction يتم تحديدها حسب الـUse Case وليس حسب كل Repository Call. مثال: Enroll Course قد تحتاج Transaction تشمل Purchase وWallet Debit وEnrollment وFollow. بينما Query بسيطة لا تحتاج Transaction كتابة.</p>
+        </div>
+
+        <!-- 47. Domain Events -->
+        <div class="section-card">
+            <span class="section-number">القسم 47</span>
+            <h2>47. Domain Events</h2>
+            <p>يمكن استخدام Domain/Application Events للأحداث المهمة. أمثلة: CourseEnrolled، PaymentActivated، ExamSubmitted، ExamGraded، HomeworkSubmitted، CouponConsumed، RefundCompleted، SubscriptionActivated. وتستخدم هذه الأحداث لربط الـDomains دون coupling مباشر.</p>
+        </div>
+
+        <!-- 48. API Documentation -->
+        <div class="section-card">
+            <span class="section-number">القسم 48</span>
+            <h2>48. API Documentation</h2>
+            <p>يجب توثيق الـAPI باستخدام OpenAPI/Swagger. كل Endpoint يجب أن يوضح Purpose وAuthentication وAuthorization وRequest وResponse وValidation Errors وBusiness Errors وHTTP Status Codes.</p>
+        </div>
+
+        <!-- 49. Observability -->
+        <div class="section-card">
+            <span class="section-number">القسم 49</span>
+            <h2>49. Observability</h2>
+            <p>يجب أن تدعم طبقة الـApplication والـAPI: Structured Logging، Correlation ID، Request Tracing، Error Tracking، Performance Metrics. خصوصًا للعمليات الحساسة مثل Payment وPurchase وRefund وExam وVideo Access وAuthentication.</p>
+        </div>
+
+        <!-- 50. Final Application Architecture -->
+        <div class="section-card">
+            <span class="section-number">القسم 50</span>
+            <h2>50. Final Application Architecture</h2>
+            <div class="diagram-box">                     Client
+                       │
+                       ▼
+              ASP.NET Core Web API
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+     Authentication            Authorization
+          │                         │
+          └────────────┬────────────┘
+                       ▼
+                Application Layer
+                       │
+              ┌────────┴────────┐
+              │                 │
+          Commands           Queries
+              │                 │
+              └────────┬────────┘
+                       ▼
+                  Domain Layer
+                       │
+             ┌─────────┼─────────┐
+             │         │         │
+        Domain Rules Events   Services
+                       │
+                       ▼
+               Infrastructure
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+   PostgreSQL     Video Provider   File Storage
+        │
+        └──────────────┬──────────────┘
+                       ▼
+                External Services</div>
+        </div>
+
+        <!-- 51. Architectural Rules -->
+        <div class="section-card">
+            <span class="section-number">القسم 51</span>
+            <h2>51. Architectural Rules</h2>
+            <ol>
+                <li>الـController لا يحتوي Business Logic.</li>
+                <li>الـDomain لا يعتمد على ASP.NET Core أو EF Core.</li>
+                <li>لا يتم إرجاع Domain Entities مباشرة من الـAPI.</li>
+                <li>الـPermissions Dynamic وليست Hard-coded داخل Role.</li>
+                <li>كل Resource يتم التحقق من Platform Ownership الخاصة به.</li>
+                <li>العمليات المالية يجب أن تكون Atomic وقابلة للتتبع.</li>
+                <li>لا يتم السماح بـNegative Wallet Balance.</li>
+                <li>Coupon Consumption يجب أن يكون آمنًا ضد Concurrent Requests.</li>
+                <li>Video Provider يتم التعامل معه من خلال Abstraction.</li>
+                <li>File Storage يتم التعامل معه من خلال Abstraction.</li>
+                <li>Audit Trail لا يتم حذفه مع حذف الـBusiness Entity.</li>
+                <li>Student Identity واحدة على مستوى النظام.</li>
+                <li>Teacher Platform هي حدود أساسية لعزل بيانات Teacher.</li>
+                <li>Central Platform لا تتملك Student Wallet الخاصة بالـTeacher Platform.</li>
+                <li>لا يتم إنشاء Role جديدة لمجرد اختلاف Permissions بين Users.</li>
+                <li>الـPublic ID والـSlug يتم التحقق منهما معًا في Teacher Platform Routing.</li>
+                <li>العمليات التي يمكن تكرار Request لها يجب أن تراعي Idempotency.</li>
+                <li>الـQueries الكبيرة يجب أن تكون optimized للقراءة.</li>
+                <li>العمليات غير الضرورية لإتمام الـRequest يمكن تنفيذها في Background.</li>
+                <li>أي قرار جديد يجب أن يحافظ على حدود الـBounded Contexts.</li>
+            </ol>
+        </div>
+
+        <!-- 52. Conclusion -->
+        <div class="section-card">
+            <span class="section-number">القسم 52</span>
+            <h2>52. Conclusion</h2>
+            <p>طبقة الـAPI في <strong>Online Teacher</strong> ليست مجرد CRUD فوق PostgreSQL. هي طبقة تنفيذ للـBusiness Domains والـUse Cases المحددة في الوثائق السابقة، مع الحفاظ على الفصل بين Central Platform وTeacher Platform وStudent وAcademic Content وFinancial Domain وSocial Domain وCommunication وSecurity.</p>
+            <p>ويتم بناء الـApplication Layer بحيث تكون قابلة للتوسع وإضافة مزودي الفيديو والتخزين والدفع والإشعارات مستقبلًا دون إعادة تصميم الـCore Domain.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • API Design & Application Layer Architecture v1.0
+        </div>
+    </div>
+</body>
+</html>

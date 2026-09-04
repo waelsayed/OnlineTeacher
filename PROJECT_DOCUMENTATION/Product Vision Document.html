@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | Product Vision Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1000px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        /* Print optimization */
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.8in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+            .badge {
+                background: #e9edf3 !important;
+                color: #0f172a !important;
+                border: 1px solid #94a3b8;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .section-card:hover {
+            border-right-color: #2c8cad;
+            box-shadow: 0 12px 22px rgba(0, 40, 70, 0.06);
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+            color: #1a3449;
+        }
+
+        .example-tree {
+            background: #f0f4fa;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 1.2rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            border: 1px solid #d0dfee;
+            white-space: pre-line;
+            overflow-x: auto;
+            line-height: 2;
+            color: #13354a;
+        }
+
+        ul, ol {
+            padding-right: 1.8rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .badge {
+            background: #e6eff9;
+            color: #124364;
+            border-radius: 50px;
+            padding: 0.2rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin: 0.2rem 0;
+        }
+
+        .wallet-pill {
+            background: #d3e3f2;
+            border-radius: 40px;
+            padding: 0.2rem 1.2rem;
+            font-weight: 700;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.4rem 2rem;
+            margin: 1.8rem 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #193e59;
+            font-style: italic;
+        }
+
+        .vision-statement {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER : unchanged content -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">Product Vision Document</h1>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">✍️</span> <strong>Written By:</strong> Eng. Wael Sayed</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+                <div class="meta-item"><span class="meta-icon">📋</span> <strong>Status:</strong> Draft</div>
+            </div>
+        </div>
+
+        <!-- ============ SECTIONS (exact text preserved) ============ -->
+        
+        <!-- 1. الرؤية العامة -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. الرؤية العامة</h2>
+            <p>المشروع هو منصة تعليمية متخصصة في <strong>المدرسين والطلاب</strong>، تهدف إلى تمكين كل مدرس من امتلاك وإدارة بيئة تعليمية خاصة به، يستطيع من خلالها تقديم مواده الدراسية، تنظيم طلابه، إدارة المحتوى التعليمي، متابعة تقدم الطلاب، والتواصل معهم، دون الحاجة إلى إنشاء نظام تعليمي خاص به من البداية.</p>
+            <p>الفكرة الأساسية هي أن يحصل المدرس على <strong>منصة خاصة به</strong> يستطيع إعدادها وفق طبيعة المادة والصفوف التي يقوم بتدريسها، ثم يبدأ في دعوة طلابه أو استقبال طلبات الانضمام منهم، وإدارة العملية التعليمية بالكامل من خلال المنصة.</p>
+        </div>
+
+        <!-- 2. الفئة المستهدفة -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. الفئة المستهدفة</h2>
+            <p>المنصة موجهة بشكل أساسي إلى <strong>المدرسين في مراحل التعليم المختلفة</strong>، سواء كان المدرس:</p>
+            <ul>
+                <li>يدرس مادة واحدة أو أكثر.</li>
+                <li>متخصصاً في صف دراسي واحد أو عدة صفوف.</li>
+                <li>يقدم تعليماً Online أو Offline أو يجمع بينهما.</li>
+                <li>لديه عدد محدود من الطلاب أو قاعدة كبيرة من الطلاب.</li>
+            </ul>
+            <p>ولا تفرض المنصة على المدرس طريقة واحدة لتنظيم عمله، بل تتيح له بناء بيئته التعليمية بما يتناسب مع طبيعة المادة والطلاب وطريقته في التدريس.</p>
+        </div>
+
+        <!-- 3. الملف التعليمي للمدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. الملف التعليمي للمدرس</h2>
+            <p>عند إنشاء حساب المدرس، يقوم بتحديد تخصصه الدراسي، ويمكنه اختيار أكثر من مادة.</p>
+            <p>ولكل مادة يمكنه تحديد الصفوف الدراسية التي يقوم بتدريسها.</p>
+            <p>فعلى سبيل المثال، يمكن لمدرس أن يحدد:</p>
+            <div class="highlight-box">
+                <strong>Science</strong><br>
+                • الصف الأول الثانوي<br>
+                • الصف الثاني الثانوي<br>
+                • الصف الثالث الثانوي
+            </div>
+            <p>بينما يمكن لمدرس آخر أن يكون متخصصاً في مادة معينة لصف واحد أو لعدة صفوف.</p>
+            <p>كما يمكن تحديد الفترة الدراسية المناسبة لكل صف، مثل:</p>
+            <ul>
+                <li>الترم الأول.</li>
+                <li>الترم الثاني.</li>
+                <li>العام الدراسي بالكامل.</li>
+            </ul>
+            <p>وبذلك تصبح بيانات المدرس مرتبطة بطبيعة عمله الدراسي الفعلية.</p>
+        </div>
+
+        <!-- 4. تنظيم المحتوى التعليمي -->
+        <div class="section-card">
+            <span class="section-number">القسم 4</span>
+            <h2>4. تنظيم المحتوى التعليمي</h2>
+            <p>يتم تنظيم المحتوى بطريقة تساعد المدرس والطالب على فهم التسلسل الدراسي بوضوح.</p>
+            <p>الهيكل الأساسي للمحتوى يكون:</p>
+            <div class="example-tree">المادة ← الصف الدراسي ← الفترة الدراسية ← Unit ← Chapter ← Lesson</div>
+            <p>فعلى سبيل المثال:</p>
+            <div class="example-tree">Science<br>← الصف الأول الثانوي<br>← الترم الأول<br>← Unit 1<br>← Chapter 1<br>← Lesson 1</div>
+            <p>ويستطيع المدرس بناء هذا الهيكل وإدارته وفق المنهج وطريقة شرحه.</p>
+        </div>
+
+        <!-- 5. محتوى الدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>5. محتوى الدرس</h2>
+            <p>يمكن أن يحتوي الدرس على أكثر من نوع من المحتوى التعليمي، مثل:</p>
+            <ul>
+                <li>فيديو تعليمي.</li>
+                <li>شرح نصي.</li>
+                <li>ملفات PDF.</li>
+                <li>صور ومواد تعليمية.</li>
+                <li>Homework.</li>
+                <li>Revision.</li>
+                <li>Exam أو Assessment عند الحاجة.</li>
+            </ul>
+            <p>ولا يشترط أن يحتوي كل درس على جميع هذه العناصر، فالمدرس هو من يحدد المحتوى المناسب لكل درس.</p>
+            <p>كما يمكن أن تكون بعض العناصر التعليمية مستقلة، مثل اختبار أو مراجعة، وفق طبيعة المادة وطريقة تنظيم المدرس للمحتوى.</p>
+        </div>
+
+        <!-- 6. الطالب وعلاقته بالمدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>6. الطالب وعلاقته بالمدرس</h2>
+            <p>ينشئ الطالب حساباً واحداً على المنصة، ويمكنه من خلاله الانضمام إلى أكثر من مدرس.</p>
+            <p>فعلى سبيل المثال، يمكن للطالب أن يدرس مادة مع مدرس، ومادة أخرى مع مدرس آخر، أو يتابع أكثر من مدرس في نفس المادة لأغراض مختلفة مثل الشرح والمراجعة.</p>
+            <p>بعد انضمام الطالب إلى منصة المدرس، يستطيع المدرس أو الأشخاص المخولون من قبله إدارة وصول الطالب إلى المحتوى والخدمات التعليمية الخاصة به.</p>
+            <p>وبذلك تكون علاقة الطالب بكل مدرس مستقلة، مع احتفاظ الطالب بحسابه الواحد على المنصة.</p>
+        </div>
+
+        <!-- 7. منصة المدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>7. منصة المدرس</h2>
+            <p>كل مدرس لديه مساحة تعليمية خاصة به تمثل بيئته التعليمية.</p>
+            <p>يمكن للمدرس من خلالها إدارة:</p>
+            <ul>
+                <li>بياناته الشخصية والتعليمية.</li>
+                <li>المواد والصفوف التي يدرسها.</li>
+                <li>الكورسات والوحدات والفصول والدروس.</li>
+                <li>المحتوى التعليمي.</li>
+                <li>الطلاب.</li>
+                <li>المجموعات.</li>
+                <li>الاختبارات والواجبات.</li>
+                <li>النتائج.</li>
+                <li>المنشورات والتفاعل.</li>
+                <li>صلاحيات الوصول.</li>
+                <li>المساعدين والإداريين.</li>
+            </ul>
+            <p>ويكون المدرس هو المسؤول عن إدارة هذه المساحة وتحديد طريقة استخدامها.</p>
+        </div>
+
+        <!-- 8. الحائط التعليمي -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>8. الحائط التعليمي — Wall</h2>
+            <p>يحتوي كل مدرس على <strong>Wall خاص به</strong> يمثل مساحة للتواصل والتفاعل مع الطلاب.</p>
+            <p>يمكن للمدرس نشر:</p>
+            <ul>
+                <li>إعلانات.</li>
+                <li>أسئلة.</li>
+                <li>شرح أو معلومات إضافية.</li>
+                <li>تنبيهات خاصة بالطلاب.</li>
+                <li>استطلاعات وتصويتات.</li>
+                <li>تقييمات.</li>
+                <li>أسئلة مفتوحة للنقاش.</li>
+            </ul>
+            <p>كما يمكن للطلاب التفاعل مع المنشورات والتعليق عليها وفق الصلاحيات التي يحددها المدرس.</p>
+            <p>والهدف من الـWall هو توفير وسيلة تواصل تعليمية مستمرة بين المدرس وطلابه، وليس مجرد وسيلة لإرسال الإعلانات.</p>
+        </div>
+
+        <!-- 9. الطلاب Online وOffline -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. الطلاب Online وOffline</h2>
+            <p>يمكن للمدرس إدارة نوعين من الطلاب:</p>
+            <p><span class="badge">🟢 Online Students</span> — وهم الطلاب الذين يحصلون على الخدمة التعليمية من خلال المنصة.</p>
+            <p><span class="badge">🟠 Offline Students</span> — وهم الطلاب الذين يتعاملون مع المدرس خارج المنصة، ويمكن للمدرس منحهم حساباً داخل المنصة للاستفادة من المحتوى الرقمي.</p>
+            <p>يمكن للمدرس تحديد المحتوى الذي يسمح للطالب Offline بالوصول إليه، سواء كان:</p>
+            <ul>
+                <li>جميع المحتوى.</li>
+                <li>وحدات محددة.</li>
+                <li>دروس محددة.</li>
+                <li>فيديوهات المراجعة.</li>
+                <li>ملفات معينة.</li>
+            </ul>
+            <p>وبذلك تصبح المنصة أداة تساعد المدرس في إدارة العملية التعليمية سواء كانت Online أو Offline.</p>
+        </div>
+
+        <!-- 10. المحفظة المالية -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>10. المحفظة المالية — Wallet</h2>
+            <p>يمتلك الطالب <strong>Wallet</strong> داخل المنصة، تستخدم لإدارة رصيده المالي المخصص للتعامل مع الخدمات والمحتوى الذي يقدمه المدرسون.</p>
+            <p>في المرحلة الأولى يمكن شحن المحفظة باستخدام وسائل دفع متاحة وشائعة في مصر، مثل:</p>
+            <ul>
+                <li>Vodafone Cash.</li>
+                <li>InstaPay.</li>
+            </ul>
+            <p>ويقوم الطالب بإرسال بيانات التحويل، مثل رقم العملية وصورة إثبات التحويل، إلى المسؤول عن منصة المدرس.</p>
+            <p>بعد مراجعة التحويل، يستطيع المدرس أو الـAssistant المسؤول تفعيل الرصيد للطالب.</p>
+            <p>وبذلك يمكن للطالب استخدام رصيده للحصول على المحتوى أو الخدمات التي يتيحها المدرس.</p>
+        </div>
+
+        <!-- 11. شراء وتفعيل المحتوى -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>11. شراء وتفعيل المحتوى</h2>
+            <p>المدرس هو المسؤول عن تحديد المحتوى الذي يقدمه للطلاب وطريقة إتاحته.</p>
+            <p>فمثلاً يمكن أن يحتوي أحد الكورسات على:</p>
+            <div class="highlight-box"><strong>Unit 1</strong></div>
+            <p>وتحتوي Unit 1 على:</p>
+            <ul>
+                <li>Chapter 1</li>
+                <li>Chapter 2</li>
+                <li>Chapter 3</li>
+            </ul>
+            <p>إذا قام الطالب بالحصول على Unit 1، يستطيع المدرس أو المسؤول المخول تفعيل الوصول إلى محتواها وفق القواعد التي وضعها المدرس.</p>
+            <p>وبالتالي لا تكون عملية الحصول على المحتوى منفصلة عن نظام إدارة الطلاب والصلاحيات، وإنما تكون مرتبطة بما يسمح به المدرس لكل طالب.</p>
+        </div>
+
+        <!-- 12. تنظيم رحلة الطالب -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>12. تنظيم رحلة الطالب التعليمية</h2>
+            <p>لا يعتمد النظام على إتاحة جميع الدروس للطالب بشكل مفتوح بالضرورة.</p>
+            <p>يمكن للمدرس وضع قواعد لتنظيم انتقال الطالب داخل المحتوى، مثل:</p>
+            <ul>
+                <li>إكمال درس قبل الانتقال إلى الدرس التالي.</li>
+                <li>مشاهدة نسبة معينة من الفيديو.</li>
+                <li>أداء Homework.</li>
+                <li>اجتياز Exam.</li>
+                <li>تحديد مدة معينة للوصول إلى الدرس أو الوحدة.</li>
+                <li>إغلاق المحتوى بعد انتهاء المدة.</li>
+                <li>إعادة فتح المحتوى خلال فترة المراجعة.</li>
+            </ul>
+            <p>هذه القواعد يتم تحديدها وفق أسلوب المدرس، وسيتم تفصيلها بشكل مستقل في وثيقة متخصصة بقواعد وإدارة الوصول إلى المحتوى.</p>
+        </div>
+
+        <!-- 13. الاختبارات والنتائج -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>13. الاختبارات والنتائج</h2>
+            <p>يمكن للمدرس إنشاء الاختبارات داخل المنصة وتحديد الأسئلة والإجابات الصحيحة والدرجات.</p>
+            <p>وتدعم الاختبارات بشكل أساسي أسئلة <strong>Multiple Choice</strong>، مع إمكانية تطوير أنواع أخرى من الأسئلة مستقبلاً.</p>
+            <p>بعد انتهاء الطالب من الاختبار، يمكن للنظام حساب النتيجة وعرضها وفق إعدادات الاختبار.</p>
+            <p>كما يمكن استخدام نتائج الاختبارات ضمن متابعة مستوى الطالب، أو كجزء من القواعد التي يحددها المدرس للانتقال بين أجزاء المحتوى.</p>
+        </div>
+
+        <!-- 14. إدارة المدرس والمساعدين -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>14. إدارة المدرس والمساعدين</h2>
+            <p>المدرس هو المسؤول عن منصته، ويمكنه تعيين واحد أو أكثر من الـAdmins أو الـAssistants لمساعدته في إدارتها.</p>
+            <p>ويستطيع المدرس تحديد صلاحيات كل مساعد وفق الدور الذي يقوم به.</p>
+            <p>فقد يكون أحد المساعدين مسؤولاً عن:</p>
+            <ul>
+                <li>متابعة الطلاب.</li>
+                <li>دعم الطلاب.</li>
+                <li>مراجعة التحويلات.</li>
+                <li>تفعيل الأرصدة.</li>
+                <li>إدارة المحتوى.</li>
+                <li>متابعة النتائج.</li>
+            </ul>
+            <p>بينما يمكن إعطاء مساعد آخر صلاحيات مختلفة.</p>
+            <p>ويكون نطاق عمل هؤلاء المساعدين داخل منصة المدرس فقط، وفق الصلاحيات التي يمنحها لهم صاحب المنصة.</p>
+        </div>
+
+        <!-- 15. الاشتراك في المنصة -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>15. الاشتراك في المنصة للمدرسين</h2>
+            <p>تقدم ProNileSoft الخدمة للمدرس بنظام اشتراك.</p>
+            <p>يمكن أن تتوفر الاشتراكات بصيغ مختلفة، مثل:</p>
+            <ul>
+                <li>اشتراك شهري.</li>
+                <li>اشتراك سنوي.</li>
+                <li>اشتراك مرتبط بالسنة الدراسية.</li>
+            </ul>
+            <p>وتختلف الباقات وفق احتياجات المدرس وحجم نشاطه والإمكانيات المتاحة له.</p>
+            <p>وبذلك يستطيع المدرس اختيار الباقة التي تناسب عدد طلابه وطبيعة عمله، سواء كان في بداية نشاطه أو لديه عدد كبير من الطلاب.</p>
+        </div>
+
+        <!-- 16. النموذج التجاري -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>16. النموذج التجاري</h2>
+            <p>يعتمد نموذج العمل الأساسي على <strong>اشتراك المدرس في الخدمة</strong>.</p>
+            <p>المدرس لا يحتاج إلى إنشاء نظام مستقل من الصفر، وإنما يحصل على بيئة تعليمية جاهزة يستطيع إدارتها وتخصيص محتواها وطلابه وفق احتياجاته.</p>
+            <p>ولا تعتمد المنصة في نموذجها الأساسي على الحصول على عمولة من المدرس مقابل بيع الكورسات أو المحتوى الخاص به.</p>
+        </div>
+
+        <!-- 17. القيمة المقدمة للمدرس -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>17. القيمة المقدمة للمدرس</h2>
+            <p>تسعى المنصة إلى أن توفر للمدرس:</p>
+            <ul>
+                <li>منصة تعليمية خاصة به.</li>
+                <li>إدارة مركزية للطلاب والمحتوى.</li>
+                <li>تنظيم المواد والصفوف والوحدات والدروس.</li>
+                <li>إدارة الاختبارات والواجبات والنتائج.</li>
+                <li>متابعة تقدم الطلاب.</li>
+                <li>التواصل المباشر مع الطلاب.</li>
+                <li>إدارة الطلاب Online وOffline.</li>
+                <li>إدارة المساعدين والصلاحيات.</li>
+                <li>تنظيم الوصول إلى المحتوى.</li>
+                <li>إدارة الرصيد والعمليات الخاصة بطلابه.</li>
+                <li>إمكانية التوسع مع زيادة عدد الطلاب.</li>
+            </ul>
+            <p>وبذلك يستطيع المدرس التركيز على العملية التعليمية، بينما توفر له المنصة البيئة اللازمة لإدارة الجانب الرقمي منها.</p>
+        </div>
+
+        <!-- 18. القيمة المقدمة للطالب -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>18. القيمة المقدمة للطالب</h2>
+            <p>يحصل الطالب على بيئة تعليمية منظمة يستطيع من خلالها:</p>
+            <ul>
+                <li>استخدام حساب واحد مع أكثر من مدرس.</li>
+                <li>الوصول إلى المحتوى المسموح له.</li>
+                <li>متابعة الدروس والوحدات.</li>
+                <li>أداء الاختبارات.</li>
+                <li>متابعة النتائج.</li>
+                <li>الحصول على الملفات التعليمية.</li>
+                <li>التواصل مع المدرس.</li>
+                <li>المشاركة في الـWall.</li>
+                <li>متابعة تقدمه في المحتوى.</li>
+                <li>الاستفادة من المراجعات والواجبات وفق نظام المدرس.</li>
+            </ul>
+        </div>
+
+        <!-- 19. جوهر الفكرة -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>19. جوهر الفكرة</h2>
+            <p>الهدف الأساسي من المشروع هو تحويل العلاقة التقليدية بين <strong>المدرس والطالب</strong> إلى بيئة تعليمية رقمية منظمة، مع الحفاظ على سيطرة المدرس على طريقته في التعليم وإدارة طلابه.</p>
+            <p>فالمدرس لا يكون مجرد مستخدم يرفع فيديوهات على منصة عامة، وإنما يحصل على <strong>مساحة تعليمية خاصة به</strong> يستطيع من خلالها بناء محتواه، إدارة طلابه، تنظيم الدراسة، متابعة النتائج، والتواصل مع الطلاب.</p>
+            <p>أما الطالب، فيحصل على حساب تعليمي واحد يستطيع من خلاله التعامل مع المدرسين المختلفين ومتابعة المحتوى الخاص بكل منهم.</p>
+        </div>
+
+        <!-- 20. الرؤية المستقبلية -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>20. الرؤية المستقبلية</h2>
+            <p>تسعى ProNileSoft إلى بناء منصة تجعل امتلاك المدرس لبيئة تعليمية رقمية خاصة به أمراً بسيطاً وعملياً، بحيث يمكن للمدرس أن يبدأ بعد إنشاء حسابه مباشرة في إعداد مواده وصفوفه ومحتواه، ثم دعوة طلابه وإدارة العملية التعليمية من مكان واحد.</p>
+            <p>والرؤية الأساسية هي:</p>
+            <blockquote class="vision-statement">
+                تمكين كل مدرس من امتلاك وإدارة بيئته التعليمية الرقمية الخاصة، وتوفير تجربة تعليمية منظمة للطلاب تجمع بين المحتوى، والمتابعة، والتقييم، والتفاعل، وإدارة الوصول إلى التعليم.
+            </blockquote>
+        </div>
+
+        <!-- subtle divider -->
+        <div class="divider"></div>
+        <div class="footer-note">
+            ProNileSoft — Product Vision Document v1.0 (Draft) &nbsp;•&nbsp; Eng. Wael Sayed
+        </div>
+    </div>
+</body>
+</html>

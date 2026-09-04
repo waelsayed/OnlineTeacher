@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProNileSoft | System Use Cases & User Journeys</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+            line-height: 1.9;
+            color: #1e2b37;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .document-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 20, 40, 0.15);
+            padding: 3rem 3.2rem;
+            transition: all 0.2s ease;
+            border: 1px solid #dce5ec;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0.2in;
+                display: block;
+            }
+            .document-wrapper {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0.7in 0.5in;
+                border: none;
+                max-width: 100%;
+            }
+            .section-card, .use-case, table, .journey-box {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #cbd5e1;
+            }
+        }
+
+        .doc-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.8rem;
+            border-bottom: 3px double #9bb7d4;
+        }
+
+        .brand-name {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            background: linear-gradient(135deg, #0f3b5f, #1f6e8c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .doc-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0.5rem 0 0.4rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #3a5670;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1.4rem;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #f8fafc;
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #dde7f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .meta-icon {
+            font-size: 1.2rem;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #0b2d4b;
+            margin: 2.8rem 0 1.2rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 2px solid #b3cbe0;
+            letter-spacing: -0.3px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e4f6e;
+            margin: 1.8rem 0 0.7rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e2eaf2;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.8rem 2rem;
+            margin: 1.8rem 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.15s;
+        }
+
+        .use-case {
+            background: #fafcff;
+            border: 1px solid #d5e3f0;
+            border-right: 4px solid #2c8cad;
+            border-radius: 14px;
+            padding: 1.5rem 1.8rem;
+            margin: 1.5rem 0;
+        }
+
+        .uc-id {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.2rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.8rem;
+        }
+
+        .section-number {
+            display: inline-block;
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            padding: 0.2rem 1rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        ul, ol {
+            padding-right: 2rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            color: #0a2f46;
+            font-weight: 700;
+        }
+
+        .journey-box {
+            background: #f0f4fa;
+            border-radius: 14px;
+            padding: 1.5rem 2rem;
+            margin: 1.2rem 0;
+            font-family: 'Courier New', 'Segoe UI', monospace;
+            font-weight: 500;
+            direction: ltr;
+            text-align: left;
+            border: 1px solid #d0dfee;
+            white-space: pre-line;
+            line-height: 2;
+            color: #13354a;
+            overflow-x: auto;
+        }
+
+        .highlight-box {
+            background: #f5f9ff;
+            border: 1px dashed #98b9d9;
+            border-radius: 16px;
+            padding: 1.2rem 1.6rem;
+            margin: 1.5rem 0;
+        }
+
+        blockquote {
+            background: #f2f7fd;
+            border-right: 6px solid #1f6e8c;
+            border-radius: 18px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 500;
+            color: #193e59;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+        }
+
+        th {
+            background: #1f6e8c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 0.7rem 1rem;
+            text-align: right;
+            border: 1px solid #1a5a72;
+        }
+
+        td {
+            padding: 0.7rem 1rem;
+            border: 1px solid #dbe4ed;
+            text-align: right;
+            background: #fcfdfe;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to left, transparent, #b3cde0, transparent);
+            margin: 3rem 0 2rem;
+            border: none;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 3rem;
+            color: #4b5c6b;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .document-wrapper {
+                padding: 1.5rem;
+            }
+            .meta-grid {
+                flex-direction: column;
+                gap: 0.4rem;
+                align-items: center;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .journey-box {
+                font-size: 0.75rem;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="document-wrapper">
+        <!-- HEADER -->
+        <div class="doc-header">
+            <div class="brand-name">ProNileSoft</div>
+            <h1 class="doc-title">System Use Cases & User Journeys</h1>
+            <div class="subtitle">تحليل حالات الاستخدام ورحلات المستخدم</div>
+            <div class="meta-grid">
+                <div class="meta-item"><span class="meta-icon">🏢</span> <strong>Company:</strong> ProNileSoft</div>
+                <div class="meta-item"><span class="meta-icon">📱</span> <strong>Product:</strong> Live Teacher</div>
+                <div class="meta-item"><span class="meta-icon">✍️</span> <strong>Written By:</strong> Eng. Wael Sayed</div>
+                <div class="meta-item"><span class="meta-icon">📄</span> <strong>Type:</strong> Use Cases & Journeys</div>
+                <div class="meta-item"><span class="meta-icon">📌</span> <strong>Version:</strong> 1.0</div>
+            </div>
+        </div>
+
+        <!-- 1. مقدمة -->
+        <div class="section-card">
+            <span class="section-number">القسم 1</span>
+            <h2>1. مقدمة</h2>
+            <p>تهدف هذه الوثيقة إلى وصف كيفية استخدام النظام من خلال المستخدمين والأدوار المختلفة، وتوضيح أهم السيناريوهات التشغيلية التي يمر بها كل مستخدم داخل <strong>Central Platform</strong> و <strong>Teacher Platform</strong>.</p>
+            <p>تركز الوثيقة على <strong>سلوك النظام ورحلة المستخدم (User Journey)</strong>، دون الدخول في تفاصيل التنفيذ البرمجي أو التقنيات المستخدمة.</p>
+            <p>يعتمد النظام على مستويين رئيسيين:</p>
+            <ul>
+                <li><strong>Central Platform:</strong> المنصة المركزية التي تدير المدرسين، اشتراكاتهم، باقاتهم، الكوبونات، والمدفوعات والتقارير المركزية.</li>
+                <li><strong>Teacher Platform:</strong> المنصة الخاصة بكل مدرس، والتي يدير من خلالها المحتوى والطلاب والعمليات التعليمية الخاصة به.</li>
+            </ul>
+        </div>
+
+        <!-- 2. Actors -->
+        <div class="section-card">
+            <span class="section-number">القسم 2</span>
+            <h2>2. Actors</h2>
+
+            <h3>2.1 Central Platform Owner / Administrator</h3>
+            <p>المسؤول عن إدارة المنصة المركزية، ويشمل ذلك:</p>
+            <ul>
+                <li>إدارة المدرسين.</li>
+                <li>تفعيل وإيقاف Teacher Platforms.</li>
+                <li>إدارة باقات الاشتراك الخاصة بالمدرسين.</li>
+                <li>إدارة اشتراكات المدرسين.</li>
+                <li>إنشاء وإدارة كوبونات الخصم.</li>
+                <li>متابعة المدفوعات.</li>
+                <li>متابعة التقارير المركزية.</li>
+                <li>إدارة المشاكل والدعم على مستوى المنصة المركزية.</li>
+            </ul>
+
+            <h3>2.2 Teacher</h3>
+            <p>هو صاحب <strong>Teacher Platform</strong>. يقوم المدرس بإدارة البيئة التعليمية الخاصة به، بما في ذلك: بياناته الشخصية والمهنية، المواد الدراسية، الصفوف الدراسية، السنوات الدراسية والفصول الدراسية، Courses، Units، Chapters، Lessons، Packages، Revisions، Exams، الطلاب، المجموعات، قواعد الوصول إلى المحتوى، Teacher Wall، فريق الإدارة والمساعدين، العمليات المالية الخاصة بمنصته، والتقارير الخاصة بالطلاب والمحتوى والمبيعات.</p>
+
+            <h3>2.3 Teacher Admin / Assistant</h3>
+            <p>مستخدم يتم تعيينه بواسطة المدرس لمساعدته في إدارة <strong>Teacher Platform</strong>. لا يمتلك بالضرورة جميع صلاحيات المدرس، وإنما يحصل على مجموعة من الصلاحيات التي يحددها المدرس. يمكن أن يكون للمدرس أكثر من Admin أو Assistant، ويمكن أن تختلف صلاحيات كل واحد منهم.</p>
+
+            <h3>2.4 Student</h3>
+            <p>المستخدم الذي ينضم إلى Teacher Platform أو أكثر من Teacher Platform. يمكن للطالب: مشاهدة بيانات المدرس، الانضمام إلى Teacher Platform، شراء المحتوى، استخدام الـWallet، مشاهدة المحتوى المسموح له، أداء الاختبارات، متابعة النتائج، مشاهدة Teacher Wall، كتابة التعليقات حسب الصلاحيات، متابعة الإعلانات والمواعيد، ومتابعة تقدمه الدراسي. يمكن للطالب أن يكون مشتركًا مع أكثر من مدرس في الوقت نفسه.</p>
+        </div>
+
+        <!-- 3. Central Platform Use Cases -->
+        <div class="section-card">
+            <span class="section-number">القسم 3</span>
+            <h2>3. المستوى الأول: Central Platform Use Cases</h2>
+
+            <div class="use-case">
+                <span class="uc-id">UC-01</span>
+                <h3>تسجيل مدرس جديد</h3>
+                <p><strong>Actor:</strong> Teacher</p>
+                <h3>السيناريو</h3>
+                <ol>
+                    <li>يدخل المدرس إلى Central Platform.</li>
+                    <li>ينشئ حسابًا جديدًا.</li>
+                    <li>يدخل بياناته الأساسية.</li>
+                    <li>يرسل طلب التسجيل.</li>
+                    <li>يتم إنشاء حساب المدرس.</li>
+                    <li>تتم مراجعة الحساب أو تفعيله وفق سياسة المنصة.</li>
+                    <li>يتم السماح للمدرس ببدء إعداد Teacher Platform الخاصة به.</li>
+                </ol>
+                <p><strong>النتيجة:</strong> يمتلك المدرس حسابًا على Central Platform ويمكنه إنشاء وإدارة Teacher Platform الخاصة به.</p>
+            </div>
+
+            <div class="use-case">
+                <span class="uc-id">UC-02</span>
+                <h3>إنشاء وتفعيل Teacher Platform</h3>
+                <p><strong>Actors:</strong> Teacher / Central Platform Administrator</p>
+                <h3>السيناريو</h3>
+                <ol>
+                    <li>يدخل المدرس إلى حسابه.</li>
+                    <li>يبدأ إعداد Teacher Platform.</li>
+                    <li>يحدد البيانات الأساسية للمنصة.</li>
+                    <li>يختار الباقة المناسبة.</li>
+                    <li>يتم تسجيل الاشتراك.</li>
+                    <li>يتم تفعيل Teacher Platform.</li>
+                    <li>تصبح المنصة متاحة للطلاب وفق إعداداتها.</li>
+                </ol>
+                <p><strong>النتيجة:</strong> يصبح للمدرس مساحة تعليمية مستقلة داخل Central Platform.</p>
+            </div>
+        </div>
+
+        <!-- 5. UC-03 -->
+        <div class="section-card">
+            <span class="section-number">القسم 5</span>
+            <h2>UC-03 — إدارة اشتراك المدرس</h2>
+            <p><strong>Actors:</strong> Teacher / Central Platform Administrator</p>
+            <p>يمكن للمدرس الاشتراك في إحدى الباقات المتاحة. تدعم الباقات نموذجًا مثل: اشتراك شهري، اشتراك سنوي، اشتراك مرتبط بالسنة الدراسية حسب سياسة الباقة.</p>
+            <h3>السيناريو</h3>
+            <ol>
+                <li>يختار المدرس الباقة.</li>
+                <li>تظهر قيمة الاشتراك.</li>
+                <li>يختار وسيلة الدفع المتاحة.</li>
+                <li>يتم تسجيل عملية الدفع.</li>
+                <li>يتم تفعيل الاشتراك بعد اعتماد الدفع.</li>
+                <li>يتم تسجيل تاريخ بداية ونهاية الاشتراك.</li>
+            </ol>
+            <p><strong>النتيجة:</strong> يصبح الاشتراك مرتبطًا بحساب المدرس وTeacher Platform الخاصة به.</p>
+        </div>
+
+        <!-- 6. UC-04 -->
+        <div class="section-card">
+            <span class="section-number">القسم 6</span>
+            <h2>UC-04 — استخدام Coupon للاشتراك</h2>
+            <p><strong>Actors:</strong> Teacher / Central Platform Administrator</p>
+            <p>يمكن للمنصة المركزية إنشاء Coupons لاستخدامها في اشتراكات المدرسين. يمكن أن يكون الكوبون خصمًا بنسبة معينة أو بقيمة محددة أو مجانيًا بالكامل بنسبة خصم 100%.</p>
+            <h3>قواعد أساسية</h3>
+            <ul>
+                <li>كل Coupon يتم إنشاؤه للاستخدام مرة واحدة.</li>
+                <li>عند استخدامه يتم ربطه بالحساب الذي استخدمه.</li>
+                <li>لا يمكن إعادة استخدامه بعد تفعيله.</li>
+                <li>يتم تسجيل عملية استخدامه في النظام.</li>
+                <li>يمكن تحديد تاريخ انتهاء للكوبون.</li>
+                <li>يمكن تحديد الباقة التي ينطبق عليها الكوبون.</li>
+                <li>يمكن أن ينتج عن الكوبون مبلغ مستحق يساوي صفرًا.</li>
+            </ul>
+            <p><strong>النتيجة:</strong> يتم تطبيق الخصم وتسجيل العملية ضمن السجلات المالية والتقارير.</p>
+        </div>
+
+        <!-- 7. UC-05 -->
+        <div class="section-card">
+            <span class="section-number">القسم 7</span>
+            <h2>UC-05 — إدارة المدرسين من Central Platform</h2>
+            <p><strong>Actor:</strong> Central Platform Administrator</p>
+            <p>يمكن للمسؤول المركزي: البحث عن المدرسين، عرض بيانات المدرس، متابعة حالة Teacher Platform، تفعيل أو تعطيل المنصة، متابعة الاشتراك، متابعة الباقة، متابعة المدفوعات، مراجعة استخدام Coupons، والوصول إلى المعلومات اللازمة للدعم.</p>
+        </div>
+
+        <!-- 8. UC-06 -->
+        <div class="section-card">
+            <span class="section-number">القسم 8</span>
+            <h2>UC-06 — التقارير المركزية</h2>
+            <p><strong>Actor:</strong> Central Platform Administrator</p>
+            <p>يوفر النظام تقارير عن: عدد المدرسين، عدد Teacher Platforms النشطة، الباقات المستخدمة، الاشتراكات، المدفوعات، Coupons، الخصومات، الاشتراكات المجانية، الإيرادات الخاصة بالمنصة المركزية، وحالة الاشتراكات.</p>
+        </div>
+
+        <!-- 9. Teacher Platform Use Cases -->
+        <div class="section-card">
+            <span class="section-number">القسم 9</span>
+            <h2>9. Teacher Platform Use Cases</h2>
+
+            <div class="use-case">
+                <span class="uc-id">UC-07</span>
+                <h3>إعداد بيانات المدرس</h3>
+                <p><strong>Actor:</strong> Teacher</p>
+                <p>يقوم المدرس بإدخال وإدارة بياناته، مثل: الاسم، الصورة، صورة الغلاف، النبذة التعريفية، المواد التي يقوم بتدريسها، الصفوف الدراسية، المواعيد، الأحداث والإعلانات.</p>
+            </div>
+
+            <div class="use-case">
+                <span class="uc-id">UC-08</span>
+                <h3>تحديد التخصص الدراسي</h3>
+                <p><strong>Actor:</strong> Teacher</p>
+                <p>يحدد المدرس: المادة الدراسية، الصف الدراسي، السنة الدراسية، الفصل الدراسي أو السنة الكاملة. يمكن للمدرس تدريس أكثر من مادة وأكثر من صف.</p>
+            </div>
+        </div>
+
+        <!-- 10. UC-09 -->
+        <div class="section-card">
+            <span class="section-number">القسم 10</span>
+            <h2>UC-09 — إنشاء Course</h2>
+            <p><strong>Actor:</strong> Teacher</p>
+            <p>ينشئ المدرس Course جديدًا. يتكون Course من هيكل تعليمي هرمي:</p>
+            <div class="journey-box">Course ← Unit ← Chapter ← Lesson</div>
+            <p>يمكن أن تحتوي السنة الدراسية على أكثر من Unit، وكل Unit تحتوي على Chapters، وكل Chapter يحتوي على Lessons.</p>
+        </div>
+
+        <!-- 11. UC-10 -->
+        <div class="section-card">
+            <span class="section-number">القسم 11</span>
+            <h2>UC-10 — إنشاء Lesson</h2>
+            <p><strong>Actor:</strong> Teacher</p>
+            <p>يمكن أن تحتوي Lesson على أكثر من نوع من المحتوى التعليمي، مثل: Video، Text Explanation، PDF، Images، Homework، Revision، Exam أو نشاط تعليمي مرتبط بالدرس حسب إعداد المدرس. يمكن للمدرس ترتيب Lessons وتحديد طريقة الوصول إليها.</p>
+        </div>
+
+        <!-- 12. UC-11 -->
+        <div class="section-card">
+            <span class="section-number">القسم 12</span>
+            <h2>UC-11 — إنشاء Packages</h2>
+            <p><strong>Actor:</strong> Teacher</p>
+            <p>الـPackage ليست محتوى جديدًا، وإنما عرض تعليمي يعتمد على محتوى موجود بالفعل داخل Courses.</p>
+            <h3>السيناريو</h3>
+            <ol>
+                <li>يختار المدرس المحتوى الموجود.</li>
+                <li>يحدد Units أو Chapters معينة.</li>
+                <li>ينشئ Package.</li>
+                <li>يحدد السعر.</li>
+                <li>يحدد قواعدها.</li>
+                <li>ينشرها للطلاب.</li>
+            </ol>
+            <p><strong>الهدف:</strong> توفير مسار مناسب للطلاب الذين تأخروا أو بدأوا متأخرًا أو انتقلوا من مدرس آخر أو يحتاجون مجموعة محددة من المحتوى السابق. يمكن أن يكون سعر Package مختلفًا عن السعر الأصلي للمحتوى المحدد فيها.</p>
+        </div>
+
+        <!-- 13. UC-12 -->
+        <div class="section-card">
+            <span class="section-number">القسم 13</span>
+            <h2>UC-12 — إنشاء Revision</h2>
+            <p><strong>Actor:</strong> Teacher</p>
+            <p>يمكن للمدرس إنشاء Revision مستقلة. يمكن أن تحتوي على Units وChapters وVideos وPDFs وText ومواد تعليمية أخرى. ويحدد المدرس السعر الخاص بها وقواعد الوصول إليها.</p>
+        </div>
+
+        <!-- 14. UC-13 -->
+        <div class="section-card">
+            <span class="section-number">القسم 14</span>
+            <h2>UC-13 — إنشاء Exam</h2>
+            <p><strong>Actor:</strong> Teacher / Teacher Admin / Assistant حسب الصلاحيات</p>
+            <p>يمكن إنشاء Exam مستقل أو مرتبط بالمسار التعليمي.</p>
+            <h3>أنواع Exam</h3>
+            <ul>
+                <li>Online Exam.</li>
+                <li>Offline Exam.</li>
+            </ul>
+            <h3>Online Exam</h3>
+            <p>يمكن أن يكون Free أو Paid. ويتم تحديد: موعد البداية، موعد النهاية، السعر، الأسئلة، الإجابات الصحيحة، الدرجة، قواعد الوصول.</p>
+            <h3>Offline Exam</h3>
+            <p>يمكن أيضًا تحديد: Free أو Paid، الموعد، عدد المقاعد أو المشاركين عند الحاجة، حالة الحجز والدفع.</p>
+        </div>
+
+        <!-- 15. UC-14 -->
+        <div class="section-card">
+            <span class="section-number">القسم 15</span>
+            <h2>UC-14 — أداء Online Exam</h2>
+            <p><strong>Actor:</strong> Student</p>
+            <h3>السيناريو</h3>
+            <ol>
+                <li>يدخل الطالب إلى Exam.</li>
+                <li>يتحقق النظام من أهلية الطالب.</li>
+                <li>يتحقق النظام من موعد الاختبار.</li>
+                <li>يبدأ الطالب الإجابة.</li>
+                <li>ينهي الاختبار.</li>
+                <li>يقوم النظام بتقييم الأسئلة القابلة للتصحيح الآلي.</li>
+                <li>تظهر النتيجة وفق إعدادات المدرس.</li>
+            </ol>
+        </div>
+
+        <!-- 16. UC-15 -->
+        <div class="section-card">
+            <span class="section-number">القسم 16</span>
+            <h2>UC-15 — إدارة قواعد الوصول إلى المحتوى</h2>
+            <p><strong>Actors:</strong> Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن تحديد Rules للتحكم في ترتيب المحتوى والوصول إليه. أمثلة: لا يمكن فتح Lesson 6 قبل إكمال Lesson 5، لا يمكن الانتقال إلى Chapter جديد قبل إكمال المتطلبات السابقة، يجب أداء Homework قبل الانتقال، يجب اجتياز Exam قبل متابعة المحتوى، يمكن تحديد مدة صلاحية الوصول، يمكن إعادة فتح المحتوى لطالب معين. جميع هذه القواعد اختيارية ويحددها المدرس وفق طبيعة المحتوى.</p>
+        </div>
+
+        <!-- 17. UC-16 -->
+        <div class="section-card">
+            <span class="section-number">القسم 17</span>
+            <h2>UC-16 — متابعة نشاط الطالب</h2>
+            <p><strong>Actors:</strong> Teacher / Teacher Admin / Assistant</p>
+            <p>يسجل النظام نشاط الطالب داخل المحتوى، مثل: مشاهدة الفيديو، نسبة المشاهدة، مدة المشاهدة الفعلية، سرعة تشغيل الفيديو، آخر نقطة مشاهدة، إكمال Lesson، أداء Homework، أداء Exam، النتائج، والتفاعل مع المحتوى. تستخدم هذه البيانات لتحديد مدى استيفاء الطالب لشروط الانتقال إلى المحتوى التالي.</p>
+        </div>
+
+        <!-- 18. UC-17 -->
+        <div class="section-card">
+            <span class="section-number">القسم 18</span>
+            <h2>UC-17 — انتهاء صلاحية المحتوى</h2>
+            <p><strong>Actors:</strong> Student / Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن أن يكون للمحتوى أو Course أو Unit أو Lesson فترة صلاحية. مثال: يصبح Video متاحًا للطالب لمدة 7 أيام من تاريخ الاشتراك.</p>
+            <p>بعد انتهاء الفترة: يتوقف وصول الطالب إلى المحتوى، يتم تسجيل حالة الانتهاء، يمكن للمسؤول المخول تمديد الصلاحية، يمكن إعادة فتح المحتوى لطالب معين.</p>
+        </div>
+
+        <!-- 19. UC-18 -->
+        <div class="section-card">
+            <span class="section-number">القسم 19</span>
+            <h2>UC-18 — إعادة فتح المحتوى</h2>
+            <p><strong>Actor:</strong> Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن للمستخدم المخول: تمديد صلاحية Lesson، إعادة فتح Unit، إعادة فتح Course، إعادة السماح بمشاهدة محتوى سابق، تحديد مدة جديدة للوصول. وذلك عند وجود سبب مناسب مثل مشكلة تقنية أو غياب الطالب أو ظروف خاصة أو فترة مراجعة.</p>
+        </div>
+
+        <!-- 20. UC-19 -->
+        <div class="section-card">
+            <span class="section-number">القسم 20</span>
+            <h2>UC-19 — إدارة الطلاب</h2>
+            <p><strong>Actors:</strong> Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن إدارة الطلاب من خلال: إضافة طالب، تعديل بياناته، تفعيل الحساب، تعطيل الحساب، تحديد حالته، ربطه بالمجموعات، منحه صلاحيات الوصول، متابعة نشاطه، متابعة مشترياته، متابعة مدفوعاته.</p>
+        </div>
+
+        <!-- 21. UC-20 -->
+        <div class="section-card">
+            <span class="section-number">القسم 21</span>
+            <h2>UC-20 — إنشاء الطلاب من Excel</h2>
+            <p><strong>Actor:</strong> Teacher Admin / Assistant</p>
+            <p>لدعم أعداد الطلاب الكبيرة، يمكن استيراد بيانات الطلاب من Excel. البيانات الأساسية: Name، Phone Number، Parent Phone، Address، بيانات إضافية يتم تحديدها لاحقًا.</p>
+            <h3>السيناريو</h3>
+            <ol>
+                <li>يرفع المسؤول ملف Excel.</li>
+                <li>يتحقق النظام من البيانات.</li>
+                <li>يعرض البيانات قبل الإنشاء.</li>
+                <li>يتم إنشاء حسابات الطلاب تلقائيًا.</li>
+                <li>يتم إنشاء بيانات الدخول.</li>
+                <li>يتم ربط الطلاب بالمنصة أو المجموعة المطلوبة.</li>
+            </ol>
+            <p>يهدف ذلك إلى تسهيل إنشاء مئات الطلاب دون إدخالهم يدويًا.</p>
+        </div>
+
+        <!-- 22. UC-21 -->
+        <div class="section-card">
+            <span class="section-number">القسم 22</span>
+            <h2>UC-21 — إدارة الطلاب Offline</h2>
+            <p><strong>Actor:</strong> Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن تسجيل الطلاب الذين يدرسون مع المدرس Offline داخل النظام. يمكن للمدرس منح الطالب Offline صلاحية الوصول إلى جزء من المحتوى Online. ويحدد المدرس أو المسؤول المخول: هل الطالب Offline لديه Online Access؟ ما المحتوى المتاح له؟ ما الـUnits المتاحة؟ ما الـVideos المتاحة؟ ما مدة الوصول؟ ما القواعد المطبقة عليه؟</p>
+        </div>
+
+        <!-- 23. UC-22 -->
+        <div class="section-card">
+            <span class="section-number">القسم 23</span>
+            <h2>UC-22 — إدارة Wallet</h2>
+            <p><strong>Actor:</strong> Student</p>
+            <p>يمتلك الطالب Wallet تحتوي على Credit يمكن استخدامها للحصول على الخدمات التعليمية.</p>
+            <h3>إضافة Credit</h3>
+            <ol>
+                <li>اختيار إضافة Credit.</li>
+                <li>اختيار طريقة التحويل المتاحة.</li>
+                <li>تنفيذ التحويل.</li>
+                <li>رفع صورة إثبات التحويل.</li>
+                <li>إدخال رقم أو بيانات التحويل.</li>
+                <li>إرسال الطلب للمراجعة.</li>
+                <li>يقوم المسؤول المخول بمراجعة العملية.</li>
+                <li>يتم اعتماد العملية.</li>
+                <li>تتم إضافة القيمة إلى Wallet الطالب.</li>
+            </ol>
+        </div>
+
+        <!-- 24. UC-23 -->
+        <div class="section-card">
+            <span class="section-number">القسم 24</span>
+            <h2>UC-23 — شراء محتوى باستخدام Wallet</h2>
+            <p><strong>Actor:</strong> Student</p>
+            <p>يمكن استخدام Wallet لشراء: Course، Package، Revision، Paid Exam.</p>
+            <h3>السيناريو</h3>
+            <ol>
+                <li>يختار الطالب المحتوى.</li>
+                <li>يظهر السعر.</li>
+                <li>يدخل إلى عملية الشراء.</li>
+                <li>يتحقق النظام من الرصيد.</li>
+                <li>يتم خصم السعر من Wallet.</li>
+                <li>يتم تسجيل Financial Transaction.</li>
+                <li>يتم منح الطالب صلاحية الوصول.</li>
+            </ol>
+            <p>إذا كان الرصيد غير كافٍ، يجب على الطالب إضافة Credit قبل إتمام عملية الشراء.</p>
+        </div>
+
+        <!-- 25. UC-24 -->
+        <div class="section-card">
+            <span class="section-number">القسم 25</span>
+            <h2>UC-24 — استخدام Coupon للطالب</h2>
+            <p><strong>Actors:</strong> Student / Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن للمدرس إنشاء Coupon للطلاب وفق الصلاحيات والسياسات المعتمدة. يمكن أن يكون الخصم نسبة مئوية أو قيمة محددة أو مجانيًا بالكامل. يتم تسجيل استخدام Coupon وربطه بالطالب الذي استخدمه، وفق قواعد الاستخدام المحددة.</p>
+        </div>
+
+        <!-- 26. UC-25 -->
+        <div class="section-card">
+            <span class="section-number">القسم 26</span>
+            <h2>UC-25 — إدارة Financial Transactions</h2>
+            <p><strong>Actors:</strong> Teacher / Teacher Admin / Assistant</p>
+            <p>يسجل النظام العمليات المالية الخاصة بـTeacher Platform. تشمل العمليات: طلبات إضافة Credit، التحويلات، قبول التحويل، رفض التحويل، قيمة التحويل، تاريخ العملية، الطالب، المحتوى الذي تم شراؤه، المبلغ المدفوع، الخصومات، Coupons، الرصيد، عمليات الشراء. تستخدم هذه البيانات لإنشاء تقارير مالية دقيقة.</p>
+        </div>
+
+        <!-- 27. UC-26 -->
+        <div class="section-card">
+            <span class="section-number">القسم 27</span>
+            <h2>UC-26 — Teacher Financial Reports</h2>
+            <p><strong>Actor:</strong> Teacher</p>
+            <p>يمكن للمدرس الاطلاع على تقارير مالية مثل: عدد الطلاب المشترين، المبيعات، قيمة المبيعات، التحويلات، إجمالي Credit المضاف، المبالغ المستخدمة، الخصومات، Coupons المستخدمة، الإيرادات حسب Course، الإيرادات حسب Package، الإيرادات حسب Revision، الإيرادات حسب Exam، والتقارير الزمنية.</p>
+        </div>
+
+        <!-- 28. UC-27 -->
+        <div class="section-card">
+            <span class="section-number">القسم 28</span>
+            <h2>UC-27 — إدارة فريق Teacher Platform</h2>
+            <p><strong>Actor:</strong> Teacher</p>
+            <p>يمكن للمدرس إنشاء أكثر من Admin أو Assistant. لكل مستخدم مجموعة صلاحيات مستقلة. يمكن للمدرس مثلًا أن يسمح لمستخدم بإدارة الطلاب والتحويلات والمحتوى وExams والدعم والتقارير، وفي المقابل يمكن منع مستخدم آخر من مشاهدة البيانات المالية أو تعديل المحتوى أو إدارة المستخدمين أو الوصول إلى إعدادات المنصة. المدرس هو المسؤول عن تحديد هذه الصلاحيات.</p>
+        </div>
+
+        <!-- 29. UC-28 -->
+        <div class="section-card">
+            <span class="section-number">القسم 29</span>
+            <h2>UC-28 — Deactivate Student</h2>
+            <p><strong>Actor:</strong> Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن تعطيل حساب الطالب عند الحاجة. أسباب محتملة: مخالفة قواعد المنصة، مخالفة قواعد المدرس، قرار إداري، انتهاء العلاقة التعليمية. يمكن إعادة تفعيل الحساب لاحقًا من خلال المستخدم المخول.</p>
+        </div>
+
+        <!-- 30. UC-29 -->
+        <div class="section-card">
+            <span class="section-number">القسم 30</span>
+            <h2>UC-29 — Teacher Wall</h2>
+            <p><strong>Actor:</strong> Teacher</p>
+            <p>يمتلك كل مدرس Wall خاصة به. يمكن للمدرس نشر: إعلان، سؤال، شرح مختصر، معلومة تعليمية، تذكير، موعد، إحصائية، استطلاع رأي، تقييم، سؤال مفتوح. يمكن للطلاب التفاعل مع المنشورات وفق إعدادات المدرس.</p>
+        </div>
+
+        <!-- 31. UC-30 -->
+        <div class="section-card">
+            <span class="section-number">القسم 31</span>
+            <h2>UC-30 — التفاعل مع Teacher Wall</h2>
+            <p><strong>Actor:</strong> Student</p>
+            <p>يمكن للطالب: مشاهدة منشورات المدرس، كتابة Comment، الإجابة عن سؤال، المشاركة في Poll، اختيار إجابة، المشاركة في التقييمات. يمكن للمدرس التحكم في إمكانية التعليق والتفاعل حسب نوع المنشور.</p>
+        </div>
+
+        <!-- 32. UC-31 -->
+        <div class="section-card">
+            <span class="section-number">القسم 32</span>
+            <h2>UC-31 — إدارة المحتوى والـWall</h2>
+            <p><strong>Actor:</strong> Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن للمستخدم المخول: إنشاء Post، تعديل Post، حذف Post، إغلاق Comments، إعادة فتح Comments، إدارة التعليقات، حذف التعليقات غير المناسبة.</p>
+        </div>
+
+        <!-- 33. UC-32 -->
+        <div class="section-card">
+            <span class="section-number">القسم 33</span>
+            <h2>UC-32 — حماية المحتوى المرئي</h2>
+            <p><strong>Actor:</strong> Student</p>
+            <p>عند مشاهدة المحتوى المرئي، يتم تشغيله من خلال خدمة متخصصة في حماية وتقديم الفيديو. يتم التعامل مع الفيديو كـProtected Video Resource. يمكن أن يتضمن المحتوى المرئي Watermark مرتبطة بالطالب، مثل Student ID وEmail وبيانات تعريفية أخرى. الهدف هو تقليل مشاركة المحتوى وتسهيل تحديد مصدر أي تسجيل غير مصرح به.</p>
+        </div>
+
+        <!-- 34. UC-33 -->
+        <div class="section-card">
+            <span class="section-number">القسم 34</span>
+            <h2>UC-33 — إدارة صلاحية مشاهدة الفيديو</h2>
+            <p><strong>Actors:</strong> Student / Teacher / Teacher Admin / Assistant</p>
+            <p>يمكن للنظام تحديد: مدة مشاهدة الفيديو، تاريخ بداية الوصول، تاريخ انتهاء الوصول، عدد مرات أو شروط المشاهدة عند الحاجة، إمكانية إعادة المشاهدة، إمكانية إعادة فتح الفيديو. ويتم الاعتماد على Activity الخاصة بالطالب لتحديد مدى استيفائه لقواعد المشاهدة.</p>
+        </div>
+
+        <!-- 35. UC-34 -->
+        <div class="section-card">
+            <span class="section-number">القسم 35</span>
+            <h2>UC-34 — تسجيل الدخول من أجهزة متعددة</h2>
+            <p><strong>Actor:</strong> Student</p>
+            <p>يسمح النظام للطالب باستخدام أكثر من جهاز عند الحاجة. وجود جهازين من نفس الشبكة لا يعتبر بمفرده مخالفة. لكن عند اكتشاف استخدام الحساب من بيئة مختلفة وفق قواعد الحماية المحددة، يمكن للنظام تطبيق سياسة الجلسات المعتمدة. ومن السياسات الممكنة: تسجيل خروج الجلسة السابقة، السماح بآخر جلسة فقط، السماح بأكثر من جلسة وفق إعدادات المدرس، تسجيل الحدث للمراجعة. الهدف هو تحقيق توازن بين حماية الحساب وعدم تعطيل الطالب الطبيعي.</p>
+        </div>
+
+        <!-- 36. Student Journey -->
+        <div class="section-card">
+            <span class="section-number">القسم 36</span>
+            <h2>36. Student Journey — رحلة الطالب</h2>
+            <div class="journey-box">المرحلة الأولى: الوصول ← يدخل الطالب إلى Teacher Platform من الرابط الخاص بالمدرس.
+
+المرحلة الثانية: التسجيل ← ينشئ حسابًا أو يتم إنشاء الحساب له بواسطة Teacher Admin / Assistant.
+
+المرحلة الثالثة: الانضمام ← ينضم إلى المدرس ويصبح مرتبطًا بـTeacher Platform.
+
+المرحلة الرابعة: Wallet ← يضيف Credit إلى Wallet من خلال وسائل الدفع المتاحة.
+
+المرحلة الخامسة: اختيار المحتوى ← يختار Course أو Package أو Revision أو Exam.
+
+المرحلة السادسة: الشراء ← يتم خصم القيمة من Wallet.
+
+المرحلة السابعة: التعلم ← يشاهد المحتوى وفق Rules المدرس.
+
+المرحلة الثامنة: التفاعل ← يمكنه أداء Homework وExams ومشاهدة النتائج والتعليق على Teacher Wall ومتابعة الإعلانات.
+
+المرحلة التاسعة: التقدم ← يسجل النظام نشاط الطالب وتقدمه.
+
+المرحلة العاشرة: الانتقال ← يتم فتح المحتوى التالي وفق القواعد المحددة.</div>
+        </div>
+
+        <!-- 37. Teacher Journey -->
+        <div class="section-card">
+            <span class="section-number">القسم 37</span>
+            <h2>37. Teacher Journey — رحلة المدرس</h2>
+            <div class="journey-box">المرحلة الأولى: التسجيل في Central Platform.
+
+المرحلة الثانية: اختيار الاشتراك المناسب.
+
+المرحلة الثالثة: تفعيل Teacher Platform.
+
+المرحلة الرابعة: إعداد البيانات والتخصصات.
+
+المرحلة الخامسة: إضافة المواد والصفوف والسنوات الدراسية.
+
+المرحلة السادسة: إنشاء Course Structure: Course ← Unit ← Chapter ← Lesson
+
+المرحلة السابعة: إضافة المحتوى: Videos / Text / PDFs / Homework / Exams / Revisions
+
+المرحلة الثامنة: تحديد الأسعار والـPackages.
+
+المرحلة التاسعة: إضافة الطلاب أو استيرادهم.
+
+المرحلة العاشرة: تعيين Admins / Assistants والصلاحيات.
+
+المرحلة الحادية عشرة: إدارة الطلاب والمحتوى والـWall.
+
+المرحلة الثانية عشرة: متابعة النشاط والنتائج والتقارير المالية.</div>
+        </div>
+
+        <!-- 38. Admin Journey -->
+        <div class="section-card">
+            <span class="section-number">القسم 38</span>
+            <h2>38. Teacher Admin / Assistant Journey</h2>
+            <ol>
+                <li>يحصل المستخدم على حساب من Teacher.</li>
+                <li>يتم تحديد الصلاحيات.</li>
+                <li>يدخل إلى Teacher Platform.</li>
+                <li>يرى فقط الوظائف المسموح له بها.</li>
+                <li>يقوم بإدارة الطلاب أو المحتوى أو التحويلات أو الدعم حسب صلاحياته.</li>
+                <li>تسجل العمليات التي يقوم بها.</li>
+                <li>يستطيع Teacher مراجعة نشاطه وإدارة صلاحياته في أي وقت.</li>
+            </ol>
+        </div>
+
+        <!-- 39. Central Platform Journey -->
+        <div class="section-card">
+            <span class="section-number">القسم 39</span>
+            <h2>39. Central Platform Journey</h2>
+            <ol>
+                <li>تسجيل Teacher.</li>
+                <li>إنشاء Teacher Platform.</li>
+                <li>اختيار Subscription.</li>
+                <li>تسجيل Payment.</li>
+                <li>تفعيل الاشتراك.</li>
+                <li>إدارة Teacher Platform.</li>
+                <li>متابعة الاستخدام.</li>
+                <li>إنشاء Coupons عند الحاجة.</li>
+                <li>متابعة الاشتراكات.</li>
+                <li>متابعة المدفوعات.</li>
+                <li>إصدار التقارير المركزية.</li>
+            </ol>
+        </div>
+
+        <!-- 40. العلاقات الرئيسية -->
+        <div class="section-card">
+            <span class="section-number">القسم 40</span>
+            <h2>40. العلاقات الرئيسية بين أجزاء النظام</h2>
+            <div class="journey-box">Central Platform
+← Teachers
+← Teacher Platforms
+← Students
+← Courses
+← Units
+← Chapters
+← Lessons
+← Learning Content
+← Packages / Revisions / Exams
+← Wallet & Financial Transactions
+← Rules & Activities
+← Teacher Wall
+← Reports</div>
+        </div>
+
+        <!-- 41. المبدأ التشغيلي -->
+        <div class="section-card">
+            <span class="section-number">القسم 41</span>
+            <h2>41. المبدأ التشغيلي الأساسي</h2>
+            <p>النظام لا يفرض طريقة تعليم واحدة على المدرس، بل يوفر له أدوات تمكنه من بناء البيئة التعليمية المناسبة لطريقته في التدريس. لذلك فإن:</p>
+            <ul>
+                <li>هيكل المحتوى قابل للتنظيم.</li>
+                <li>Rules قابلة للتفعيل أو التعطيل.</li>
+                <li>الوصول للمحتوى قابل للتخصيص.</li>
+                <li>الأسعار يحددها المدرس.</li>
+                <li>Packages يحددها المدرس.</li>
+                <li>Revisions يحددها المدرس.</li>
+                <li>Exams يحددها المدرس.</li>
+                <li>صلاحيات فريق العمل يحددها المدرس.</li>
+                <li>صلاحيات الطلاب تحدد وفق المحتوى والقواعد.</li>
+                <li>الإدارة المركزية تدير العلاقة بين المنصة المركزية والمدرسين، دون إدارة العملية التعليمية اليومية نيابة عن المدرس.</li>
+            </ul>
+        </div>
+
+        <!-- 42. الخلاصة -->
+        <div class="section-card">
+            <span class="section-number">القسم 42</span>
+            <h2>42. الخلاصة</h2>
+            <p>يعمل النظام من خلال نموذج هرمي واضح:</p>
+            <div class="journey-box">Central Platform ← Teacher Platform ← Students ← Learning Content</div>
+            <p>وتوفر كل Teacher Platform بيئة تعليمية مستقلة يديرها المدرس وفريقه، بينما توفر Central Platform الإدارة المركزية والاشتراكات والتقارير والخدمات المشتركة.</p>
+            <p>ويتمحور الاستخدام الأساسي حول دورة متكاملة:</p>
+            <div class="journey-box">Teacher Registration ← Platform Activation ← Content Creation ← Student Enrollment ← Wallet ← Purchase ← Learning ← Assessment ← Activity Tracking ← Reports</div>
+            <p>مع إمكانية تخصيص قواعد الوصول والمشاهدة والاختبارات والمراجعة لكل بيئة تعليمية بما يتناسب مع أسلوب المدرس.</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="footer-note">
+            <strong>ProNileSoft</strong> • System Use Cases & User Journeys v1.0 • Eng. Wael Sayed
+        </div>
+    </div>
+</body>
+</html>
